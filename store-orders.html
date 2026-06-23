@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="MEMS Storekeeper — Purchase Orders"/>
+  <title>Purchase Orders — MEMS Storekeeper</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%238B5CF6'/><path d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{display:flex;min-height:100vh;background:#0F1117;color:#E2E8F0;font-family:'Inter',system-ui,sans-serif;font-size:0.9rem;overflow-x:hidden;}
+    .sidebar{width:240px;min-width:240px;background:#131720;border-right:1px solid #1F2A40;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 18px;border-bottom:1px solid #1F2A40;}
+    .sidebar-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sidebar-brand-icon svg{width:18px;height:18px;color:#fff;}
+    .sidebar-brand-name{font-size:1rem;font-weight:700;color:#E2E8F0;}
+    .sidebar-brand-sub{font-size:0.65rem;color:#8B5CF6;margin-top:1px;font-weight:600;}
+    .sidebar-role-badge{margin:10px 20px;padding:6px 12px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:8px;font-size:0.7rem;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:0.08em;text-align:center;}
+    .sidebar-nav{flex:1;padding:12px 0;}
+    .nav-section-label{font-size:0.65rem;font-weight:600;color:#5A6A85;text-transform:uppercase;letter-spacing:0.08em;padding:12px 20px 6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:#94A3B8;font-size:0.875rem;font-weight:500;cursor:pointer;border-left:3px solid transparent;text-decoration:none;}
+    .nav-item svg{width:17px;height:17px;flex-shrink:0;}
+    .nav-item:hover{background:#1A2235;color:#E2E8F0;}
+    .nav-item.active{background:rgba(139,92,246,0.12);color:#A78BFA;border-left-color:#8B5CF6;font-weight:600;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid #1F2A40;display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#6366F1);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:white;flex-shrink:0;}
+    .user-info{flex:1;min-width:0;}.user-name{font-size:0.8125rem;font-weight:600;color:#E2E8F0;}.user-role{font-size:0.7rem;color:#A78BFA;font-weight:600;}
+    .logout-btn{width:28px;height:28px;border-radius:6px;background:none;border:none;color:#5A6A85;cursor:pointer;display:flex;align-items:center;justify-content:center;}.logout-btn:hover{background:#1F2A40;color:#E2E8F0;}.logout-btn svg{width:16px;height:16px;}
+    
+    .main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+    .topbar{height:60px;background:#131720;border-bottom:1px solid #1F2A40;display:flex;align-items:center;padding:0 28px;gap:16px;}
+    .topbar-title{font-size:1rem;font-weight:700;color:#E2E8F0;flex:1;}
+    .shift-chip{padding:4px 10px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:99px;font-size:0.72rem;font-weight:700;color:#A78BFA;}
+    .notif-btn{position:relative;width:36px;height:36px;border-radius:8px;background:#1A2235;border:1px solid #1F2A40;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94A3B8;}.notif-btn svg{width:17px;height:17px;}
+    .topbar-date{font-size:0.8rem;color:#5A6A85;}
+    
+    .page-body{flex:1;padding:28px;display:flex;flex-direction:column;gap:20px;}
+    .page-header h1{font-size:1.25rem;font-weight:700;color:#E2E8F0;}
+    .page-header p{font-size:0.8125rem;color:#5A6A85;margin-top:3px;}
+    
+    .tabs{display:flex;gap:2px;background:#131720;border:1px solid #1F2A40;border-radius:10px;padding:4px;width:fit-content;}
+    .tab-btn{padding:7px 18px;border-radius:7px;font-size:0.8125rem;font-weight:600;cursor:pointer;background:none;border:none;color:#5A6A85;transition:all 0.15s;}
+    .tab-btn.active{background:#181D2A;color:#8B5CF6;}
+    
+    .panel{background:#181D2A;border:1px solid #1F2A40;border-radius:12px;overflow:hidden;}
+    .data-table{width:100%;border-collapse:collapse;}
+    .data-table th{text-align:left;font-size:0.7rem;font-weight:600;color:#5A6A85;text-transform:uppercase;padding:10px 18px;background:#131720;border-bottom:1px solid #1F2A40;}
+    .data-table td{padding:12px 18px;font-size:0.8125rem;color:#94A3B8;border-bottom:1px solid #1A2235;vertical-align:middle;}
+    .data-table tr:hover td{background:#1A2235;}
+    .td-primary{color:#E2E8F0;font-weight:500;}
+    
+    .badge{padding:3px 9px;border-radius:99px;font-size:0.7rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+    .badge-shipped{background:rgba(59,114,246,0.12);color:#60A5FA;}
+    .badge-ordered{background:rgba(245,158,11,0.12);color:#FCD34D;}
+    .badge-fulfilled{background:rgba(34,197,94,0.12);color:#4ADE80;}
+    .badge-fulfilled::before{background:#4ADE80;}
+    
+    .btn-action{padding:6px 12px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:6px;color:#A78BFA;font-size:0.75rem;font-weight:600;cursor:pointer;}
+    .btn-action:hover{background:rgba(139,92,246,0.2);}
+    
+    #toast{position:fixed;bottom:28px;right:28px;background:#8B5CF6;color:white;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:2000;}
+    #toast.show{transform:translateY(0);opacity:1;}
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18"/></svg></div>
+      <div><div class="sidebar-brand-name">MEMS</div><div class="sidebar-brand-sub">Storekeeper Portal</div></div>
+    </div>
+    <div class="sidebar-role-badge">Storekeeper</div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Inventory Management</div>
+      <a href="store-dashboard.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm10.5 0A2.25 2.25 0 0116.5 3.75h2.25A2.25 2.25 0 0121 6v2.25a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm10.5 0a2.25 2.25 0 012.25-2.25h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"/></svg>Dashboard</a>
+      <a href="store-inventory.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>Inventory Catalog</a>
+      <a href="store-requests.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375"/></svg>Part Requests</a>
+      <a href="store-orders.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125H15M15 18.75h.008v.008H15v-.008zm-9-1.5h.008v.008H6v-.008zm11.455-5.32L17.25 4.5A2.25 2.25 0 0015 2.25H9A2.25 2.25 0 006.75 4.5l-.205 7.43m10.91 0L17.25 4.5a2.25 2.25 0 00-2.25-2.25H9a2.25 2.25 0 00-2.25 2.25l-.205 7.43m10.91 0l-10.91 0"/></svg>Purchase Orders</a>
+        <a href="store-rejected-orders.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      Rejected Orders
+    </a>
+<a href="store-email-log.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Supplier Email Log</a>
+<div class="nav-section-label">Account</div>
+      <a href="store-profile.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>My Profile</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-avatar">SA</div>
+      <div class="user-info"><div class="user-name">Sami Ali</div><div class="user-role">Storekeeper</div></div>
+      <a href="index.html" class="logout-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg></a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Purchase Orders</span>
+      <span class="shift-chip">Morning Shift (07:00-15:00)</span>
+      <button class="notif-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg></button>
+      <span class="topbar-date" id="topbar-date"></span>
+    </header>
+    
+    <main class="page-body">
+      <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <h1>Purchase Orders</h1>
+          <p>Track parts ordered from suppliers and update inventory upon receipt.</p>
+        </div>
+        <button class="btn-primary" style="display:flex; align-items:center; gap:8px; padding:10px 20px; border:none; border-radius:8px; background:#8B5CF6; color:white; font-weight:600; cursor:pointer;" onclick="location.href='store-create-order.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M12 4v16m8-8H4"/></svg>
+          New Order
+        </button>
+      </div>
+      
+      <div class="tabs">
+        <button class="tab-btn active">Active Orders (2)</button>
+        <button class="tab-btn">Received</button>
+      </div>
+
+      <div class="panel">
+        <table class="data-table">
+          <thead>
+            <tr><th>PO #</th><th>Supplier</th><th>Items</th><th>Expected Delivery</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="po-tbody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+function applyPoState(tr, state) {
+  const badge = tr.querySelector('.badge');
+  const actionTd = tr.querySelector('td:last-child');
+  if (!badge) return;
+  badge.className = 'badge';
+  
+  const isAr = localStorage.getItem('lang') === 'ar';
+  
+  if (state === 'delivered') {
+    badge.classList.add('badge-fulfilled'); // Green color
+    badge.textContent = isAr ? 'تم الاستلام' : 'Delivered';
+    actionTd.innerHTML = '';
+  } else {
+    // Keep original
+  }
+}
+
+  function receive(id) {
+    const el = document.querySelector('[data-po-id="' + id + '"]');
+    
+    if(el) {
+      localStorage.setItem('po-status-' + id, 'delivered');
+      applyPoState(el, 'delivered');
+      
+      const customOrders = JSON.parse(localStorage.getItem('customOrders') || '[]');
+      const po = customOrders.find(o => o.id === id);
+      if (po && po.reqId) {
+        let reqs = JSON.parse(localStorage.getItem('deviceRequests') || '[]');
+        const idx = reqs.findIndex(r => r.id === po.reqId);
+        if (idx > -1) {
+          reqs[idx].status = 'fulfilled';
+          localStorage.setItem('deviceRequests', JSON.stringify(reqs));
+        }
+      }
+      
+      // Update inventory in localStorage
+      const itemsCell = el.querySelectorAll('td')[2];
+      if (itemsCell) {
+        const cellText = itemsCell.textContent;
+        const qtyMatch = cellText.match(/\((\d+)\)/);
+        const poQty = qtyMatch ? parseInt(qtyMatch[1]) : 0;
+        const namePart = cellText.replace(/\s*\(\d+\)\s*$/, '').trim();
+        
+        const devs = JSON.parse(localStorage.getItem('mems_devices_v2') || '[]');
+        const templateDevice = devs.find(d => d.name.toLowerCase() === namePart.toLowerCase());
+        
+        if (templateDevice && poQty > 0) {
+          // This is a hospital device! Create real instances in the central database.
+          for (let i = 0; i < poQty; i++) {
+            const newId = 'DEV-' + Math.floor(Math.random() * 9000 + 1000);
+            devs.push({
+              id: newId,
+              name: templateDevice.name,
+              category: templateDevice.category || 'Other',
+              type: templateDevice.type || 'Other',
+              dept: 'Storage', // Newly received devices go to Storage
+              status: 'operational',
+              serial: 'SN-' + Date.now().toString().slice(-6) + i,
+              lastPm: new Date().toISOString().split('T')[0],
+              nextPm: ''
+            });
+          }
+          localStorage.setItem('mems_devices_v2', JSON.stringify(devs));
+        } else {
+          // It's a regular spare part, update the basic inventory qty
+          const inventory = JSON.parse(localStorage.getItem('mems_inventory') || '[]');
+          const invItem = inventory.find(item => item.itemName && item.itemName.toLowerCase() === namePart.toLowerCase());
+          if (invItem && poQty > 0) {
+            invItem.qty = (parseInt(invItem.qty) || 0) + poQty;
+            localStorage.setItem('mems_inventory', JSON.stringify(inventory));
+          } else if (poQty > 0) {
+            // Auto-add completely new requested parts to the inventory
+            inventory.unshift({
+              id: 'PRT-' + Math.floor(Math.random() * 9000 + 1000),
+              itemName: namePart,
+              category: 'Newly Requested',
+              qty: poQty,
+              min: 5,
+              dateAdded: new Date().toISOString().split('T')[0]
+            });
+            localStorage.setItem('mems_inventory', JSON.stringify(inventory));
+          }
+        }
+      }
+      filterPoTable();
+    }
+    const isAr = localStorage.getItem('lang') === 'ar';
+    showToast(isAr ? 'تم استلام ' + id + '. تم تحديث المخزون.' : '✓ ' + id + ' received. Inventory stock incremented.');
+  }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // Inject custom orders
+  let customOrders = JSON.parse(localStorage.getItem('customOrders') || 'null');
+  if (!customOrders) {
+    customOrders = [
+      { id: 'PO-9101', supplier: 'MedTech Supply Co.', item: 'Suction Catheters', qty: 100, date: '2026-05-26', status: 'pending' },
+      { id: 'PO-9102', supplier: 'Global Medical Parts', item: 'O2 Sensors', qty: 20, date: '2026-05-28', status: 'pending' }
+    ];
+    localStorage.setItem('customOrders', JSON.stringify(customOrders));
+  }
+  const tbody = document.getElementById('po-tbody');
+  
+  const isAr = localStorage.getItem('lang') === 'ar';
+  
+  window.simulateReply = function(id, outcome) {
+    const currentOrders = JSON.parse(localStorage.getItem('customOrders') || '[]');
+    const orderIndex = currentOrders.findIndex(o => o.id === id);
+    if (orderIndex > -1) {
+      if (outcome === 'not_exists') {
+        // Archive to rejected orders instead of deleting
+        const rejectedOrder = {...currentOrders[orderIndex], status: 'rejected', rejectedAt: new Date().toISOString()};
+        const rejectedList = JSON.parse(localStorage.getItem('mems_rejected_orders') || '[]');
+        rejectedList.unshift(rejectedOrder);
+        localStorage.setItem('mems_rejected_orders', JSON.stringify(rejectedList));
+        
+        currentOrders.splice(orderIndex, 1);
+        localStorage.setItem('customOrders', JSON.stringify(currentOrders));
+        
+        const tr = document.getElementById(id.toLowerCase());
+        if (tr) {
+          tr.style.opacity = '0';
+          setTimeout(() => {
+            tr.remove();
+            filterPoTable();
+          }, 300);
+        }
+        
+        showToast(isAr ? '❌ رد الشركة: العنصر غير متوفر. تم إلغاء الطلب.' : '❌ Company Reply: Item not exists. Order cancelled.');
+        const t = document.getElementById('toast');
+        t.style.background = '#EF4444'; 
+        setTimeout(() => t.style.background = '#8B5CF6', 4000);
+      } else if (outcome === 'exists') {
+        currentOrders[orderIndex].status = 'ordered';
+        localStorage.setItem('customOrders', JSON.stringify(currentOrders));
+        
+        const tr = document.getElementById(id.toLowerCase());
+        if (tr) {
+          const updatedBadge = tr.querySelector('.badge');
+          if (updatedBadge) {
+            updatedBadge.className = 'badge badge-ordered';
+            updatedBadge.removeAttribute('style');
+            updatedBadge.textContent = isAr ? 'تم الطلب' : 'Ordered';
+          }
+          
+          const actionTd = tr.querySelector('td:last-child');
+          if (actionTd) {
+            actionTd.innerHTML = `<button class="btn-action" onclick="receive('${id}')">${isAr ? 'تحديد كمستلم' : 'Mark Received'}</button>`;
+          }
+        }
+        showToast(isAr ? '📧 تم استلام الرد من الشركة! تم تحديث الحالة.' : '📧 Reply received from company! Status updated.');
+        const t = document.getElementById('toast');
+        t.style.background = '#10B981'; 
+        setTimeout(() => t.style.background = '#8B5CF6', 4000);
+      }
+    }
+  };
+  
+  customOrders.forEach((order, index) => {
+    const tr = document.createElement('tr');
+    tr.id = order.id.toLowerCase();
+    tr.setAttribute('data-po-id', order.id);
+    
+    const isPending = order.status === 'pending' || !order.status;
+    const statusText = isPending ? (isAr ? 'في انتظار الرد' : 'Pending Response') : (isAr ? 'تم الطلب' : 'Ordered');
+    const badgeClass = isPending ? 'style="background:rgba(100,116,139,0.12);color:#94A3B8;"' : 'class="badge-ordered"';
+    
+    const actionBtn = isPending 
+      ? `<div style="display:flex; gap:6px;align-items:center;flex-wrap:wrap;">
+           <button class="btn-action" style="color:#C4B5FD; border-color:rgba(139,92,246,0.35); display:inline-flex; align-items:center; gap:5px;" onclick="openEmailModal('${order.id}','${order.supplier}')">
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+               <polyline points="22,6 12,13 2,6"/>
+             </svg>
+             ${isAr ? 'الرد' : 'Response'}
+           </button>
+         </div>`
+      : `<button class="btn-action" onclick="receive('${order.id}')">${isAr ? 'تحديد كمستلم' : 'Mark Received'}</button>`;
+    
+    tr.innerHTML = `
+      <td class="td-primary">${order.id}</td>
+      <td>${order.supplier}</td>
+      <td>${order.item} (${order.qty})</td>
+      <td>${order.date}</td>
+      <td><span class="badge" ${badgeClass}>${statusText}</span></td>
+      <td>${actionBtn}</td>
+    `;
+    tbody.insertBefore(tr, tbody.firstChild);
+  });
+
+
+  const allRows = document.querySelectorAll('tr[data-po-id]');
+  allRows.forEach(tr => {
+    const id = tr.getAttribute('data-po-id');
+    const saved = localStorage.getItem('po-status-' + id);
+    if(saved) {
+      applyPoState(tr, saved);
+    }
+  });
+
+  const tabs = document.querySelectorAll('.tab-btn');
+  
+  window.filterPoTable = function() {
+    let activeIdx = 0;
+    tabs.forEach((t, i) => { if(t.classList.contains('active')) activeIdx = i; });
+    
+    let activeCount = 0;
+    Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+      const badge = tr.querySelector('.badge');
+      if (!badge) return;
+      let show = false;
+      
+      const isReceived = badge.classList.contains('badge-fulfilled');
+      
+      if (activeIdx === 0 && !isReceived) { show = true; activeCount++; }
+      if (activeIdx === 1 && isReceived) show = true;
+      
+      tr.style.display = show ? '' : 'none';
+    });
+    
+    if (activeIdx === 0) {
+      const isAr = localStorage.getItem('lang') === 'ar';
+      tabs[0].textContent = isAr ? 'الطلبات النشطة (' + activeCount + ')' : 'Active Orders (' + activeCount + ')';
+    }
+  };
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      filterPoTable();
+    });
+  });
+  
+  filterPoTable();
+});
+</script>
+
+<script src="js/session.js"></script>
+<script>if(window.MEMSSession)window.MEMSSession.requireAuth(['storekeeper']);</script>
+<script src="js/i18n.js"></script>
+
+<!-- ═══ LOG RESPONSE EMAIL MODAL ═══ -->
+<style>
+  #emailModal{display:none;position:fixed;inset:0;background:rgba(5,8,15,0.88);z-index:1000;align-items:center;justify-content:center;}
+  .em-box{background:#181D2A;border:1px solid #1F2A40;border-radius:16px;padding:28px 30px;max-width:540px;width:100%;position:relative;animation:emIn 0.22s ease;max-height:90vh;overflow-y:auto;box-sizing:border-box;}
+  @keyframes emIn{from{opacity:0;transform:translateY(-16px) scale(0.97)}to{opacity:1;transform:none}}
+  .em-close{position:absolute;top:16px;right:16px;background:none;border:1px solid #1F2A40;color:#5A6A85;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;transition:all .15s;}
+  .em-close:hover{background:#1A2235;color:#E2E8F0;}
+  .em-heading{font-size:1rem;font-weight:700;color:#E2E8F0;display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+  .em-heading svg{color:#8B5CF6;}
+  .em-context{font-size:0.78rem;color:#5A6A85;padding:8px 12px;background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);border-radius:8px;margin-bottom:18px;}
+  .em-context strong{color:#C4B5FD;}
+  .em-label{font-size:0.68rem;font-weight:700;color:#5A6A85;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px;}
+  .em-input,.em-select,.em-textarea{width:100%;background:#0F1117;border:1px solid #1F2A40;border-radius:8px;color:#E2E8F0;font-size:.8125rem;padding:9px 12px;outline:none;transition:border-color .15s;box-sizing:border-box;font-family:inherit;}
+  .em-input:focus,.em-select:focus,.em-textarea:focus{border-color:#8B5CF6;}
+  .em-textarea{resize:vertical;min-height:88px;}
+  .em-select option{background:#1A2235;}
+  .em-group{margin-bottom:14px;}
+  .em-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .em-outcome-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;}
+  .em-oc{padding:6px 13px;border-radius:8px;border:1px solid #1F2A40;background:none;color:#94A3B8;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;}
+  .em-oc:hover{border-color:#8B5CF6;color:#C4B5FD;}
+  .em-oc.sel-exists{background:rgba(74,222,128,.12);border-color:#4ADE80;color:#4ADE80;}
+  .em-oc.sel-not-exists{background:rgba(248,113,113,.12);border-color:#F87171;color:#F87171;}
+  .em-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #1F2A40;}
+  .em-btn-cancel{background:none;border:1px solid #1F2A40;color:#94A3B8;padding:8px 18px;border-radius:8px;font-size:.8125rem;cursor:pointer;font-family:inherit;transition:all .15s;}
+  .em-btn-cancel:hover{background:#1A2235;color:#E2E8F0;}
+  .em-btn-save{background:#8B5CF6;border:none;color:#fff;padding:8px 20px;border-radius:8px;font-size:.8125rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:background .15s;}
+  .em-btn-save:hover{background:#7C3AED;}
+  .em-divider{border:none;border-top:1px solid #1F2A40;margin:18px 0;}
+  .em-hist-title{font-size:.68rem;font-weight:700;color:#5A6A85;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+  .em-hist-item{background:#0F1117;border:1px solid #1F2A40;border-radius:8px;padding:11px 14px;margin-bottom:8px;}
+  .em-hist-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+  .em-hist-date{font-size:.72rem;color:#5A6A85;}
+  .em-hist-from{font-size:.72rem;color:#C4B5FD;font-weight:600;}
+  .em-hist-oc{padding:2px 8px;border-radius:5px;font-size:.67rem;font-weight:700;}
+  .em-hist-subj{font-size:.72rem;color:#5A6A85;font-style:italic;margin-bottom:4px;}
+  .em-hist-body{font-size:.8rem;color:#94A3B8;line-height:1.55;white-space:pre-wrap;}
+  .em-hist-att{font-size:.72rem;color:#5A6A85;margin-top:4px;}
+  .em-no-hist{font-size:.8rem;color:#5A6A85;text-align:center;padding:14px 0;}
+</style>
+
+<div id="emailModal">
+  <div class="em-box">
+    <button class="em-close" onclick="closeEmailModal()">&#10005;</button>
+
+    <div class="em-heading">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+      </svg>
+      Log Supplier Response Email
+    </div>
+
+    <div class="em-context">
+      Order: <strong id="em-po-id"></strong> &nbsp;&middot;&nbsp; Supplier: <strong id="em-supplier"></strong>
+    </div>
+
+    <div class="em-grid">
+      <div class="em-group">
+        <label class="em-label" for="em-name">Sender Name *</label>
+        <input class="em-input" id="em-name" type="text" placeholder="e.g. John Doe" autocomplete="off"/>
+      </div>
+      <div class="em-group">
+        <label class="em-label" for="em-email">Sender Email</label>
+        <input class="em-input" id="em-email" type="email" placeholder="sales@supplier.com" autocomplete="off"/>
+      </div>
+    </div>
+
+    <div class="em-grid">
+      <div class="em-group">
+        <label class="em-label" for="em-date">Date &amp; Time Received</label>
+        <input class="em-input" id="em-date" type="datetime-local"/>
+      </div>
+      <div class="em-group">
+        <label class="em-label" for="em-subject">Subject Line</label>
+        <input class="em-input" id="em-subject" type="text" placeholder="Re: PO Confirmation"/>
+      </div>
+    </div>
+
+    <div class="em-group">
+      <label class="em-label">Response Outcome *</label>
+      <div class="em-outcome-row">
+        <button class="em-oc" data-oc="Exists"  data-sel="sel-exists"  onclick="pickOutcome(this)">&#10003; Exists</button>
+        <button class="em-oc" data-oc="Not Exists"  data-sel="sel-not-exists"  onclick="pickOutcome(this)">&#10005; Not Exists</button>
+      </div>
+    </div>
+
+    <div class="em-group">
+      <label class="em-label" for="em-body">Email Content / Notes *</label>
+      <textarea class="em-textarea" id="em-body" placeholder="Paste or summarize the supplier's response here&#8230;" rows="4"></textarea>
+    </div>
+
+    <div class="em-group">
+      <label class="em-label" for="em-att">Attachments (optional)</label>
+      <input class="em-input" id="em-att" type="text" placeholder="invoice.pdf, delivery_note.pdf (comma separated)"/>
+    </div>
+
+    <div class="em-footer">
+      <button class="em-btn-cancel" onclick="closeEmailModal()">Cancel</button>
+      <button class="em-btn-save" onclick="saveEmailLog()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Log
+      </button>
+    </div>
+
+    <hr class="em-divider"/>
+    <div class="em-hist-title">&#128337; Previously Logged Responses</div>
+    <div id="em-hist-list"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var _po = null, _supplier = null, _outcome = null;
+
+  var OC_COLORS = {
+    "Exists": {bg:'rgba(74,222,128,.13)',color:'#4ADE80',border:'rgba(74,222,128,.3)'},
+    "Not Exists": {bg:'rgba(248,113,113,.13)',color:'#F87171',border:'rgba(248,113,113,.3)'}
+  };
+
+  window.openEmailModal = function(poId, supplier) {
+    _po = poId; _supplier = supplier; _outcome = null;
+
+    document.getElementById('em-po-id').textContent = poId;
+    document.getElementById('em-supplier').textContent = supplier || '';
+
+    var now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('em-date').value = now.toISOString().slice(0,16);
+    document.getElementById('em-name').value = '';
+    document.getElementById('em-email').value = '';
+    document.getElementById('em-subject').value = 'Re: ' + poId + ' — Order Response';
+    document.getElementById('em-body').value = '';
+    document.getElementById('em-att').value = '';
+    document.querySelectorAll('.em-oc').forEach(function(b){ b.className='em-oc'; });
+
+    renderHistory(poId);
+    document.getElementById('emailModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('em-name').focus();
+  };
+
+  window.closeEmailModal = function() {
+    document.getElementById('emailModal').style.display = 'none';
+    document.body.style.overflow = '';
+  };
+
+  window.pickOutcome = function(btn) {
+    document.querySelectorAll('.em-oc').forEach(function(b){ b.className='em-oc'; });
+    btn.className = 'em-oc ' + btn.dataset.sel;
+    _outcome = btn.dataset.oc;
+  };
+
+  window.saveEmailLog = function() {
+    var name  = document.getElementById('em-name').value.trim();
+    var email = document.getElementById('em-email').value.trim();
+    var date  = document.getElementById('em-date').value;
+    var subj  = document.getElementById('em-subject').value.trim();
+    var body  = document.getElementById('em-body').value.trim();
+    var att   = document.getElementById('em-att').value.trim();
+
+    if (!name) { document.getElementById('em-name').focus(); showToast('Please enter the sender name'); return; }
+    if (!body) { document.getElementById('em-body').focus(); showToast('Please enter the email content'); return; }
+    if (!_outcome) { showToast('Please select a response outcome'); return; }
+
+    var sess = {};
+    try { sess = JSON.parse(sessionStorage.getItem('mems_session') || localStorage.getItem('mems_session') || '{}'); } catch(e){}
+
+    var entry = {
+      poId: _po, supplier: _supplier,
+      senderName: name, senderEmail: email,
+      date: date || new Date().toISOString(),
+      subject: subj, body: body, attachments: att,
+      outcome: _outcome,
+      loggedAt: new Date().toISOString(),
+      loggedBy: sess.email || 'Storekeeper'
+    };
+
+    var all = [];
+    try { all = JSON.parse(localStorage.getItem('po_email_log') || '[]'); } catch(e){}
+    all.unshift(entry);
+    localStorage.setItem('po_email_log', JSON.stringify(all));
+
+    renderHistory(_po);
+
+    // Reset form for another entry
+    document.getElementById('em-name').value = '';
+    document.getElementById('em-email').value = '';
+    document.getElementById('em-body').value = '';
+    document.getElementById('em-att').value = '';
+    document.querySelectorAll('.em-oc').forEach(function(b){ b.className='em-oc'; });
+    _outcome = null;
+
+    showToast('Response email logged for ' + _po);
+
+    // Auto-update order status based on outcome
+    if (entry.outcome === 'Exists' && typeof simulateReply === 'function') {
+      var tr = document.querySelector('[data-po-id="' + _po + '"]');
+      if (tr) {
+        var badge = tr.querySelector('.badge');
+        if (badge && !badge.classList.contains('badge-ordered') && !badge.classList.contains('badge-fulfilled')) {
+          simulateReply(_po, 'exists');
+        }
+      }
+    }
+    if (entry.outcome === 'Not Exists' && typeof simulateReply === 'function') {
+      var tr = document.querySelector('[data-po-id="' + _po + '"]');
+      if (tr) {
+        var badge = tr.querySelector('.badge');
+        if (badge && !badge.classList.contains('badge-fulfilled')) {
+          simulateReply(_po, 'not_exists');
+          closeEmailModal();
+        }
+      }
+    }
+  };
+
+  function renderHistory(poId) {
+    var all = [];
+    try { all = JSON.parse(localStorage.getItem('po_email_log') || '[]'); } catch(e){}
+    var entries = all.filter(function(e){ return e.poId === poId; });
+    var el = document.getElementById('em-hist-list');
+
+    if (!entries.length) {
+      el.innerHTML = '<div class="em-no-hist">No responses logged yet for this order.</div>';
+      return;
+    }
+
+    el.innerHTML = entries.map(function(e) {
+      var oc = OC_COLORS[e.outcome] || OC_COLORS["Not Exists"];
+      var dt = '—';
+      try { dt = new Date(e.date).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(err){}
+      return '<div class="em-hist-item">'
+        + '<div class="em-hist-meta">'
+        + '<span class="em-hist-date">&#128197; ' + dt + '</span>'
+        + '<span class="em-hist-from">&#9993; ' + e.senderName + (e.senderEmail ? ' &lt;' + e.senderEmail + '&gt;' : '') + '</span>'
+        + '<span class="em-hist-oc" style="background:' + oc.bg + ';color:' + oc.color + ';border:1px solid ' + oc.border + ';">' + e.outcome + '</span>'
+        + '</div>'
+        + (e.subject ? '<div class="em-hist-subj">&ldquo;' + e.subject + '&rdquo;</div>' : '')
+        + '<div class="em-hist-body">' + e.body.replace(/</g,'&lt;') + '</div>'
+        + (e.attachments ? '<div class="em-hist-att">&#128206; ' + e.attachments + '</div>' : '')
+        + '</div>';
+    }).join('');
+  }
+
+  // Backdrop click closes modal
+  document.getElementById('emailModal').addEventListener('click', function(e) {
+    if (e.target === this) window.closeEmailModal();
+  });
+  // Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('emailModal').style.display !== 'none') window.closeEmailModal();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="MEMS Supervisor — Spare Parts Inventory"/>
+  <title>Spare Parts — MEMS Supervisor</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2314B8A6'/><path d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{display:flex;min-height:100vh;background:#0F1117;color:#E2E8F0;font-family:'Inter',system-ui,sans-serif;font-size:0.9rem;overflow-x:hidden;}
+    .sidebar{width:240px;min-width:240px;background:#131720;border-right:1px solid #1F2A40;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 18px;border-bottom:1px solid #1F2A40;}
+    .sidebar-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#14B8A6,#0EA5E9);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sidebar-brand-icon svg{width:18px;height:18px;color:#fff;}
+    .sidebar-brand-name{font-size:1rem;font-weight:700;color:#E2E8F0;}
+    .sidebar-brand-sub{font-size:0.65rem;color:#14B8A6;margin-top:1px;font-weight:600;}
+    .sidebar-role-badge{margin:10px 20px;padding:6px 12px;background:rgba(20,184,166,0.12);border:1px solid rgba(20,184,166,0.25);border-radius:8px;font-size:0.7rem;font-weight:700;color:#14B8A6;text-transform:uppercase;letter-spacing:0.08em;text-align:center;}
+    .sidebar-nav{flex:1;padding:12px 0;}
+    .nav-section-label{font-size:0.65rem;font-weight:600;color:#5A6A85;text-transform:uppercase;letter-spacing:0.08em;padding:12px 20px 6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:#94A3B8;font-size:0.875rem;font-weight:500;cursor:pointer;border-left:3px solid transparent;text-decoration:none;user-select:none;}
+    .nav-item svg{width:17px;height:17px;flex-shrink:0;}
+    .nav-item:hover{background:#1A2235;color:#E2E8F0;}
+    .nav-item.active{background:rgba(20,184,166,0.12);color:#14B8A6;border-left-color:#14B8A6;font-weight:600;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid #1F2A40;display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#14B8A6,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:white;flex-shrink:0;}
+    .user-info{flex:1;min-width:0;}.user-name{font-size:0.8125rem;font-weight:600;color:#E2E8F0;}.user-role{font-size:0.7rem;color:#14B8A6;font-weight:600;}
+    .logout-btn{width:28px;height:28px;border-radius:6px;background:none;border:none;color:#5A6A85;cursor:pointer;display:flex;align-items:center;justify-content:center;}.logout-btn svg{width:16px;height:16px;}
+    .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{height:60px;background:#131720;border-bottom:1px solid #1F2A40;display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:40;}
+    .topbar-title{font-size:1rem;font-weight:700;color:#E2E8F0;flex:1;}
+    .dept-chip{padding:4px 10px;background:rgba(20,184,166,0.12);border:1px solid rgba(20,184,166,0.25);border-radius:99px;font-size:0.72rem;font-weight:700;color:#14B8A6;}
+    .notif-btn{position:relative;width:36px;height:36px;border-radius:8px;background:#1A2235;border:1px solid #1F2A40;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94A3B8;}
+    .notif-btn svg{width:17px;height:17px;}
+    .notif-badge{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#EF4444;border:2px solid #131720;}
+    .topbar-date{font-size:0.8rem;color:#5A6A85;}
+    .page-body{flex:1;padding:28px;display:flex;flex-direction:column;gap:20px;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .page-header h1{font-size:1.25rem;font-weight:700;color:#E2E8F0;}
+    .page-header p{font-size:0.8125rem;color:#5A6A85;margin-top:3px;}
+    .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#14B8A6;border:none;border-radius:8px;color:white;font-size:0.8125rem;font-weight:600;cursor:pointer;font-family:inherit;}
+    .btn-primary:hover{background:#0D9488;}.btn-primary svg{width:15px;height:15px;}
+    .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    .kpi-card{background:#181D2A;border:1px solid #1F2A40;border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;}
+    .kpi-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .kpi-icon svg{width:20px;height:20px;}
+    .kpi-icon.green{background:rgba(34,197,94,0.15);color:#4ADE80;}
+    .kpi-icon.red{background:rgba(239,68,68,0.15);color:#F87171;}
+    .kpi-icon.orange{background:rgba(245,158,11,0.15);color:#FCD34D;}
+    .kpi-value{font-size:1.5rem;font-weight:800;color:#E2E8F0;line-height:1;}
+    .kpi-label{font-size:0.78rem;color:#5A6A85;font-weight:500;margin-top:3px;}
+    .toolbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#131720;border:1px solid #1F2A40;border-radius:10px 10px 0 0;}
+    .toolbar-search{display:flex;align-items:center;gap:8px;background:#0F1117;border:1px solid #1F2A40;border-radius:8px;padding:0 12px;height:34px;flex:1;max-width:280px;}
+    .toolbar-search svg{width:14px;height:14px;color:#5A6A85;flex-shrink:0;}
+    .toolbar-search input{background:none;border:none;outline:none;color:#E2E8F0;font-size:0.8125rem;width:100%;font-family:inherit;}
+    .toolbar-search input::placeholder{color:#5A6A85;}
+    .filter-select{background:#0F1117;border:1px solid #1F2A40;color:#94A3B8;padding:0 10px;height:34px;border-radius:8px;outline:none;font-family:inherit;font-size:0.8rem;cursor:pointer;}
+    .panel{background:#181D2A;border:1px solid #1F2A40;border-radius:0 0 12px 12px;overflow:hidden;}
+    .data-table{width:100%;border-collapse:collapse;}
+    .data-table th{text-align:left;font-size:0.7rem;font-weight:600;color:#5A6A85;text-transform:uppercase;letter-spacing:0.06em;padding:10px 18px;background:#131720;border-bottom:1px solid #1F2A40;}
+    .data-table td{padding:12px 18px;font-size:0.8125rem;color:#94A3B8;border-bottom:1px solid #1A2235;vertical-align:middle;}
+    .data-table tr:last-child td{border-bottom:none;}
+    .data-table tr:hover td{background:#1A2235;}
+    .td-primary{color:#E2E8F0;font-weight:500;}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:0.7rem;font-weight:600;}
+    .badge::before{content:'';width:5px;height:5px;border-radius:50%;}
+    .badge-ok{background:rgba(34,197,94,0.12);color:#4ADE80;}.badge-ok::before{background:#4ADE80;}
+    .badge-low{background:rgba(245,158,11,0.12);color:#FCD34D;}.badge-low::before{background:#FCD34D;}
+    .badge-critical{background:rgba(239,68,68,0.12);color:#F87171;}.badge-critical::before{background:#F87171;}
+    .stock-bar-track{height:6px;background:#1F2A40;border-radius:99px;overflow:hidden;width:80px;}
+    .stock-bar-fill{height:100%;border-radius:99px;}
+    .btn-request{padding:4px 10px;background:rgba(20,184,166,0.12);border:1px solid rgba(20,184,166,0.25);color:#14B8A6;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;}
+    .btn-request:hover{background:rgba(20,184,166,0.2);}
+    .btn-icon{width:30px;height:30px;border-radius:6px;background:none;border:1px solid #1F2A40;color:#5A6A85;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .btn-icon:hover{background:#1F2A40;color:#E2E8F0;}.btn-icon svg{width:13px;height:13px;}
+    .actions-cell{display:flex;gap:6px;}
+    .pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid #1F2A40;}
+    .pagination-info{font-size:0.8rem;color:#5A6A85;}
+    .pagination-btns{display:flex;gap:4px;}
+    .pg-btn{width:30px;height:30px;border-radius:6px;background:#1A2235;border:1px solid #1F2A40;color:#94A3B8;cursor:pointer;font-size:0.8rem;font-weight:600;display:flex;align-items:center;justify-content:center;}
+    .pg-btn.active{background:#14B8A6;border-color:#14B8A6;color:white;}
+    .pg-btn:disabled{opacity:0.35;cursor:default;}
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px);}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#181D2A;border:1px solid #1F2A40;border-radius:14px;width:460px;max-width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.6);}
+    .modal-header{padding:18px 22px;border-bottom:1px solid #1F2A40;display:flex;justify-content:space-between;align-items:center;}
+    .modal-header h3{margin:0;font-size:1rem;font-weight:700;color:#E2E8F0;}
+    .modal-body{padding:22px;display:flex;flex-direction:column;gap:16px;}
+    .modal-footer{padding:16px 22px;border-top:1px solid #1F2A40;display:flex;justify-content:flex-end;gap:10px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-group label{font-size:0.8rem;color:#94A3B8;font-weight:600;}
+    .form-select,.form-input,.form-textarea{background:#1A2235;border:1px solid #1F2A40;color:#E2E8F0;padding:10px 12px;border-radius:8px;outline:none;font-family:inherit;font-size:0.875rem;width:100%;}
+    .form-select:focus,.form-input:focus,.form-textarea:focus{border-color:#14B8A6;outline:none;}.form-textarea{resize:vertical;min-height:70px;}
+    .btn-ghost{padding:8px 16px;background:none;border:1px solid #1F2A40;border-radius:8px;color:#94A3B8;font-size:0.8125rem;font-weight:600;cursor:pointer;font-family:inherit;}
+    .btn-ghost:hover{border-color:#94A3B8;color:#E2E8F0;}
+    .btn-success{padding:8px 18px;background:#14B8A6;border:none;border-radius:8px;color:white;font-size:0.8125rem;font-weight:600;cursor:pointer;font-family:inherit;}
+    .btn-success:hover{background:#0D9488;}
+    .info-readonly{background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:8px;padding:10px 14px;font-size:0.8rem;color:#14B8A6;}
+    #toast{position:fixed;bottom:28px;right:28px;background:#14B8A6;color:white;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(.4,0,.2,1);z-index:2000;}
+    #toast.show{transform:translateY(0);opacity:1;}
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18"/></svg></div>
+      <div><div class="sidebar-brand-name">MEMS</div><div class="sidebar-brand-sub">Supervisor Portal</div></div>
+    </div>
+    <div class="sidebar-role-badge">Technical Supervisor</div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a href="supervisor-dashboard.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>Dashboard</a>
+      <div class="nav-section-label">My Department</div>
+      <a href="supervisor-workorders.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375"/></svg>Work Orders</a>
+      <a href="supervisor-devices.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3"/></svg>Department Devices</a>
+      <a href="supervisor-inventory.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>Spare Parts</a>
+      <div class="nav-section-label">Team</div>
+      <a href="supervisor-team.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>My Team</a>
+    <div class="nav-section-label">Account</div>
+      <a href="supervisor-profile.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>My Profile</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-avatar">MS</div>
+      <div class="user-info"><div class="user-name">M. Supervisor</div><div class="user-role">Technical Supervisor</div></div>
+      <a href="index.html" class="logout-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg></a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Spare Parts Inventory</span>
+      <span class="dept-chip">View Only</span>
+      <button class="notif-btn"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg><span class="notif-badge"></span></button>
+      <span class="topbar-date" id="topbar-date"></span>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div><h1>Spare Parts Inventory</h1><p>View stock levels and request parts from the Storekeeper for your department</p></div>
+        <button class="btn-primary" id="btn-request"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Request Parts</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><div class="kpi-value" id="kpi-ok">18</div><div class="kpi-label">In Stock (OK)</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div><div><div class="kpi-value" id="kpi-low">5</div><div class="kpi-label">Low Stock</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></div><div><div class="kpi-value" id="kpi-critical">2</div><div class="kpi-label">Critical / Out</div></div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-search"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 0z"/></svg><input type="search" id="search" placeholder="Search parts…"/></div>
+        <select class="filter-select" id="filter-status"><option value="">Status: All</option><option value="OK">OK</option><option value="Low">Low</option><option value="Critical">Critical</option></select>
+        <select class="filter-select" id="filter-cat"><option value="">Category: All</option><option value="Consumables">Consumables</option><option value="Parts">Parts</option><option value="Accessories">Accessories</option></select>
+      </div>
+      <div class="panel">
+        <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Part ID</th><th>Name</th><th>Category</th><th>Current Stock</th><th>Min Stock</th><th>Stock Level</th><th>Status</th><th>Actions</th></tr></thead><tbody id="inv-tbody"></tbody></table></div>
+        <div class="pagination"><span class="pagination-info" id="pg-info"></span><div class="pagination-btns" id="pg-btns"></div></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="requestModal">
+    <div class="modal">
+      <div class="modal-header"><h3>Request Parts</h3><button onclick="closeModal()" style="width:28px;height:28px;border-radius:6px;background:none;border:none;color:#5A6A85;cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+      <div class="modal-body">
+        <div class="info-readonly">📤 Your request will be sent to the Storekeeper for approval. You cannot modify stock levels directly.</div>
+        <div class="form-group"><label>Part / Item</label><select class="form-select" id="req-part"><option value="">Select part…</option></select></div>
+        <div class="form-group"><label>Quantity Needed</label><input type="number" class="form-input" id="req-qty" min="1" value="1"/></div>
+        <div class="form-group"><label>Reason / Work Order</label><textarea class="form-textarea" id="req-reason" placeholder="e.g. WO-2041 — ICU Ventilator repair…"></textarea></div>
+        <div class="form-group"><label>Urgency</label><select class="form-select" id="req-urgency"><option value="Urgent">Urgent</option><option selected>Normal</option><option value="Low">Low</option></select></div>
+      </div>
+      <div class="modal-footer"><button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-success" onclick="submitRequest()">Send Request</button></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+<script>
+'use strict';
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+const PARTS = [
+  {id:'PRT-001',name:'Defibrillator Pads (pair)',  cat:'Consumables', stock:8,  min:20, status:'Critical'},
+  {id:'PRT-002',name:'ECG Electrodes (box/50)',    cat:'Consumables', stock:500, min:100, status:'OK'},
+  {id:'PRT-003',name:'Ventilator Filter',           cat:'Parts',       stock:12, min:15, status:'Low'},
+  {id:'PRT-004',name:'Infusion Pump Tubing',        cat:'Consumables', stock:80, min:50, status:'OK'},
+  {id:'PRT-005',name:'O2 Sensor Probe',             cat:'Parts',       stock:0,  min:5,  status:'Critical'},
+  {id:'PRT-006',name:'SpO2 Probe',                  cat:'Accessories', stock:22, min:10, status:'OK'},
+  {id:'PRT-007',name:'BP Cuff (Adult)',             cat:'Accessories', stock:18, min:10, status:'OK'},
+  {id:'PRT-008',name:'Ventilator Bellows',          cat:'Parts',       stock:4,  min:8,  status:'Low'},
+  {id:'PRT-009',name:'NIBP Tube',                   cat:'Accessories', stock:35, min:20, status:'OK'},
+  {id:'PRT-010',name:'Suction Canister',            cat:'Consumables', stock:60, min:30, status:'OK'},
+  {id:'PRT-011',name:'Laryngoscope Blade',          cat:'Accessories', stock:9,  min:15, status:'Low'},
+  {id:'PRT-012',name:'Electrode Gel',               cat:'Consumables', stock:120, min:50, status:'OK'},
+  {id:'PRT-013',name:'Temperature Probe',           cat:'Accessories', stock:7,  min:10, status:'Low'},
+  {id:'PRT-014',name:'Capnography Sensor',          cat:'Parts',       stock:3,  min:8,  status:'Low'},
+];
+
+const ROWS=10; let currentPage=1, searchVal='';
+
+const statusBadge = s => s==='OK'?'badge-ok':s==='Low'?'badge-low':'badge-critical';
+const stockColor = s => s==='OK'?'#4ADE80':s==='Low'?'#FCD34D':'#F87171';
+
+function filtered(){
+  return PARTS.filter(p=>{
+    const q=searchVal.toLowerCase();
+    const mQ=!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q);
+    const mS=!document.getElementById('filter-status').value||p.status===document.getElementById('filter-status').value;
+    const mC=!document.getElementById('filter-cat').value||p.cat===document.getElementById('filter-cat').value;
+    return mQ&&mS&&mC;
+  });
+}
+
+function renderTable(){
+  const data=filtered();
+  const total=Math.max(1,Math.ceil(data.length/ROWS));
+  if(currentPage>total)currentPage=total;
+  const s=(currentPage-1)*ROWS,e=Math.min(s+ROWS,data.length);
+  const slice=data.slice(s,e);
+  const tbody=document.getElementById('inv-tbody');
+  tbody.innerHTML=slice.map(p=>{
+    const pct=Math.min(100,Math.round(p.stock/p.min*100));
+    return `<tr>
+      <td class="td-primary">${p.id}</td>
+      <td>${p.name}</td>
+      <td>${p.cat}</td>
+      <td style="font-weight:700;color:${stockColor(p.status)};">${p.stock}</td>
+      <td style="color:#5A6A85;">${p.min}</td>
+      <td><div class="stock-bar-track"><div class="stock-bar-fill" style="width:${Math.min(100,pct)}%;background:${stockColor(p.status)};"></div></div></td>
+      <td><span class="badge ${statusBadge(p.status)}">${p.status}</span></td>
+      <td><div class="actions-cell"><button class="btn-request" onclick="openRequest('${p.id}')">Request</button></div></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pg-info').textContent=`Showing ${s+1}–${e} of ${data.length} parts`;
+  renderPg(total);
+}
+
+function renderPg(total){
+  const c=document.getElementById('pg-btns');c.innerHTML='';
+  if(total<=1)return;
+  const mk=(h,dis,act,fn)=>{const b=document.createElement('button');b.className='pg-btn'+(act?' active':'');b.innerHTML=h;if(dis){b.disabled=true;}else b.addEventListener('click',fn);return b;};
+  c.appendChild(mk('‹',currentPage<=1,false,()=>{currentPage--;renderTable();}));
+  for(let p=1;p<=total;p++)c.appendChild(mk(p,false,p===currentPage,()=>{currentPage=p;renderTable();}));
+  c.appendChild(mk('›',currentPage>=total,false,()=>{currentPage++;renderTable();}));
+}
+
+document.getElementById('search').addEventListener('input',e=>{searchVal=e.target.value;currentPage=1;renderTable();});
+document.getElementById('filter-status').addEventListener('change',()=>{currentPage=1;renderTable();});
+document.getElementById('filter-cat').addEventListener('change',()=>{currentPage=1;renderTable();});
+
+document.getElementById('btn-request').addEventListener('click',()=>{
+  const sel=document.getElementById('req-part');sel.innerHTML='<option value="">Select part…</option>';
+  PARTS.forEach(p=>sel.innerHTML+=`<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`);
+  document.getElementById('requestModal').classList.add('open');
+});
+
+function openRequest(id){
+  const sel=document.getElementById('req-part');sel.innerHTML='';
+  const p=PARTS.find(x=>x.id===id);sel.innerHTML=`<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`;
+  document.getElementById('requestModal').classList.add('open');
+}
+
+function submitRequest(){
+  const part=document.getElementById('req-part').value;
+  const qty=document.getElementById('req-qty').value;
+  const reason=document.getElementById('req-reason').value;
+  if(!part){showToast('Please select a part','#F87171');return;}
+  closeModal();
+  document.getElementById('req-reason').value='';
+  document.getElementById('req-qty').value='1';
+  showToast(`✓ Request sent to Storekeeper — ${qty} unit(s) requested`);
+}
+
+function closeModal(){document.getElementById('requestModal').classList.remove('open');}
+
+function showToast(msg,color='#14B8A6'){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.background=color;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+renderTable();
+</script>
+<script src="js/session.js"></script>
+<script>if(window.MEMSSession)window.MEMSSession.requireAuth(['supervisor']);</script>
+<script src="js/i18n.js"></script>
+</body>
+</html>

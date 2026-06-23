@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="MEMS Department Supervisor Requests"/>
+  <title>Problem Reports — Department Supervisor</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23EC4899'/><path d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{display:flex;min-height:100vh;background:#0F1117;color:#E2E8F0;font-family:'Inter',system-ui,sans-serif;font-size:0.9rem;overflow-x:hidden;}
+    .sidebar{width:240px;min-width:240px;background:#131720;border-right:1px solid #1F2A40;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 18px;border-bottom:1px solid #1F2A40;}
+    .sidebar-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#EC4899,#F43F5E);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sidebar-brand-icon svg{width:18px;height:18px;color:#fff;}
+    .sidebar-brand-name{font-size:1rem;font-weight:700;color:#E2E8F0;}
+    .sidebar-brand-sub{font-size:0.65rem;color:#EC4899;margin-top:1px;font-weight:600;}
+    .sidebar-role-badge{margin:10px 20px;padding:6px 12px;background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.25);border-radius:8px;font-size:0.7rem;font-weight:700;color:#F472B6;text-transform:uppercase;letter-spacing:0.08em;text-align:center;}
+    .sidebar-nav{flex:1;padding:12px 0;}
+    .nav-section-label{font-size:0.65rem;font-weight:600;color:#5A6A85;text-transform:uppercase;letter-spacing:0.08em;padding:12px 20px 6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:#94A3B8;font-size:0.875rem;font-weight:500;cursor:pointer;border-left:3px solid transparent;text-decoration:none;}
+    .nav-item svg{width:17px;height:17px;flex-shrink:0;}
+    .nav-item:hover{background:#1A2235;color:#E2E8F0;}
+    .nav-item.active{background:rgba(236,72,153,0.12);color:#F472B6;border-left-color:#EC4899;font-weight:600;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid #1F2A40;display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#F43F5E);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:white;flex-shrink:0;}
+    .user-info{flex:1;min-width:0;}.user-name{font-size:0.8125rem;font-weight:600;color:#E2E8F0;}.user-role{font-size:0.7rem;color:#F472B6;font-weight:600;}
+    .logout-btn{width:28px;height:28px;border-radius:6px;background:none;border:none;color:#5A6A85;cursor:pointer;display:flex;align-items:center;justify-content:center;}.logout-btn:hover{background:#1F2A40;color:#E2E8F0;}.logout-btn svg{width:16px;height:16px;}
+    
+    .main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+    .topbar{height:60px;background:#131720;border-bottom:1px solid #1F2A40;display:flex;align-items:center;padding:0 28px;gap:16px;}
+    .topbar-title{font-size:1rem;font-weight:700;color:#E2E8F0;flex:1;}
+    .notif-btn{position:relative;width:36px;height:36px;border-radius:8px;background:#1A2235;border:1px solid #1F2A40;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94A3B8;}.notif-btn svg{width:17px;height:17px;}
+    .topbar-date{font-size:0.8rem;color:#5A6A85;}
+    
+    .page-body{flex:1;padding:28px;display:flex;flex-direction:column;gap:20px;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .page-header h1{font-size:1.25rem;font-weight:700;color:#E2E8F0;}
+    .page-header p{font-size:0.8125rem;color:#5A6A85;margin-top:3px;}
+    
+    .btn-primary{padding:8px 16px;background:#EC4899;border:none;border-radius:8px;color:#fff;font-size:0.8125rem;font-weight:600;cursor:pointer;}
+    .btn-primary:hover{background:#DB2777;}
+    
+    .panel{background:#181D2A;border:1px solid #1F2A40;border-radius:12px;overflow:hidden;}
+    .data-table{width:100%;border-collapse:collapse;}
+    .data-table th{text-align:left;font-size:0.7rem;font-weight:600;color:#5A6A85;text-transform:uppercase;padding:10px 18px;background:#131720;border-bottom:1px solid #1F2A40;}
+    .data-table td{padding:12px 18px;font-size:0.8125rem;color:#94A3B8;border-bottom:1px solid #1A2235;vertical-align:middle;}
+    .data-table tr:hover td{background:#1A2235;}
+    .td-primary{color:#E2E8F0;font-weight:500;}
+    
+    .badge{padding:3px 9px;border-radius:99px;font-size:0.7rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+    .badge::before{content:'';width:5px;height:5px;border-radius:50%;}
+    .badge-pending{background:rgba(59,114,246,0.12);color:#60A5FA;}.badge-pending::before{background:#60A5FA;}
+    .badge-prog{background:rgba(245,158,11,0.12);color:#FCD34D;}.badge-prog::before{background:#FCD34D;}
+    .badge-solved{background:rgba(34,197,94,0.12);color:#4ADE80;}.badge-solved::before{background:#4ADE80;}
+    .badge-time{background:rgba(239,68,68,0.12);color:#F87171;}.badge-time::before{background:#F87171;}
+    
+    .tech-msg{margin-top:6px;padding:8px;background:rgba(0,0,0,0.2);border-left:2px solid #EC4899;border-radius:4px;font-size:0.75rem;color:#E2E8F0;}
+    
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:1000;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#181D2A;border:1px solid #1F2A40;border-radius:14px;width:500px;max-width:95%;}
+    .modal-header{padding:18px 22px;border-bottom:1px solid #1F2A40;display:flex;justify-content:space-between;align-items:center;}
+    .modal-header h3{font-size:1rem;color:#E2E8F0;font-weight:700;}
+    .btn-ghost{padding:4px 8px;background:none;border:1px solid #1F2A40;border-radius:6px;color:#94A3B8;font-size:0.75rem;font-weight:600;cursor:pointer;}
+    .modal-body{padding:22px;display:flex;flex-direction:column;gap:14px;}
+    .modal-footer{padding:16px 22px;border-top:1px solid #1F2A40;display:flex;justify-content:flex-end;gap:10px;}
+    
+    .form-group label{font-size:0.8rem;color:#94A3B8;font-weight:600;display:block;margin-bottom:6px;}
+    .form-input,.form-select,.form-textarea{width:100%;background:#1A2235;border:1px solid #1F2A40;color:#E2E8F0;padding:10px 12px;border-radius:8px;font-size:0.875rem;outline:none;}
+    .form-input:focus,.form-textarea:focus{border-color:#EC4899;}
+    .form-textarea{min-height:80px;resize:vertical;}
+    
+    .empty-msg{padding:40px;text-align:center;color:#5A6A85;font-size:0.875rem;}
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18"/></svg></div>
+      <div><div class="sidebar-brand-name">MEMS</div><div class="sidebar-brand-sub">Dept Portal</div></div>
+    </div>
+    <div class="sidebar-role-badge">Dept Supervisor</div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Department</div>
+      <a href="dept-dashboard.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm10.5 0A2.25 2.25 0 0116.5 3.75h2.25A2.25 2.25 0 0121 6v2.25a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm10.5 0a2.25 2.25 0 012.25-2.25h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"/></svg>Dashboard</a>
+      <a href="dept-requests.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375"/></svg>Problem Reports</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="sb-avatar">DS</div>
+      <div class="user-info"><div class="user-name" id="sb-name">Dept Sup</div><div class="user-role" id="sb-role">Dept Supervisor</div></div>
+      <a href="index.html" class="logout-btn" id="logout-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg></a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Problem Reports</span>
+      <button class="notif-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg></button>
+      <span class="topbar-date" id="topbar-date"></span>
+    </header>
+    
+    <main class="page-body">
+      <div class="page-header">
+        <div>
+          <h1>Department Device Issues</h1>
+          <p>Report issues to the Technical Supervisor and track resolution status.</p>
+        </div>
+        <button class="btn-primary" onclick="openModal()">+ Report New Problem</button>
+      </div>
+
+      <div class="panel">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Report ID</th>
+              <th>Device / Equipment</th>
+              <th>Problem Description</th>
+              <th>Status</th>
+              <th>Technician Message</th>
+            </tr>
+          </thead>
+          <tbody id="req-tbody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+        <div id="empty-state" class="empty-msg" style="display:none;">No reports found. Click "+ Report New Problem" to create one.</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create Report Modal -->
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Report Device Problem</h3>
+        <button class="btn-ghost" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Device Name / Serial Number</label>
+          <input type="text" id="r-device" class="form-input" placeholder="e.g. ECG Monitor E-12"/>
+        </div>
+        <div class="form-group">
+          <label>Problem Description</label>
+          <textarea id="r-desc" class="form-textarea" placeholder="Describe the issue in detail..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitReport()">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+function loadTable() {
+  const reqs = JSON.parse(localStorage.getItem('mems_dept_requests') || '[]');
+  const tbody = document.getElementById('req-tbody');
+  const empty = document.getElementById('empty-state');
+  
+  if(reqs.length === 0) {
+    empty.style.display = 'block';
+    tbody.innerHTML = '';
+    return;
+  }
+  
+  empty.style.display = 'none';
+  tbody.innerHTML = reqs.map(r => {
+    let badge = 'badge-pending';
+    if(r.status === 'In Progress') badge = 'badge-prog';
+    if(r.status === 'Solved' || r.status === 'Problem Solved') badge = 'badge-solved';
+    if(r.status === 'Needs More Time') badge = 'badge-time';
+    
+    let msgHtml = r.techMessage ? `<div class="tech-msg"><strong>Tech Update:</strong> ${r.techMessage}</div>` : `<span style="color:#5A6A85;font-size:0.75rem;">No updates yet</span>`;
+    
+    return `
+      <tr>
+        <td class="td-primary">${r.id}</td>
+        <td><strong>${r.device}</strong></td>
+        <td>
+          <div style="font-size:0.8125rem;">${r.desc}</div>
+          <div style="font-size:0.7rem;color:#5A6A85;margin-top:4px;">Reported on ${r.date}</div>
+        </td>
+        <td><span class="badge ${badge}">${r.status}</span></td>
+        <td>${msgHtml}</td>
+      </tr>
+    `;
+  }).reverse().join('');
+}
+
+function openModal() {
+  document.getElementById('r-device').value = '';
+  document.getElementById('r-desc').value = '';
+  document.getElementById('reportModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('reportModal').classList.remove('open');
+}
+
+function submitReport() {
+  const device = document.getElementById('r-device').value.trim();
+  const desc = document.getElementById('r-desc').value.trim();
+  
+  if(!device || !desc) return alert("Please fill in all fields");
+  
+  const reqs = JSON.parse(localStorage.getItem('mems_dept_requests') || '[]');
+  const newReq = {
+    id: 'DR-' + Math.floor(1000 + Math.random() * 9000),
+    device,
+    desc,
+    date: new Date().toLocaleDateString('en-GB'),
+    status: 'Pending Assignment',
+    techMessage: null,
+    assignedTo: null,
+    woId: null
+  };
+  
+  reqs.push(newReq);
+  localStorage.setItem('mems_dept_requests', JSON.stringify(reqs));
+  
+  closeModal();
+  loadTable();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadTable();
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('new') === 'true') {
+    openModal();
+  }
+});
+</script>
+<script src="js/session.js"></script>
+<script>if(window.MEMSSession)window.MEMSSession.requireAuth(['dept-supervisor']);</script>
+<script src="js/i18n.js"></script>
+</body>
+</html>

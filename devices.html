@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="MEMS Device Catalog — Browse and manage all hospital medical equipment"/>
+  <title>Device Catalog — MEMS</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233B72F6'/><path d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>"/>
+  <link rel="stylesheet" href="css/dashboard.css"/>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sidebar" role="navigation" aria-label="Main navigation">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18"/></svg></div>
+    <div><div class="sidebar-brand-name">MEMS</div><div class="sidebar-brand-sub">Medical Equip. Mgmt.</div></div>
+  </div>
+  <div class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>Dashboard</a>
+      <a href="devices.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3"/></svg>Medical Devices</a>
+      <a href="workorders.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375"/></svg>Work Orders</a>
+      <div class="nav-section-label">Operations</div>
+      <a href="preventive-maintenance.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>Preventive Maintenance</a>
+      <a href="inventory.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>Spare Parts Inventory</a>
+      <div class="nav-section-label">System</div>
+      <a href="users.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>Users & Permissions</a>
+      <a href="reports.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>Reports</a>
+      <a href="profile.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.4.4-.4 1.05 0 1.45.4.4 1.05.4 1.45 0l5.58-5.58c.4-.4.4-1.05 0-1.45-.4-.4-1.05-.4-1.45 0l-5.58 5.58zm-5.74-5.74c-.4-.4-1.05-.4-1.45 0-.4.4-.4 1.05 0 1.45l5.58 5.58c.4.4 1.05.4 1.45 0 .4-.4.4-1.05 0-1.45L4.6 10.1z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>Profile</a>
+    </div>
+    <div class="sidebar-footer">
+    <div class="user-avatar" id="sb-avatar">AD</div>
+    <div class="user-info"><div class="user-name" id="sb-name">Admin User</div><div class="user-role">Administrator</div></div>
+    <a href="index.html" class="logout-btn" title="Sign out" aria-label="Sign out"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg></a>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <header class="topbar">
+    <span class="topbar-title">Device Catalog</span>
+    <div class="search-box" role="search"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 0z"/></svg><input type="search" placeholder="Search devices..." aria-label="Search"/></div>
+    <button class="notif-btn" aria-label="Notifications"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg><span class="notif-badge"></span></button>
+    <span class="topbar-date" id="topbar-date"></span>
+  </header>
+
+  <main class="page-body" role="main">
+    <!-- Header -->
+    <div class="page-header">
+      <div><h1>Device Catalog</h1><p>Browse and manage all hospital medical equipment</p></div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 0113.5 18v-2.25z"/></svg></div><div><div class="kpi-value" id="kpi-total-val">2,418</div><div class="kpi-label">Total Devices</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><div class="kpi-value" id="kpi-active-val">2,389</div><div class="kpi-label">Operational</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div><div><div class="kpi-value" id="kpi-offline-val">14</div><div class="kpi-label">Faulty</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17l-5.1-5.1m0 0L11.42 4.97m-5.1 5.1h12.76"/></svg></div><div><div class="kpi-value" id="kpi-maintenance-val">15</div><div class="kpi-label">Under Maintenance</div></div></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-search"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 0z"/></svg><input type="text" id="tbl-search" placeholder="Search by name, asset ID, serial..." aria-label="Filter devices"/></div>
+      <select class="filter-select" id="f-dept" aria-label="Filter by department"><option value="">All Departments</option><option value="ICU">ICU</option><option value="ER">ER</option><option value="Surgery">Surgery</option><option value="Radiology">Radiology</option><option value="Cardiology">Cardiology</option><option value="Laboratory">Laboratory</option><option value="General Ward">General Ward</option></select>
+      <select class="filter-select" id="f-status" aria-label="Filter by status"><option value="">All Statuses</option><option value="operational">Operational</option><option value="faulty">Faulty</option><option value="undermaint">Maintenance</option><option value="decommissioned">Decommissioned</option></select>
+      <select class="filter-select" id="filterCategory" aria-label="Filter by category"><option value="">Category: All</option></select>
+      <div class="toolbar-divider"></div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="v-table" aria-label="Table view" title="Table view"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M10.875 12c-.621 0-1.125.504-1.125 1.125M12 12c0-.621.504-1.125 1.125-1.125M12 12c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m-1.125 1.125c0-.621-.504-1.125-1.125-1.125"/></svg></button>
+        <button class="view-btn" id="v-grid" aria-label="Grid view" title="Grid view"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg></button>
+      </div>
+      <a href="add-device.html" class="btn btn-primary" aria-label="Add Device"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Add Device</a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-filter="" role="tab" aria-selected="true">All <span class="tab-count">2418</span></button>
+      <button class="tab" data-filter="operational" role="tab">Active <span class="tab-count">2389</span></button>
+      <button class="tab" data-filter="faulty" role="tab">Offline <span class="tab-count">14</span></button>
+      <button class="tab" data-filter="undermaint" role="tab">Maintenance <span class="tab-count">15</span></button>
+      <button class="tab" data-filter="decommissioned" role="tab">Retired <span class="tab-count">0</span></button>
+    </div>
+
+    <!-- Table View -->
+    <div class="panel" id="table-view">
+      <div class="table-wrap">
+        <table class="data-table" id="device-table" aria-label="Device catalog table">
+          <thead><tr><th>Asset ID</th><th>Device Name</th><th>Category</th><th>Serial No.</th><th>Department</th><th>Status</th><th>Last PM</th><th>Next PM</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr data-status="active" data-dept="ICU" data-type="Ventilator"><td class="td-mono">DEV-001</td><td class="td-primary">ICU Ventilator V500</td><td>Ventilator</td><td class="td-mono">SN-20241001</td><td>ICU</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-15</td><td>2026-07-15</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="offline" data-dept="ICU" data-type="Ventilator"><td class="td-mono">DEV-002</td><td class="td-primary">ICU Ventilator V300</td><td>Ventilator</td><td class="td-mono">SN-20241002</td><td>ICU</td><td><span class="badge badge-faulty">Faulty</span></td><td>2026-03-10</td><td>2026-06-10</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="ER" data-type="Defibrillator"><td class="td-mono">DEV-003</td><td class="td-primary">Defibrillator AED-7</td><td>Defibrillator</td><td class="td-mono">SN-20241003</td><td>ER</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-01</td><td>2026-08-01</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="maintenance" data-dept="Radiology" data-type="Imaging"><td class="td-mono">DEV-004</td><td class="td-primary">MRI Scanner Unit B</td><td>Imaging</td><td class="td-mono">SN-20241004</td><td>Radiology</td><td><span class="badge badge-undermaint">Maintenance</span></td><td>2026-02-20</td><td>2026-05-20</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Surgery" data-type="Monitor"><td class="td-mono">DEV-005</td><td class="td-primary">Patient Monitor #12</td><td>Monitor</td><td class="td-mono">SN-20241005</td><td>Surgery</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-28</td><td>2026-07-28</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Cardiology" data-type="Monitor"><td class="td-mono">DEV-006</td><td class="td-primary">ECG Monitor Pro</td><td>Monitor</td><td class="td-mono">SN-20241006</td><td>Cardiology</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-10</td><td>2026-08-10</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="offline" data-dept="ER" data-type="Defibrillator"><td class="td-mono">DEV-007</td><td class="td-primary">Defibrillator AED-3</td><td>Defibrillator</td><td class="td-mono">SN-20241007</td><td>ER</td><td><span class="badge badge-faulty">Faulty</span></td><td>2026-01-15</td><td>2026-04-15</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="ICU" data-type="Infusion Pump"><td class="td-mono">DEV-008</td><td class="td-primary">Infusion Pump IP-400</td><td>Infusion Pump</td><td class="td-mono">SN-20241008</td><td>ICU</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-05</td><td>2026-08-05</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="maintenance" data-dept="Surgery" data-type="Monitor"><td class="td-mono">DEV-009</td><td class="td-primary">Anesthesia Monitor AM-2</td><td>Monitor</td><td class="td-mono">SN-20241009</td><td>Surgery</td><td><span class="badge badge-undermaint">Maintenance</span></td><td>2026-04-01</td><td>2026-07-01</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Laboratory" data-type="Other"><td class="td-mono">DEV-010</td><td class="td-primary">Blood Gas Analyzer</td><td>Other</td><td class="td-mono">SN-20241010</td><td>Laboratory</td><td><span class="badge badge-operational">Operational</span></td><td>2026-03-18</td><td>2026-06-18</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="General Ward" data-type="Infusion Pump"><td class="td-mono">DEV-011</td><td class="td-primary">Syringe Pump SP-50</td><td>Infusion Pump</td><td class="td-mono">SN-20241011</td><td>General Ward</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-12</td><td>2026-08-12</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Radiology" data-type="Imaging"><td class="td-mono">DEV-012</td><td class="td-primary">X-Ray Portable XR-200</td><td>Imaging</td><td class="td-mono">SN-20241012</td><td>Radiology</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-22</td><td>2026-07-22</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="ICU" data-type="Monitor"><td class="td-mono">DEV-013</td><td class="td-primary">Bedside Monitor BM-9</td><td>Monitor</td><td class="td-mono">SN-20241013</td><td>ICU</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-02</td><td>2026-08-02</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="maintenance" data-dept="Cardiology" data-type="Other"><td class="td-mono">DEV-014</td><td class="td-primary">Holter Recorder HR-3</td><td>Other</td><td class="td-mono">SN-20241014</td><td>Cardiology</td><td><span class="badge badge-undermaint">Maintenance</span></td><td>2026-03-25</td><td>2026-06-25</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="ER" data-type="Monitor"><td class="td-mono">DEV-015</td><td class="td-primary">Crash Cart Monitor CC-1</td><td>Monitor</td><td class="td-mono">SN-20241015</td><td>ER</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-10</td><td>2026-07-10</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Surgery" data-type="Other"><td class="td-mono">DEV-016</td><td class="td-primary">Electrosurgical Unit ESU-300</td><td>Other</td><td class="td-mono">SN-20241016</td><td>Surgery</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-08</td><td>2026-08-08</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="offline" data-dept="Radiology" data-type="Imaging"><td class="td-mono">DEV-017</td><td class="td-primary">CT Scanner CS-64</td><td>Imaging</td><td class="td-mono">SN-20241017</td><td>Radiology</td><td><span class="badge badge-faulty">Faulty</span></td><td>2026-02-14</td><td>2026-05-14</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Laboratory" data-type="Other"><td class="td-mono">DEV-018</td><td class="td-primary">Hematology Analyzer HA-5</td><td>Other</td><td class="td-mono">SN-20241018</td><td>Laboratory</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-05</td><td>2026-07-05</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="General Ward" data-type="Monitor"><td class="td-mono">DEV-019</td><td class="td-primary">Pulse Oximeter PO-7</td><td>Monitor</td><td class="td-mono">SN-20241019</td><td>General Ward</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-15</td><td>2026-08-15</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="maintenance" data-dept="ICU" data-type="Ventilator"><td class="td-mono">DEV-020</td><td class="td-primary">High-Flow Oxygen Therapy HF-1</td><td>Ventilator</td><td class="td-mono">SN-20241020</td><td>ICU</td><td><span class="badge badge-undermaint">Maintenance</span></td><td>2026-03-30</td><td>2026-06-30</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="ER" data-type="Infusion Pump"><td class="td-mono">DEV-021</td><td class="td-primary">Ambulatory IV Pump AP-2</td><td>Infusion Pump</td><td class="td-mono">SN-20241021</td><td>ER</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-18</td><td>2026-07-18</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Surgery" data-type="Imaging"><td class="td-mono">DEV-022</td><td class="td-primary">C-Arm Fluoroscopy CA-9</td><td>Imaging</td><td class="td-mono">SN-20241022</td><td>Surgery</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-20</td><td>2026-08-20</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="offline" data-dept="Laboratory" data-type="Other"><td class="td-mono">DEV-023</td><td class="td-primary">Microbiology Incubator MI-2</td><td>Other</td><td class="td-mono">SN-20241023</td><td>Laboratory</td><td><span class="badge badge-faulty">Faulty</span></td><td>2026-02-28</td><td>2026-05-28</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Cardiology" data-type="Other"><td class="td-mono">DEV-024</td><td class="td-primary">Echocardiography Echo-7</td><td>Other</td><td class="td-mono">SN-20241024</td><td>Cardiology</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-30</td><td>2026-07-30</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="General Ward" data-type="Monitor"><td class="td-mono">DEV-025</td><td class="td-primary">Thermometer Station TH-4</td><td>Monitor</td><td class="td-mono">SN-20241025</td><td>General Ward</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-18</td><td>2026-08-18</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="ICU" data-type="Infusion Pump"><td class="td-mono">DEV-026</td><td class="td-primary">Volumetric Pump VP-100</td><td>Infusion Pump</td><td class="td-mono">SN-20241026</td><td>ICU</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-03</td><td>2026-08-03</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="maintenance" data-dept="ER" data-type="Defibrillator"><td class="td-mono">DEV-027</td><td class="td-primary">Cardioverter CV-Pro</td><td>Defibrillator</td><td class="td-mono">SN-20241027</td><td>ER</td><td><span class="badge badge-undermaint">Maintenance</span></td><td>2026-03-12</td><td>2026-06-12</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Radiology" data-type="Imaging"><td class="td-mono">DEV-028</td><td class="td-primary">Ultrasound System US-Elite</td><td>Imaging</td><td class="td-mono">SN-20241028</td><td>Radiology</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-07</td><td>2026-08-07</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="General Ward" data-type="Other"><td class="td-mono">DEV-029</td><td class="td-primary">Suction Machine SM-400</td><td>Other</td><td class="td-mono">SN-20241029</td><td>General Ward</td><td><span class="badge badge-operational">Operational</span></td><td>2026-04-25</td><td>2026-07-25</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+            <tr data-status="active" data-dept="Cardiology" data-type="Monitor"><td class="td-mono">DEV-030</td><td class="td-primary">Stress Test System ST-Max</td><td>Monitor</td><td class="td-mono">SN-20241030</td><td>Cardiology</td><td><span class="badge badge-operational">Operational</span></td><td>2026-05-22</td><td>2026-08-22</td><td><button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination-bar">
+        <span class="pagination-info" id="pg-info">Loading devices...</span>
+        <div class="pagination-btns" id="pg-btns"></div>
+      </div>
+    </div>
+
+    <!-- Grid View (hidden) -->
+    <div class="panel" id="grid-view" style="display:none;">
+      <div class="device-grid">
+        <div class="device-card"><div class="device-card-head"><div><div class="device-card-title">ICU Ventilator V500</div><div class="device-card-id">DEV-001 · SN-20241001</div></div><span class="badge badge-operational">Operational</span></div><div class="device-card-row"><span>Department</span><span>ICU</span></div><div class="device-card-row"><span>Category</span><span>Ventilator</span></div><div class="device-card-foot"><span class="device-card-foot-label">Next PM</span><span class="device-card-foot-val">Jul 15, 2026</span></div></div>
+        <div class="device-card"><div class="device-card-head"><div><div class="device-card-title">ICU Ventilator V300</div><div class="device-card-id">DEV-002 · SN-20241002</div></div><span class="badge badge-faulty">Faulty</span></div><div class="device-card-row"><span>Department</span><span>ICU</span></div><div class="device-card-row"><span>Category</span><span>Ventilator</span></div><div class="device-card-foot"><span class="device-card-foot-label">Next PM</span><span class="device-card-foot-val">Jun 10, 2026</span></div></div>
+        <div class="device-card"><div class="device-card-head"><div><div class="device-card-title">Defibrillator AED-7</div><div class="device-card-id">DEV-003 · SN-20241003</div></div><span class="badge badge-operational">Operational</span></div><div class="device-card-row"><span>Department</span><span>ER</span></div><div class="device-card-row"><span>Category</span><span>Defibrillator</span></div><div class="device-card-foot"><span class="device-card-foot-label">Next PM</span><span class="device-card-foot-val">Aug 1, 2026</span></div></div>
+        <div class="device-card"><div class="device-card-head"><div><div class="device-card-title">MRI Scanner Unit B</div><div class="device-card-id">DEV-004 · SN-20241004</div></div><span class="badge badge-undermaint">Maintenance</span></div><div class="device-card-row"><span>Department</span><span>Radiology</span></div><div class="device-card-row"><span>Category</span><span>Imaging</span></div><div class="device-card-foot"><span class="device-card-foot-label">Next PM</span><span class="device-card-foot-val">May 20, 2026</span></div></div>
+        <div class="device-card"><div class="device-card-head"><div><div class="device-card-title">Patient Monitor #12</div><div class="device-card-id">DEV-005 · SN-20241005</div></div><span class="badge badge-operational">Operational</span></div><div class="device-card-row"><span>Department</span><span>Surgery</span></div><div class="device-card-row"><span>Category</span><span>Monitor</span></div><div class="device-card-foot"><span class="device-card-foot-label">Next PM</span><span class="device-card-foot-val">Jul 28, 2026</span></div></div>
+        <div class="device-card"><div class="device-card-head"><div><div class="device-card-title">ECG Monitor Pro</div><div class="device-card-id">DEV-006 · SN-20241006</div></div><span class="badge badge-operational">Operational</span></div><div class="device-card-row"><span>Department</span><span>Cardiology</span></div><div class="device-card-row"><span>Category</span><span>Monitor</span></div><div class="device-card-foot"><span class="device-card-foot-label">Next PM</span><span class="device-card-foot-val">Aug 10, 2026</span></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  /* ── DATE + SESSION ─────────────────────────────── */
+  document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  const s = JSON.parse(sessionStorage.getItem('mems_session')||localStorage.getItem('mems_session')||'{}');
+  if(s.email){document.getElementById('sb-name').textContent=s.email.split('@')[0];document.getElementById('sb-avatar').textContent=(s.email.charAt(0)||'A').toUpperCase()+'D';}
+
+  /* ── DEVICE DATA INITIALIZATION ─────────────────── */
+  const DEFAULT_DEVICES = [
+    { id: "DEV-001", name: "ICU Ventilator V500", category: "Ventilator", serial: "SN-20241001", dept: "ICU", status: "operational", lastPm: "2026-04-15", nextPm: "2026-07-15", type: "Ventilator" },
+    { id: "DEV-002", name: "ICU Ventilator V300", category: "Ventilator", serial: "SN-20241002", dept: "ICU", status: "faulty", lastPm: "2026-03-10", nextPm: "2026-06-10", type: "Ventilator" },
+    { id: "DEV-003", name: "Defibrillator AED-7", category: "Defibrillator", serial: "SN-20241003", dept: "ER", status: "operational", lastPm: "2026-05-01", nextPm: "2026-08-01", type: "Defibrillator" },
+    { id: "DEV-004", name: "MRI Scanner Unit B", category: "Imaging", serial: "SN-20241004", dept: "Radiology", status: "undermaint", lastPm: "2026-02-20", nextPm: "2026-05-20", type: "Imaging" },
+    { id: "DEV-005", name: "Patient Monitor #12", category: "Monitor", serial: "SN-20241005", dept: "Surgery", status: "operational", lastPm: "2026-04-28", nextPm: "2026-07-28", type: "Monitor" },
+    { id: "DEV-006", name: "ECG Monitor Pro", category: "Monitor", serial: "SN-20241006", dept: "Cardiology", status: "operational", lastPm: "2026-05-10", nextPm: "2026-08-10", type: "Monitor" },
+    { id: "DEV-007", name: "Defibrillator AED-3", category: "Defibrillator", serial: "SN-20241007", dept: "ER", status: "faulty", lastPm: "2026-01-15", nextPm: "2026-04-15", type: "Defibrillator" },
+    { id: "DEV-008", name: "Infusion Pump IP-400", category: "Infusion Pump", serial: "SN-20241008", dept: "ICU", status: "operational", lastPm: "2026-05-05", nextPm: "2026-08-05", type: "Infusion Pump" },
+    { id: "DEV-009", name: "Anesthesia Monitor AM-2", category: "Monitor", serial: "SN-20241009", dept: "Surgery", status: "undermaint", lastPm: "2026-04-01", nextPm: "2026-07-01", type: "Monitor" },
+    { id: "DEV-010", name: "Blood Gas Analyzer", category: "Other", serial: "SN-20241010", dept: "Laboratory", status: "operational", lastPm: "2026-03-18", nextPm: "2026-06-18", type: "Other" },
+    { id: "DEV-011", name: "Syringe Pump SP-50", category: "Infusion Pump", serial: "SN-20241011", dept: "General Ward", status: "operational", lastPm: "2026-05-12", nextPm: "2026-08-12", type: "Infusion Pump" },
+    { id: "DEV-012", name: "X-Ray Portable XR-200", category: "Imaging", serial: "SN-20241012", dept: "Radiology", status: "operational", lastPm: "2026-04-22", nextPm: "2026-07-22", type: "Imaging" },
+    { id: "DEV-013", name: "Bedside Monitor BM-9", category: "Monitor", serial: "SN-20241013", dept: "ICU", status: "operational", lastPm: "2026-05-02", nextPm: "2026-08-02", type: "Monitor" },
+    { id: "DEV-014", name: "Holter Recorder HR-3", category: "Other", serial: "SN-20241014", dept: "Cardiology", status: "undermaint", lastPm: "2026-03-25", nextPm: "2026-06-25", type: "Other" },
+    { id: "DEV-015", name: "Crash Cart Monitor CC-1", category: "Monitor", serial: "SN-20241015", dept: "ER", status: "operational", lastPm: "2026-04-10", nextPm: "2026-07-10", type: "Monitor" },
+    { id: "DEV-016", name: "Electrosurgical Unit ESU-300", category: "Other", serial: "SN-20241016", dept: "Surgery", status: "operational", lastPm: "2026-05-08", nextPm: "2026-08-08", type: "Other" },
+    { id: "DEV-017", name: "CT Scanner CS-64", category: "Imaging", serial: "SN-20241017", dept: "Radiology", status: "faulty", lastPm: "2026-02-14", nextPm: "2026-05-14", type: "Imaging" },
+    { id: "DEV-018", name: "Hematology Analyzer HA-5", category: "Other", serial: "SN-20241018", dept: "Laboratory", status: "operational", lastPm: "2026-04-05", nextPm: "2026-07-05", type: "Other" },
+    { id: "DEV-019", name: "Pulse Oximeter PO-7", category: "Monitor", serial: "SN-20241019", dept: "General Ward", status: "operational", lastPm: "2026-05-15", nextPm: "2026-08-15", type: "Monitor" },
+    { id: "DEV-020", name: "High-Flow Oxygen Therapy HF-1", category: "Ventilator", serial: "SN-20241020", dept: "ICU", status: "undermaint", lastPm: "2026-03-30", nextPm: "2026-06-30", type: "Ventilator" },
+    { id: "DEV-021", name: "Ambulatory IV Pump AP-2", category: "Infusion Pump", serial: "SN-20241021", dept: "ER", status: "operational", lastPm: "2026-04-18", nextPm: "2026-07-18", type: "Infusion Pump" },
+    { id: "DEV-022", name: "C-Arm Fluoroscopy CA-9", category: "Imaging", serial: "SN-20241022", dept: "Surgery", status: "operational", lastPm: "2026-05-20", nextPm: "2026-08-20", type: "Imaging" },
+    { id: "DEV-023", name: "Microbiology Incubator MI-2", category: "Other", serial: "SN-20241023", dept: "Laboratory", status: "faulty", lastPm: "2026-02-28", nextPm: "2026-05-28", type: "Other" },
+    { id: "DEV-024", name: "Echocardiography Echo-7", category: "Other", serial: "SN-20241024", dept: "Cardiology", status: "operational", lastPm: "2026-04-30", nextPm: "2026-07-30", type: "Other" },
+    { id: "DEV-025", name: "Thermometer Station TH-4", category: "Monitor", serial: "SN-20241025", dept: "General Ward", status: "operational", lastPm: "2026-05-18", nextPm: "2026-08-18", type: "Monitor" },
+    { id: "DEV-026", name: "Volumetric Pump VP-100", category: "Infusion Pump", serial: "SN-20241026", dept: "ICU", status: "operational", lastPm: "2026-05-03", nextPm: "2026-08-03", type: "Infusion Pump" },
+    { id: "DEV-027", name: "Cardioverter CV-Pro", category: "Defibrillator", serial: "SN-20241027", dept: "ER", status: "undermaint", lastPm: "2026-03-12", nextPm: "2026-06-12", type: "Defibrillator" },
+    { id: "DEV-028", name: "Ultrasound System US-Elite", category: "Imaging", serial: "SN-20241028", dept: "Radiology", status: "operational", lastPm: "2026-05-07", nextPm: "2026-08-07", type: "Imaging" },
+    { id: "DEV-029", name: "Suction Machine SM-400", category: "Other", serial: "SN-20241029", dept: "General Ward", status: "operational", lastPm: "2026-04-25", nextPm: "2026-07-25", type: "Other" },
+    { id: "DEV-030", name: "Stress Test System ST-Max", category: "Monitor", serial: "SN-20241030", dept: "Cardiology", status: "operational", lastPm: "2026-05-22", nextPm: "2026-08-22", type: "Monitor" }
+  ];
+
+  if (!localStorage.getItem('mems_devices_v2')) {
+    localStorage.setItem('mems_devices_v2', JSON.stringify(DEFAULT_DEVICES));
+  }
+  let devicesData = JSON.parse(localStorage.getItem('mems_devices_v2'));
+
+  /* ── PAGINATION STATE ───────────────────────────── */
+  const ROWS_PER_PAGE = 5;
+  let currentPage = 1;
+  let filteredDevices = [...devicesData];
+
+  /* ── DYNAMIC COUNTS UPDATER ─────────────────────── */
+  function updateDynamicCounts() {
+    const total = devicesData.length;
+    const operational = devicesData.filter(d => d.status === 'operational').length;
+    const faulty = devicesData.filter(d => d.status === 'faulty').length;
+    const undermaint = devicesData.filter(d => d.status === 'undermaint').length;
+    const decommissioned = devicesData.filter(d => d.status === 'decommissioned').length;
+
+    // Update KPI values
+    const totalValEl = document.getElementById('kpi-total-val');
+    if (totalValEl) totalValEl.textContent = total.toLocaleString();
+    const activeValEl = document.getElementById('kpi-active-val');
+    if (activeValEl) activeValEl.textContent = operational.toLocaleString();
+    const offlineValEl = document.getElementById('kpi-offline-val');
+    if (offlineValEl) offlineValEl.textContent = faulty.toLocaleString();
+    const maintenanceValEl = document.getElementById('kpi-maintenance-val');
+    if (maintenanceValEl) maintenanceValEl.textContent = undermaint.toLocaleString();
+
+    // Update Tab count badges
+    const tabs = document.querySelectorAll('.tabs .tab');
+    tabs.forEach(tab => {
+      const filter = tab.dataset.filter;
+      const countEl = tab.querySelector('.tab-count');
+      if (countEl) {
+        if (filter === undefined || filter === '') countEl.textContent = total;
+        else if (filter === 'operational') countEl.textContent = operational;
+        else if (filter === 'faulty') countEl.textContent = faulty;
+        else if (filter === 'undermaint') countEl.textContent = undermaint;
+        else if (filter === 'decommissioned') countEl.textContent = decommissioned;
+      }
+    });
+  }
+
+  // Update KPI cards and tab counts dynamically from the local storage data
+  updateDynamicCounts();
+
+  function populateCategoryDropdown() {
+    const filterCat = document.getElementById('filterCategory');
+    const existingOptions = new Set();
+    filterCat.querySelectorAll('option').forEach(opt => {
+      if (opt.value) existingOptions.add(opt.value);
+    });
+
+    const categories = new Set(devicesData.map(d => d.category).filter(Boolean));
+    categories.forEach(cat => {
+      if (!existingOptions.has(cat)) {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        filterCat.appendChild(option);
+      }
+    });
+
+    if (typeof applyTranslations === 'function') {
+      applyTranslations();
+    }
+  }
+  populateCategoryDropdown();
+
+  // Close modal logic
+  /* ── TABS ────────────────────────────────────────── */
+  document.querySelectorAll('.tabs .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tabs .tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      tab.classList.add('active'); tab.setAttribute('aria-selected','true');
+      document.getElementById('f-status').value = tab.dataset.filter;
+      currentPage = 1;
+      applyFilters();
+    });
+  });
+
+  /* ── VIEW TOGGLE ────────────────────────────────── */
+  document.getElementById('v-table').addEventListener('click', () => { document.getElementById('table-view').style.display=''; document.getElementById('grid-view').style.display='none'; document.getElementById('v-table').classList.add('active'); document.getElementById('v-grid').classList.remove('active'); });
+  document.getElementById('v-grid').addEventListener('click', () => { document.getElementById('table-view').style.display='none'; document.getElementById('grid-view').style.display=''; document.getElementById('v-grid').classList.add('active'); document.getElementById('v-table').classList.remove('active'); });
+
+  /* ── FILTER LISTENERS ───────────────────────────── */
+  document.getElementById('tbl-search').addEventListener('input', () => { currentPage=1; applyFilters(); });
+  document.getElementById('f-dept').addEventListener('change', () => { currentPage=1; applyFilters(); });
+  document.getElementById('f-status').addEventListener('change', () => { currentPage=1; applyFilters(); });
+  document.getElementById('filterCategory').addEventListener('change', () => { currentPage=1; applyFilters(); });
+
+  
+  /* ── VIEW MODAL LOGIC ───────────────────────────── */
+  function openViewModal(id) {
+    // try to find the device in devicesData or DEFAULT_DEVICES
+    const arr = (typeof devicesData !== 'undefined') ? devicesData : (typeof DEFAULT_DEVICES !== 'undefined' ? DEFAULT_DEVICES : []);
+    const dev = arr.find(d => d.id === id);
+    if (!dev) return;
+    
+    document.getElementById('v-dev-id').textContent = dev.id || '-';
+    document.getElementById('v-dev-name').textContent = dev.name || '-';
+    document.getElementById('v-dev-cat').textContent = dev.category || '-';
+    document.getElementById('v-dev-sn').textContent = dev.serial || '-';
+    document.getElementById('v-dev-dept').textContent = dev.dept || '-';
+    
+    let statusClass = dev.status;
+    if(statusClass === 'operational') statusClass = 'operational';
+    else if(statusClass === 'faulty') statusClass = 'faulty';
+    else if(statusClass === 'maintenance') statusClass = 'undermaint';
+    else statusClass = 'operational';
+    
+    const statusLabel = dev.status.charAt(0).toUpperCase() + dev.status.slice(1);
+    document.getElementById('v-dev-status').innerHTML = `<span class="badge badge-${statusClass}">${statusLabel === 'Maintenance' ? 'Maintenance' : statusLabel}</span>`;
+    
+    document.getElementById('v-dev-lpm').textContent = dev.lastPm || '-';
+    document.getElementById('v-dev-npm').textContent = dev.nextPm || '-';
+    
+    const viewModal = document.getElementById('viewModal');
+    viewModal.style.display = 'flex';
+  }
+
+  function closeViewModal() {
+    document.getElementById('viewModal').style.display = 'none';
+  }
+  
+  window.openViewModal = openViewModal;
+  window.closeViewModal = closeViewModal;
+
+
+  /* ── HTML RENDERERS ─────────────────────────────── */
+  function renderTableRow(dev) {
+    const statusLabel = dev.status.charAt(0).toUpperCase() + dev.status.slice(1);
+    return `
+      <tr data-status="${dev.status}" data-dept="${dev.dept}" data-type="${dev.type}">
+        <td class="td-mono">${dev.id}</td>
+        <td class="td-primary">${dev.name}</td>
+        <td>${dev.category}</td>
+        <td class="td-mono">${dev.serial}</td>
+        <td>${dev.dept}</td>
+        <td><span class="badge badge-${dev.status}">${statusLabel === 'Maintenance' ? 'Maintenance' : statusLabel}</span></td>
+        <td>${dev.lastPm || '-'}</td>
+        <td>${dev.nextPm || '-'}</td>
+        <td>
+          <button class="btn-icon" title="View" onclick="openViewModal(this.closest('tr').querySelector('.td-mono').textContent)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>
+         
+        </td>
+      </tr>
+    `;
+  }
+
+  function renderGridCard(dev) {
+    const statusLabel = dev.status.charAt(0).toUpperCase() + dev.status.slice(1);
+    const nextPmFormatted = dev.nextPm ? new Date(dev.nextPm).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+    const photoHtml = dev.photo ? `
+      <div style="width:100%; height:120px; overflow:hidden; display:flex; align-items:center; justify-content:center; border-bottom: 1px solid #1F2A40; margin-bottom: 12px; border-radius: 8px;">
+        <img src="${dev.photo}" alt="${dev.name}" style="width:100%; height:100%; object-fit:cover;" />
+      </div>
+    ` : '';
+
+    return `
+      <div class="device-card" style="display:flex; flex-direction:column; justify-content:space-between; height: 100%;">
+        <div>
+          ${photoHtml}
+          <div class="device-card-head">
+            <div>
+              <div class="device-card-title">${dev.name}</div>
+              <div class="device-card-id">${dev.id} · ${dev.serial}</div>
+            </div>
+            <span class="badge badge-${dev.status}">${statusLabel === 'Maintenance' ? 'Maintenance' : statusLabel}</span>
+          </div>
+          <div class="device-card-row"><span>Department</span><span>${dev.dept}</span></div>
+          <div class="device-card-row"><span>Category</span><span>${dev.category}</span></div>
+        </div>
+        <div class="device-card-foot" style="margin-top:12px;">
+          <span class="device-card-foot-label">Next PM</span>
+          <span class="device-card-foot-val">${nextPmFormatted}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ── APPLY FILTERS + RENDERING ──────────────────── */
+  function applyFilters() {
+    const q = document.getElementById('tbl-search').value.toLowerCase().trim();
+    const dept = document.getElementById('f-dept').value;
+    const status = document.getElementById('f-status').value;
+    const category = document.getElementById('filterCategory').value;
+
+    filteredDevices = devicesData.filter(d => {
+      const matchQ = !q || d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) || d.serial.toLowerCase().includes(q);
+      const matchDept = !dept || d.dept === dept;
+      const matchStatus = !status || d.status === status;
+      const matchCategory = !category || d.category === category;
+      return matchQ && matchDept && matchStatus && matchCategory;
+    });
+
+    const tbody = document.querySelector('#device-table tbody');
+    const gridContainer = document.querySelector('#grid-view .device-grid');
+
+    const totalPages = Math.max(1, Math.ceil(filteredDevices.length / ROWS_PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    const end = Math.min(start + ROWS_PER_PAGE, filteredDevices.length);
+    const paginatedSlice = filteredDevices.slice(start, end);
+
+    // 1) Render Table rows
+    tbody.innerHTML = paginatedSlice.map(renderTableRow).join('');
+
+    // 2) Render Grid cards (we show the same paginated slice for grid view)
+    gridContainer.innerHTML = paginatedSlice.map(renderGridCard).join('');
+
+    // 3) update info text
+    const infoEl = document.getElementById('pg-info');
+    if (filteredDevices.length === 0) {
+      infoEl.textContent = 'No devices found';
+    } else {
+      infoEl.textContent = `Showing ${start+1}–${end} of ${filteredDevices.length} devices`;
+    }
+
+    // 4) render pagination buttons
+    renderPagination(totalPages);
+  }
+
+  /* ── RENDER PAGINATION BUTTONS ──────────────────── */
+  function renderPagination(totalPages) {
+    const container = document.getElementById('pg-btns');
+    container.innerHTML = '';
+
+    // Prev button
+    const prevBtn = makePgBtn('‹', currentPage <= 1);
+    prevBtn.setAttribute('aria-label', 'Previous page');
+    prevBtn.addEventListener('click', () => { if(currentPage>1){ currentPage--; applyFilters(); } });
+    container.appendChild(prevBtn);
+
+    // Page number buttons (show max 5 pages centered on current)
+    let startPg = Math.max(1, currentPage - 2);
+    let endPg = Math.min(totalPages, startPg + 4);
+    if (endPg - startPg < 4) startPg = Math.max(1, endPg - 4);
+
+    for (let p = startPg; p <= endPg; p++) {
+      const btn = makePgBtn(String(p), false, p === currentPage);
+      btn.addEventListener('click', () => { currentPage = p; applyFilters(); });
+      container.appendChild(btn);
+    }
+
+    // Next button
+    const nextBtn = makePgBtn('›', currentPage >= totalPages);
+    nextBtn.setAttribute('aria-label', 'Next page');
+    nextBtn.addEventListener('click', () => { if(currentPage<totalPages){ currentPage++; applyFilters(); } });
+    container.appendChild(nextBtn);
+  }
+
+  function makePgBtn(text, disabled, active) {
+    const btn = document.createElement('button');
+    btn.className = 'pg-btn' + (active ? ' active' : '');
+    btn.textContent = text;
+    if (disabled) { btn.disabled = true; btn.style.opacity = '0.3'; btn.style.cursor = 'default'; }
+    return btn;
+  }
+
+  // Initial render
+  applyFilters();
+</script>
+
+<script>
+  if (localStorage.getItem('mems_alerts_cleared') === 'true') {
+    document.querySelectorAll('.notif-badge').forEach(b => b.style.display = 'none');
+    
+    // For dashboard
+    const alertList = document.querySelector('.alert-list');
+    if (alertList) {
+      alertList.innerHTML = '<div style="padding: 24px; text-align: center; color: #64748b; font-size: 13px;">All caught up! No active alerts.</div>';
+    }
+    
+    // For inventory
+    const alertBanner = document.getElementById('alertBanner');
+    if (alertBanner) {
+      alertBanner.style.display = 'none';
+    }
+  }
+</script>
+<script src="js/session.js"></script>
+<script>if(window.MEMSSession)window.MEMSSession.requireAuth(['admin']);</script>
+<script src="js/i18n.js"></script>
+
+  <!-- View Device Modal -->
+  <div class="modal-overlay" id="viewModal" style="display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); position:fixed; top:0; left:0; right:0; bottom:0; z-index:9999;">
+    <div class="modal" style="background:#181D2A; border:1px solid #1F2A40; border-radius:12px; width:400px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1F2A40; padding-bottom:16px; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:1.1rem; color:#E2E8F0;">Device Details</h3>
+        <button class="btn-icon" onclick="closeViewModal()" style="width:28px;height:28px;border-radius:6px;background:none;border:none;color:#5A6A85;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Device ID</label><div id="v-dev-id" style="color:#E2E8F0;font-weight:600;"></div></div>
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Name</label><div id="v-dev-name" style="color:#E2E8F0;"></div></div>
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Category</label><div id="v-dev-cat" style="color:#E2E8F0;"></div></div>
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Serial No.</label><div id="v-dev-sn" style="color:#E2E8F0;"></div></div>
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Department</label><div id="v-dev-dept" style="color:#E2E8F0;"></div></div>
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Status</label><div id="v-dev-status" style="color:#E2E8F0;"></div></div>
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Last PM</label><div id="v-dev-lpm" style="color:#E2E8F0;"></div></div>
+          <div><label style="font-size:0.75rem;color:#5A6A85;">Next PM Due</label><div id="v-dev-npm" style="color:#E2E8F0;"></div></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="margin-top:24px; text-align:right;">
+        <button class="btn-action" style="padding:8px 16px;background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.25);border-radius:8px;color:#F472B6;font-size:0.8125rem;font-weight:600;cursor:pointer;" onclick="closeViewModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
+
+

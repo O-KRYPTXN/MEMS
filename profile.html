@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile — MEMS</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233B72F6'/><path d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>"/>
+  <link rel="stylesheet" href="css/dashboard.css"/>
+  <style>
+    /* ── Settings-specific styles ──────────────────────────── */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    @media (max-width: 900px) {
+      .settings-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ─ Sidebar Menu ─ */
+    .settings-menu {
+      background: #181D2A;
+      border: 1px solid #1F2A40;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .settings-tab {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: #94A3B8;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .settings-tab:hover { background: #1A2235; color: #E2E8F0; }
+    .settings-tab.active { background: rgba(59,114,246,0.12); color: #5E8FFF; font-weight: 600; }
+    .settings-tab svg { width: 18px; height: 18px; }
+
+    /* ─ Panels ─ */
+    .settings-panel {
+      background: #181D2A;
+      border: 1px solid #1F2A40;
+      border-radius: 12px;
+      padding: 24px 30px;
+      display: none;
+    }
+    .settings-panel.active { display: block; }
+    .panel-head { margin-bottom: 24px; border-bottom: 1px solid #1F2A40; padding-bottom: 16px; }
+    .panel-title { font-size: 1.1rem; font-weight: 700; color: #E2E8F0; }
+    .panel-sub { font-size: 0.8rem; color: #5A6A85; margin-top: 4px; }
+
+    /* ─ Forms & Controls ─ */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { font-size: 0.8rem; font-weight: 600; color: #94A3B8; }
+    .form-input {
+      background: #131720; border: 1px solid #1F2A40;
+      color: #E2E8F0; padding: 10px 14px; border-radius: 8px;
+      font-family: inherit; outline: none; transition: border 0.2s;
+    }
+    .form-input:focus { border-color: #3B72F6; }
+
+    /* ─ Toggle Switch ─ */
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1A2235; }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { display: flex; flex-direction: column; gap: 2px; }
+    .toggle-title { font-size: 0.85rem; font-weight: 600; color: #E2E8F0; }
+    .toggle-desc { font-size: 0.75rem; color: #5A6A85; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1F2A40; transition: .3s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: #3B72F6; }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .btn-save { width: 100%; max-width: 200px; margin-top: 10px; }
+
+    /* Profile Avatar section */
+    .avatar-upload { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .avatar-preview { width: 64px; height: 64px; border-radius: 50%; background: #1F2A40; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; color: #94A3B8; }
+    .avatar-actions { display: flex; gap: 10px; }
+  </style>
+</head>
+<body class="dark-theme">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <nav class="sidebar" role="navigation">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18"/></svg></div>
+        <div>
+          <div class="sidebar-brand-name">MEMS</div>
+          <div class="sidebar-brand-sub">Medical Equip. Mgmt.</div>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>Dashboard</a>
+      <a href="devices.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3"/></svg>Medical Devices</a>
+      <a href="workorders.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375"/></svg>Work Orders</a>
+      <div class="nav-section-label">Operations</div>
+      <a href="preventive-maintenance.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>Preventive Maintenance</a>
+      <a href="inventory.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>Spare Parts Inventory</a>
+      <div class="nav-section-label">System</div>
+      <a href="users.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>Users & Permissions</a>
+      <a href="reports.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>Reports</a>
+      <a href="profile.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.4.4-.4 1.05 0 1.45.4.4 1.05.4 1.45 0l5.58-5.58c.4-.4.4-1.05 0-1.45-.4-.4-1.05-.4-1.45 0l-5.58 5.58zm-5.74-5.74c-.4-.4-1.05-.4-1.45 0-.4.4-.4 1.05 0 1.45l5.58 5.58c.4.4 1.05.4 1.45 0 .4-.4.4-1.05 0-1.45L4.6 10.1z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>Profile</a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-avatar" id="sidebar-avatar">AD</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name">Admin User</div>
+          <div class="user-role">Administrator</div>
+        </div>
+        <a href="index.html" class="logout-btn" title="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg></a>
+      </div>
+    </nav>
+
+    <!-- ═══ MAIN ═══ -->
+    <div class="main">
+      <header class="topbar">
+        <span class="topbar-title">Profile</span>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg>
+          <input type="search" placeholder="Search settings..."/>
+        </div>
+        <button class="notif-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg><span class="notif-badge"></span></button>
+        <span class="topbar-date" id="topbar-date"></span>
+      </header>
+
+      <main class="page-body">
+        <div class="page-header">
+          <div>
+            <h1>Profile</h1>
+            <p>Manage your account, notification preferences, and application settings.</p>
+          </div>
+        </div>
+
+        <div class="settings-layout">
+          <!-- Navigation Menu -->
+          <div class="settings-menu">
+            <button class="settings-tab active" data-target="panel-profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+              My Profile
+            </button>
+            <button class="settings-tab" data-target="panel-notif">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+              Notifications
+            </button>
+            <button class="settings-tab" data-target="panel-security">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+              Security
+            </button>
+            <button class="settings-tab" data-target="panel-app">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/></svg>
+              Application
+            </button>
+          </div>
+
+          <!-- Panels Container -->
+          <div class="settings-content">
+            
+            <!-- Profile Panel -->
+            <div id="panel-profile" class="settings-panel active">
+              <div class="panel-head">
+                <div class="panel-title">My Profile</div>
+                <div class="panel-sub">Update your personal details and public profile.</div>
+              </div>
+              <div class="avatar-upload" style="justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <div class="avatar-preview" id="prof-avatar" style="background-size: cover; background-position: center; overflow: hidden;">AD</div>
+                  <button type="button" class="pg-btn" onclick="document.getElementById('avatar-input').click()" style="background:#131720;border:1px solid #1F2A40;color:#E2E8F0;padding:8px 16px;border-radius:6px;cursor:pointer;">Change Photo</button>
+                  <input type="file" id="avatar-input" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)"/>
+                </div>
+                <button type="button" class="pg-btn" onclick="removeAvatar()" style="background:transparent;border:1px solid rgba(239,68,68,0.25);color:#F87171;padding:8px 16px;border-radius:6px;cursor:pointer;">Remove</button>
+              </div>
+              <form class="form-grid" onsubmit="event.preventDefault(); saveSettings();">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-input" id="set-fname" value="Admin"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-input" id="set-lname" value="User"/>
+                </div>
+                <div class="form-group full">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" class="form-input" id="set-email" value="admin@hospital.org"/>
+                </div>
+                <div class="form-group full">
+                  <label class="form-label">Role</label>
+                  <input type="text" class="form-input" value="Administrator" disabled style="opacity:0.6;"/>
+                </div>
+                <div class="form-group full">
+                  <button type="submit" class="btn-primary btn-save">Save Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Notifications Panel -->
+            <div id="panel-notif" class="settings-panel">
+              <div class="panel-head">
+                <div class="panel-title">Notification Preferences</div>
+                <div class="panel-sub">Choose what alerts you receive and how they are delivered.</div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">Email Alerts</div>
+                  <div class="toggle-desc">Receive daily summary reports and critical alerts via email.</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">SMS Notifications</div>
+                  <div class="toggle-desc">Get text messages for High priority work orders.</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">Preventive Maintenance Reminders</div>
+                  <div class="toggle-desc">Notify 7 days before scheduled maintenance.</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">Low Stock Warnings</div>
+                  <div class="toggle-desc">Alert when inventory parts drop below minimum threshold.</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Security Panel -->
+            <div id="panel-security" class="settings-panel">
+              <div class="panel-head">
+                <div class="panel-title">Security & Authentication</div>
+                <div class="panel-sub">Manage your password and security protocols.</div>
+              </div>
+              <form class="form-grid" onsubmit="event.preventDefault(); updatePassword();">
+                <div class="form-group full">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-input" id="pw-current" placeholder="••••••••"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-input" id="pw-new" placeholder="Min 8 chars"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-input" id="pw-confirm" placeholder="Repeat new password"/>
+                </div>
+                <div class="form-group full">
+                  <p id="pw-error" style="color:#F87171;font-size:0.8rem;margin-bottom:8px;display:none;"></p>
+                  <button type="submit" class="btn-primary btn-save">Update Password</button>
+                </div>
+              </form>
+              <div class="toggle-row" style="margin-top: 30px; border-top: 1px solid #1F2A40; padding-top:20px;">
+                <div class="toggle-info">
+                  <div class="toggle-title">Two-Factor Authentication (2FA)</div>
+                  <div class="toggle-desc">Require an authenticator code when logging in.</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Application Panel -->
+            <div id="panel-app" class="settings-panel">
+              <div class="panel-head">
+                <div class="panel-title">Application Preferences</div>
+                <div class="panel-sub">Customize the MEMS application interface and regional settings.</div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Language</label>
+                  <select class="form-input">
+                    <option value="English (US)">English (US)</option>
+                    <option value="English (UK)">English (UK)</option>
+                    <option value="Spanish">Spanish</option>
+                    <option value="French">French</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date Format</label>
+                  <select class="form-input">
+                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                  </select>
+                </div>
+              </div>
+              <div class="toggle-row" style="margin-top: 10px;">
+                <div class="toggle-info">
+                  <div class="toggle-title">Dark Theme</div>
+                  <div class="toggle-desc">Use a dark color palette across the application.</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked onchange="toggleTheme(this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">Compact Table View</div>
+                  <div class="toggle-desc">Reduce padding in data tables to show more rows.</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+
+  <script>
+    // Tab switching logic
+    const tabs = document.querySelectorAll('.settings-tab');
+    const panels = document.querySelectorAll('.settings-panel');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.target).classList.add('active');
+      });
+    });
+
+    // Populate date
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // ── Load saved profile ──
+    const savedProf = JSON.parse(localStorage.getItem('mems_admin_profile') || 'null');
+    const s = JSON.parse(sessionStorage.getItem('mems_session') || localStorage.getItem('mems_session') || '{}');
+    if (savedProf) {
+      document.getElementById('set-fname').value = savedProf.firstName || '';
+      document.getElementById('set-lname').value = savedProf.lastName  || '';
+      document.getElementById('set-email').value = savedProf.email     || s.email || '';
+    } else if (s.name) {
+      const parts = s.name.split(' ');
+      document.getElementById('set-fname').value = parts[0] || '';
+      document.getElementById('set-lname').value = parts.slice(1).join(' ') || '';
+      document.getElementById('set-email').value = s.email || '';
+    }
+
+    // ── Restore notification toggles ──
+    const notifPrefs = JSON.parse(localStorage.getItem('mems_admin_notif') || 'null');
+    if (notifPrefs) {
+      const switches = document.querySelectorAll('#panel-notif input[type="checkbox"]');
+      const keys = ['emailAlerts','smsAlerts','pmReminders','lowStock'];
+      switches.forEach((sw, i) => { if (keys[i] in notifPrefs) sw.checked = notifPrefs[keys[i]]; });
+    }
+    // Persist toggle changes
+    document.querySelectorAll('#panel-notif input[type="checkbox"]').forEach((sw, i) => {
+      const keys = ['emailAlerts','smsAlerts','pmReminders','lowStock'];
+      sw.addEventListener('change', () => {
+        const prefs = JSON.parse(localStorage.getItem('mems_admin_notif') || '{}');
+        prefs[keys[i]] = sw.checked;
+        localStorage.setItem('mems_admin_notif', JSON.stringify(prefs));
+      });
+    });
+
+    // Avatar upload logic
+    function setAvatar(url) {
+      const prof = document.getElementById('prof-avatar');
+      const side = document.getElementById('sidebar-avatar');
+      if (url) {
+        prof.style.backgroundImage = `url(${url})`;
+        prof.textContent = '';
+        side.style.backgroundImage = `url(${url})`;
+        side.style.backgroundSize = 'cover';
+        side.style.backgroundPosition = 'center';
+        side.textContent = '';
+      } else {
+        prof.style.backgroundImage = 'none';
+        side.style.backgroundImage = 'none';
+        let init = 'AD';
+        if (s.email) {
+          const name = s.email.split('@')[0];
+          init = name.substring(0, 2).toUpperCase();
+        }
+        prof.textContent = init;
+        side.textContent = init;
+      }
+    }
+
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        localStorage.setItem('mems_avatar', dataUrl);
+        setAvatar(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAvatar() {
+      localStorage.removeItem('mems_avatar');
+      setAvatar(null);
+      document.getElementById('avatar-input').value = '';
+    }
+
+    // Initialize avatar on load
+    const savedAvatar = localStorage.getItem('mems_avatar');
+    if (savedAvatar) {
+      setAvatar(savedAvatar);
+    }
+
+    function saveSettings() {
+      const firstName = document.getElementById('set-fname').value.trim();
+      const lastName  = document.getElementById('set-lname').value.trim();
+      const email     = document.getElementById('set-email').value.trim();
+      if (!firstName) { alert('First name is required.'); return; }
+
+      // Persist profile
+      const prof = { firstName, lastName, email };
+      localStorage.setItem('mems_admin_profile', JSON.stringify(prof));
+
+      // Update session
+      if (window.MEMSSession) {
+        window.MEMSSession.saveSession({ name: firstName + (lastName ? ' ' + lastName : ''), email });
+        window.MEMSSession.initSidebarUser();
+      }
+
+      const btn = document.querySelector('#panel-profile .btn-save');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Saved!';
+      btn.style.background = '#22C55E';
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+    }
+
+    function updatePassword() {
+      const current = document.getElementById('pw-current').value;
+      const newPw   = document.getElementById('pw-new').value;
+      const confirm = document.getElementById('pw-confirm').value;
+      const errEl   = document.getElementById('pw-error');
+      errEl.style.display = 'none';
+      if (!current) { errEl.textContent = 'Please enter your current password.'; errEl.style.display='block'; return; }
+      if (newPw.length < 8) { errEl.textContent = 'New password must be at least 8 characters.'; errEl.style.display='block'; return; }
+      if (newPw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display='block'; return; }
+      const btn = document.querySelector('#panel-security .btn-save');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Password Updated!';
+      btn.style.background = '#22C55E';
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2500);
+      document.getElementById('pw-current').value = '';
+      document.getElementById('pw-new').value = '';
+      document.getElementById('pw-confirm').value = '';
+    }
+
+    function toggleTheme(isDark) {
+      if (isDark) { document.body.classList.add('dark-theme'); }
+    }
+  </script>
+
+<script>
+  if (localStorage.getItem('mems_alerts_cleared') === 'true') {
+    document.querySelectorAll('.notif-badge').forEach(b => b.style.display = 'none');
+    
+    // For dashboard
+    const alertList = document.querySelector('.alert-list');
+    if (alertList) {
+      alertList.innerHTML = '<div style="padding: 24px; text-align: center; color: #64748b; font-size: 13px;">All caught up! No active alerts.</div>';
+    }
+    
+    // For inventory
+    const alertBanner = document.getElementById('alertBanner');
+    if (alertBanner) {
+      alertBanner.style.display = 'none';
+    }
+  }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.querySelector('input[type="search"]');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    
+    // Find all table rows in the main data table
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(tr => {
+      // Don't filter rows inside small widgets or modals if we only want main table
+      // but usually there's only one main table or we can just filter all.
+      // Let's ensure it's not a modal table if possible, or just filter all for simplicity.
+      if (tr.closest('.modal')) return;
+      
+      const text = tr.textContent.toLowerCase();
+      tr.style.display = text.includes(term) ? '' : 'none';
+    });
+    
+    // Also support card grids if they exist (e.g., .device-card)
+    const cards = document.querySelectorAll('.device-card, .part-card, .grid > div');
+    cards.forEach(card => {
+      if (card.closest('.modal') || card.classList.contains('mini-stat')) return;
+      const text = card.textContent.toLowerCase();
+      card.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+});
+</script>
+
+<script src="js/session.js"></script>
+<script>if(window.MEMSSession)window.MEMSSession.requireAuth(['admin']);</script>
+<script src="js/i18n.js"></script>
+</body>
+
+</html>

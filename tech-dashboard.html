@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="MEMS Technician Dashboard"/>
+  <title>Dashboard — MEMS Technician</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23F59E0B'/><path d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{display:flex;min-height:100vh;background:#0F1117;color:#E2E8F0;font-family:'Inter',system-ui,sans-serif;font-size:0.9rem;overflow-x:hidden;}
+    .sidebar{width:240px;min-width:240px;background:#131720;border-right:1px solid #1F2A40;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 18px;border-bottom:1px solid #1F2A40;}
+    .sidebar-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#F59E0B,#F97316);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sidebar-brand-icon svg{width:18px;height:18px;color:#fff;}
+    .sidebar-brand-name{font-size:1rem;font-weight:700;color:#E2E8F0;}
+    .sidebar-brand-sub{font-size:0.65rem;color:#F59E0B;margin-top:1px;font-weight:600;}
+    .sidebar-role-badge{margin:10px 20px;padding:6px 12px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:8px;font-size:0.7rem;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:0.08em;text-align:center;}
+    .sidebar-nav{flex:1;padding:12px 0;}
+    .nav-section-label{font-size:0.65rem;font-weight:600;color:#5A6A85;text-transform:uppercase;letter-spacing:0.08em;padding:12px 20px 6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:#94A3B8;font-size:0.875rem;font-weight:500;cursor:pointer;border-left:3px solid transparent;text-decoration:none;}
+    .nav-item svg{width:17px;height:17px;flex-shrink:0;}
+    .nav-item:hover{background:#1A2235;color:#E2E8F0;}
+    .nav-item.active{background:rgba(245,158,11,0.12);color:#FCD34D;border-left-color:#F59E0B;font-weight:600;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid #1F2A40;display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#F97316);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:white;flex-shrink:0;}
+    .user-info{flex:1;min-width:0;}.user-name{font-size:0.8125rem;font-weight:600;color:#E2E8F0;}.user-role{font-size:0.7rem;color:#FCD34D;font-weight:600;}
+    .logout-btn{width:28px;height:28px;border-radius:6px;background:none;border:none;color:#5A6A85;cursor:pointer;display:flex;align-items:center;justify-content:center;}.logout-btn:hover{background:#1F2A40;color:#E2E8F0;}.logout-btn svg{width:16px;height:16px;}
+    .main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+    .topbar{height:60px;background:#131720;border-bottom:1px solid #1F2A40;display:flex;align-items:center;padding:0 28px;gap:16px;}
+    .topbar-title{font-size:1rem;font-weight:700;color:#E2E8F0;flex:1;}
+    .shift-chip{padding:4px 10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:99px;font-size:0.72rem;font-weight:700;color:#FCD34D;}
+    .notif-btn{position:relative;width:36px;height:36px;border-radius:8px;background:#1A2235;border:1px solid #1F2A40;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94A3B8;}.notif-btn svg{width:17px;height:17px;}
+    .topbar-date{font-size:0.8rem;color:#5A6A85;}
+    .page-body{flex:1;padding:28px;display:flex;flex-direction:column;gap:20px;}
+    .page-header h1{font-size:1.25rem;font-weight:700;color:#E2E8F0;}
+    .page-header p{font-size:0.8125rem;color:#5A6A85;margin-top:3px;}
+    
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+    .kpi-card{background:#181D2A;border:1px solid #1F2A40;border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;}
+    .kpi-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .kpi-icon svg{width:20px;height:20px;}
+    .kpi-icon.orange{background:rgba(245,158,11,0.15);color:#FCD34D;}
+    .kpi-icon.blue{background:rgba(59,114,246,0.15);color:#60A5FA;}
+    .kpi-icon.purple{background:rgba(168,85,247,0.15);color:#C084FC;}
+    .kpi-icon.green{background:rgba(34,197,94,0.15);color:#4ADE80;}
+    .kpi-value{font-size:1.5rem;font-weight:800;color:#E2E8F0;line-height:1;}
+    .kpi-label{font-size:0.78rem;color:#5A6A85;font-weight:500;margin-top:3px;}
+    
+    .task-panel{background:#181D2A;border:1px solid #1F2A40;border-radius:12px;overflow:hidden;}
+    .task-header{padding:16px 20px;border-bottom:1px solid #1F2A40;display:flex;justify-content:space-between;align-items:center;}
+    .task-header h2{font-size:1rem;font-weight:700;color:#E2E8F0;}
+    .task-list{display:flex;flex-direction:column;}
+    .task-item{padding:16px 20px;border-bottom:1px solid #1F2A40;display:flex;align-items:center;gap:16px;transition:background 0.15s;}
+    .task-item:hover{background:#1A2235;}
+    .task-item:last-child{border-bottom:none;}
+    .task-pri{width:4px;height:32px;border-radius:4px;}
+    .task-pri.high{background:#F87171;}
+    .task-pri.med{background:#F59E0B;}
+    .task-pri.low{background:#4ADE80;}
+    .task-info{flex:1;min-width:0;}
+    .task-title{font-size:0.9rem;font-weight:700;color:#E2E8F0;}
+    .task-sub{font-size:0.78rem;color:#94A3B8;margin-top:4px;display:flex;gap:12px;align-items:center;}
+    .task-badge{padding:2px 8px;border-radius:99px;font-size:0.65rem;font-weight:700;}
+    .task-badge.todo{background:rgba(59,114,246,0.15);color:#60A5FA;}
+    .task-badge.prog{background:rgba(245,158,11,0.15);color:#FCD34D;}
+    .task-badge.wait{background:rgba(139,92,246,0.15);color:#A78BFA;}
+    .btn-update{padding:6px 14px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:8px;color:#FCD34D;font-size:0.75rem;font-weight:600;cursor:pointer;}
+    .btn-update:hover{background:rgba(245,158,11,0.2);}
+    
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:1000;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#181D2A;border:1px solid #1F2A40;border-radius:14px;width:480px;}
+    .modal-header{padding:18px 22px;border-bottom:1px solid #1F2A40;display:flex;justify-content:space-between;}
+    .modal-header h3{font-size:1rem;color:#E2E8F0;font-weight:700;}
+    .modal-body{padding:22px;display:flex;flex-direction:column;gap:14px;}
+    .modal-footer{padding:16px 22px;border-top:1px solid #1F2A40;display:flex;justify-content:flex-end;gap:10px;}
+    .form-group label{font-size:0.8rem;color:#94A3B8;font-weight:600;display:block;margin-bottom:6px;}
+    .form-select,.form-input,.form-textarea{width:100%;background:#1A2235;border:1px solid #1F2A40;color:#E2E8F0;padding:10px 12px;border-radius:8px;font-size:0.875rem;outline:none;}
+    .form-select:focus{border-color:#F59E0B;}
+    .form-textarea{min-height:80px;resize:vertical;}
+    .btn-ghost{padding:8px 16px;background:none;border:1px solid #1F2A40;border-radius:8px;color:#94A3B8;font-size:0.8125rem;font-weight:600;cursor:pointer;}
+    .btn-primary{padding:8px 16px;background:#F59E0B;border:none;border-radius:8px;color:#fff;font-size:0.8125rem;font-weight:600;cursor:pointer;}
+    .btn-primary:hover{background:#D97706;}
+    
+    #toast{position:fixed;bottom:28px;right:28px;background:#F59E0B;color:white;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:2000;}
+    #toast.show{transform:translateY(0);opacity:1;}
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18"/></svg></div>
+      <div><div class="sidebar-brand-name">MEMS</div><div class="sidebar-brand-sub">Technician Portal</div></div>
+    </div>
+    <div class="sidebar-role-badge">Biomedical Tech</div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">My Workspace</div>
+      <a href="tech-dashboard.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm10.5 0A2.25 2.25 0 0116.5 3.75h2.25A2.25 2.25 0 0121 6v2.25a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm10.5 0a2.25 2.25 0 012.25-2.25h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"/></svg>Dashboard</a>
+      <a href="tech-workorders.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375"/></svg>My Work Orders</a>
+      <a href="tech-devices.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3"/></svg>Equipment Catalog</a>
+      <a href="tech-inventory.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>Spare Parts lookup</a>
+      <a href="tech-notifications.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>Notifications</a>
+    <div class="nav-section-label">Account</div>
+      <a href="tech-profile.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>My Profile</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-avatar">AH</div>
+      <div class="user-info"><div class="user-name">Ahmed Hassan</div><div class="user-role">Biomedical Tech</div></div>
+      <a href="index.html" class="logout-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg></a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Technician Dashboard</span>
+      <span class="shift-chip">Morning Shift (07:00-15:00)</span>
+      <button class="notif-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg></button>
+      <span class="topbar-date" id="topbar-date"></span>
+    </header>
+    
+    <main class="page-body">
+      <div class="page-header">
+        <h1>Welcome back, Ahmed</h1>
+        <p>You have 3 active tasks assigned to you today.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg></div><div><div class="kpi-value" id="kpi-assigned">3</div><div class="kpi-label">Active Tasks</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><div class="kpi-value" id="kpi-due">2</div><div class="kpi-label">Due Today</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg></div><div><div class="kpi-value" id="kpi-waiting">1</div><div class="kpi-label">Waiting on Parts</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><div class="kpi-value" id="kpi-completed">9</div><div class="kpi-label">Completed (Month)</div></div></div>
+      </div>
+
+      <div class="task-panel">
+        <div class="task-header">
+          <h2>My Task Queue</h2>
+          <button class="btn-ghost" style="padding:4px 10px;font-size:0.75rem;" onclick="location.href='tech-workorders.html'">View All</button>
+        </div>
+        <div class="task-list" id="task-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Update Modal -->
+  <div class="modal-overlay" id="updateModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Update Work Order</h3>
+        <button class="btn-ghost" style="padding:4px;" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Status</label><select class="form-select" id="upd-status"><option value="In Progress">In Progress</option><option value="Waiting on Parts">Waiting on Parts</option><option value="Completed / Solved">Completed / Solved (Sent for Approval)</option></select></div>
+        <div class="form-group"><label>Hours Logged</label><input type="number" class="form-input" id="upd-hours" min="0.5" step="0.5" value="1.0"/></div>
+        <div class="form-group"><label>Work Notes</label><textarea class="form-textarea" id="upd-notes" placeholder="Describe work performed..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitUpdate()">Save Update</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+let activeWO = null;
+
+function openUpdateModal(wo, device) {
+  activeWO = wo;
+  document.getElementById('modal-title').textContent = `Update ${wo}`;
+  document.getElementById('upd-notes').value = '';
+  document.getElementById('updateModal').classList.add('open');
+}
+
+function submitUpdate() {
+  const status = document.getElementById('upd-status').value;
+  const woNum = activeWO;
+  
+  let wos = JSON.parse(localStorage.getItem('mems_supervisor_wos') || '[]');
+  const w = wos.find(x => x.id === woNum);
+  if (w) {
+    let newStatus = status;
+    if (status.includes('Completed') || status.includes('Solved') || status.includes('مكتمل')) {
+      newStatus = 'Pending Approval';
+    } else if (status.includes('Waiting on Parts') || status.includes('بانتظار قطع الغيار')) {
+      newStatus = 'Waiting Parts';
+    } else if (status.includes('In Progress') || status.includes('قيد التنفيذ')) {
+      newStatus = 'In Progress';
+    }
+    
+    w.status = newStatus;
+    localStorage.setItem('mems_supervisor_wos', JSON.stringify(wos));
+    
+    // Sync to department
+    let reqs = JSON.parse(localStorage.getItem('mems_dept_requests') || '[]');
+    let r = reqs.find(x => x.id === woNum);
+    if (r) {
+      r.status = newStatus;
+      localStorage.setItem('mems_dept_requests', JSON.stringify(reqs));
+    }
+  }
+  
+  closeModal();
+  showToast('✓ ' + activeWO + ' updated.');
+  renderTasks();
+}
+
+function closeModal() { document.getElementById('updateModal').classList.remove('open'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+
+<script>
+function renderTasks() {
+  let userName = "Ahmed Hassan";
+  if (window.MEMSSession && window.MEMSSession.getSession) {
+    const u = window.MEMSSession.getSession();
+    if (u) userName = u.name || u.firstName + ' ' + u.lastName;
+  }
+  
+  // Set welcome message
+  document.querySelector('.page-header h1').textContent = `Welcome back, ${userName.split(' ')[0]}`;
+
+  if (!localStorage.getItem('mems_supervisor_wos')) {
+    const DEFAULT_WOS = [
+      {id:'WO-2041',device:'ICU Ventilator',      type:'Repair',                 dept:'ICU', priority:'High',   tech:'Unassigned', status:'Unassigned', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2042',device:'Patient Monitor #5',  type:'Repair',                 dept:'ICU', priority:'High',   tech:'Unassigned', status:'Unassigned', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2043',device:'O2 Flow Meter',       type:'Repair',                 dept:'ER',  priority:'Medium', tech:'Unassigned', status:'Unassigned', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2040',device:'Defibrillator AED-9', type:'Preventive Maintenance', dept:'ER',  priority:'Medium', tech:'J. Smith',   status:'In Progress', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2039',device:'ECG Monitor E-12',    type:'Repair',                 dept:'ICU', priority:'High',   tech:'A. Hassan',  status:'In Progress', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2037',device:'Infusion Pump IP-11', type:'Repair',                 dept:'ICU', priority:'Low',    tech:'M. Youssef', status:'In Progress', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2035',device:'BP Monitor B-04',     type:'Preventive Maintenance', dept:'ER',  priority:'Low',    tech:'R. Ibrahim', status:'In Progress', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2034',device:'Pulse Oximeter P-8',  type:'Repair',                 dept:'ICU', priority:'Medium', tech:'S. Khalid',  status:'In Progress', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2038',device:'Defibrillator AED-7', type:'Repair',                 dept:'ER',  priority:'High',   tech:'J. Smith',   status:'Pending Approval', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2036',device:'Patient Monitor #3',  type:'Repair',                 dept:'ICU', priority:'High',   tech:'A. Hassan',  status:'Pending Approval', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2033',device:'Infusion Pump IP-22', type:'Preventive Maintenance', dept:'ICU', priority:'Medium', tech:'S. Khalid',  status:'Pending Approval', created: new Date().toISOString().split('T')[0]},
+      {id:'WO-2030',device:'O2 Concentrator',     type:'Repair',                 dept:'ER',  priority:'Low',    tech:'M. Youssef', status:'Closed', created: new Date().toISOString().split('T')[0]},
+    ];
+    localStorage.setItem('mems_supervisor_wos', JSON.stringify(DEFAULT_WOS));
+  }
+
+  let wos = JSON.parse(localStorage.getItem('mems_supervisor_wos') || '[]');
+  
+  // Find tasks assigned to this technician (or their short name "A. Hassan")
+  const shortName = userName.split(' ')[0].charAt(0) + '. ' + userName.split(' ').pop();
+  let sessionEmail = '';
+  if (window.MEMSSession && window.MEMSSession.getSession) {
+    const u = window.MEMSSession.getSession();
+    if (u) sessionEmail = u.email;
+  }
+  let myTasks = wos.filter(w => {
+    const t = w.tech || w.assignee || w.assigned || '';
+    return t === userName || t === shortName || (sessionEmail && t === sessionEmail);
+  });
+  // Hide both Closed and Pending Approval (since the tech has finished their part)
+  let activeTasks = myTasks.filter(w => w.status !== 'Closed' && w.status !== 'Pending Approval');
+  let completedCount = myTasks.filter(w => w.status === 'Closed' || w.status === 'Pending Approval').length;
+  
+  document.getElementById('kpi-assigned').textContent = activeTasks.length;
+  document.querySelector('.page-header p').textContent = `You have ${activeTasks.length} active tasks assigned to you today.`;
+  document.getElementById('kpi-completed').textContent = completedCount;
+  
+  let dueCount = activeTasks.filter(w => w.status === 'In Progress' || w.status === 'Unassigned').length;
+  if(document.getElementById('kpi-due')) document.getElementById('kpi-due').textContent = dueCount;
+  
+  let waitCount = activeTasks.filter(w => w.status === 'Waiting Parts').length;
+  if(document.getElementById('kpi-waiting')) document.getElementById('kpi-waiting').textContent = waitCount;
+
+  const taskList = document.getElementById('task-list');
+  if (!activeTasks.length) {
+    taskList.innerHTML = '<div style="text-align:center;padding:24px;color:#5A6A85;">No active tasks — great work! 🎉</div>';
+  } else {
+    taskList.innerHTML = activeTasks.map(w => {
+      let badgeCls = 'todo';
+      let badgeText = 'To Do';
+      let badgeStyle = '';
+      if (w.status === 'In Progress') { badgeCls = 'prog'; badgeText = 'In Progress'; }
+      if (w.status === 'Waiting Parts') { badgeCls = 'wait'; badgeText = 'Waiting Parts'; badgeStyle = 'color:#C084FC;background:rgba(168,85,247,0.15);'; }
+      if (w.status === 'Pending Approval') { badgeCls = 'prog'; badgeText = 'Pending Approval'; }
+      
+      let priCls = w.priority === 'High' ? 'high' : w.priority === 'Medium' ? 'med' : 'low';
+      
+      return `
+        <div class="task-item" id="task-${w.id}">
+          <div class="task-pri ${priCls}"></div>
+          <div class="task-info">
+            <div class="task-title">${w.id} — ${w.device}</div>
+            <div class="task-sub">
+              <span class="task-badge ${badgeCls}" style="${badgeStyle}">${badgeText}</span>
+              <span>${w.priority} Priority</span>
+              <span>${w.dept} Dept</span>
+            </div>
+          </div>
+          <button class="btn-update" onclick="openUpdateModal('${w.id}', '${w.device}')">Quick Update</button>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  if (typeof applyTranslations === 'function') setTimeout(applyTranslations, 10);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTasks();
+});
+</script>
+
+<script src="js/session.js"></script>
+<script>if(window.MEMSSession)window.MEMSSession.requireAuth(['technician']);</script>
+<script src="js/i18n.js"></script>
+</body>
+</html>
