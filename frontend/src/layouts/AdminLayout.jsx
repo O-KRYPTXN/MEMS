@@ -1,0 +1,39 @@
+import { Outlet, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import Sidebar from '../components/layout/Sidebar'
+import Topbar from '../components/layout/Topbar'
+
+const pageTitles = {
+  '/admin/dashboard': 'Admin Dashboard',
+  '/admin/devices': 'Medical Devices',
+  '/admin/devices/add': 'Add New Device',
+  '/admin/work-orders': 'Work Orders',
+  '/admin/preventive-maintenance': 'Preventive Maintenance',
+  '/admin/inventory': 'Spare Parts Inventory',
+  '/admin/users': 'Users & Permissions',
+  '/admin/reports': 'Reports',
+  '/admin/profile': 'Profile',
+}
+
+const AdminLayout = () => {
+  const { pathname } = useLocation()
+  const pageTitle = pageTitles[pathname] ?? 'MEMS'
+  const [searchTerm, setSearchTerm] = useState('')
+
+  return (
+    <div className="flex min-h-screen bg-[#0F1117]">
+      <div className="hidden md:block fixed top-0 left-0 h-screen z-30">
+        <Sidebar />
+      </div>
+
+      <main className="flex-1 flex flex-col min-h-screen ml-0 md:ml-[240px] bg-[#0F1117]">
+        <Topbar title={pageTitle} onSearch={setSearchTerm} />
+        <div className="flex-1 flex flex-col gap-6 p-7">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  )
+}
+
+export default AdminLayout
