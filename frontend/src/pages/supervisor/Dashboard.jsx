@@ -1,2 +1,447 @@
-const Dashboard = () => <div className='p-6'><h1 className='text-2xl font-bold'>Dashboard</h1></div>
-export default Dashboard
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { useForm } from 'react-hook-form'
+import clsx from 'clsx'
+import KPICard from '../../components/ui/KPICard'
+import StatusBadge from '../../components/ui/StatusBadge'
+import AlertItem from '../../components/ui/AlertItem'
+import { ROUTES } from '../../constants/routes'
+
+// --- MOCK DATA ---
+const pendingApprovals = [
+  { id: 'WO-2038', device: 'Defibrillator AED-7', tech: 'J. Smith', type: 'Repair', dept: 'ER' },
+  { id: 'WO-2036', device: 'Patient Monitor #3', tech: 'A. Hassan', type: 'Repair', dept: 'ICU' },
+  { id: 'WO-2033', device: 'Infusion Pump IP-22', tech: 'S. Khalid', type: 'Preventive Maintenance', dept: 'ICU' },
+]
+
+const teamData = [
+  { id: 'tech-1', name: 'J. Smith', initials: 'JS', color: '#3B72F6', tasks: 2, maxTasks: 5, status: 'busy' },
+  { id: 'tech-2', name: 'A. Hassan', initials: 'AH', color: '#14B8A6', tasks: 1, maxTasks: 5, status: 'online' },
+  { id: 'tech-3', name: 'M. Youssef', initials: 'MY', color: '#A855F7', tasks: 3, maxTasks: 5, status: 'busy' },
+  { id: 'tech-4', name: 'S. Khalid', initials: 'SK', color: '#F59E0B', tasks: 0, maxTasks: 5, status: 'online' },
+  { id: 'tech-5', name: 'R. Ibrahim', initials: 'RI', color: '#EF4444', tasks: 1, maxTasks: 5, status: 'online' },
+]
+
+const donutData = [
+  { label: 'Completed', value: 12, color: '#4ADE80' },
+  { label: 'In Progress', value: 5, color: '#FCD34D' },
+  { label: 'Pending Approval', value: 3, color: '#14B8A6' },
+  { label: 'Overdue', value: 4, color: '#F87171' },
+]
+
+const departmentAlerts = [
+  { type: 'crit', title: 'ICU Ventilator — Reported Faulty', sub: 'WO-2041 auto-created · Unassigned', time: '2m ago' },
+  { type: 'warn', title: 'PM Due: Defibrillator AED-7', sub: 'Scheduled maintenance overdue by 2 days', time: '1h ago' },
+  { type: 'info', title: 'WO-2038 completed by J. Smith', sub: 'Defibrillator repaired · Awaiting your approval', time: '3h ago' },
+]
+
+// --- ICONS ---
+const icons = {
+  crit: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />,
+  warn: <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />,
+  info: <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+}
+
+export default function SupervisorDashboard() {
+  const navigate = useNavigate()
+  const [approvals, setApprovals] = useState(pendingApprovals)
+  const [alertsDismissed, setAlertsDismissed] = useState(false)
+  const [showAssignModal, setShowAssignModal] = useState(false)
+  const [showApproveModal, setShowApproveModal] = useState(false)
+  const [activeApproval, setActiveApproval] = useState(null)
+  const [toast, setToast] = useState({ show: false, msg: '', color: '#14B8A6' })
+  const [approveNotes, setApproveNotes] = useState('')
+
+  const { register: regAssign, handleSubmit: submitAssign, reset: resetAssign } = useForm()
+
+  const showToast = (msg, color = '#14B8A6') => {
+    setToast({ show: true, msg, color })
+    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500)
+  }
+
+  const handleAssign = (data) => {
+    if (!data.woId || !data.techId) {
+      showToast('Please select a work order and technician', '#F87171')
+      return
+    }
+    const tech = teamData.find(t => t.id === data.techId)
+    showToast(`✓ Work order assigned to ${tech?.name || 'Technician'}`)
+    setShowAssignModal(false)
+    resetAssign()
+  }
+
+  const handleApprove = () => {
+    setApprovals(prev => prev.filter(w => w.id !== activeApproval.id))
+    setShowApproveModal(false)
+    showToast('✓ Work Order approved — device returned to service!')
+  }
+
+  const handleReject = () => {
+    setShowApproveModal(false)
+    showToast('⚠ Work Order returned to technician for revision', '#F59E0B')
+  }
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-[#181D2A] border border-[#1F2A40] p-2 rounded shadow-lg text-xs">
+          {payload.map((entry, index) => (
+            <p key={index} style={{ color: entry.color }} className="font-semibold">
+              {entry.payload.label}: {entry.value}
+            </p>
+          ))}
+        </div>
+      )
+    }
+    return null
+  }
+
+  return (
+    <>
+      <div className="flex flex-col gap-6 relative pb-10">
+        {/* Page Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Good morning, Supervisor 👋</h1>
+            <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">
+              Here's your department status for today — {approvals.length} work orders need your attention
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowAssignModal(true)} 
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors shadow-lg shadow-teal-500/20"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+            Assign Work Order
+          </button>
+        </div>
+
+        {/* Approval Banner */}
+        {approvals.length > 0 && (
+          <div className="p-5 flex items-center justify-between gap-4 rounded-xl border border-[rgba(20,184,166,0.3)] shadow-[0_4px_24px_rgba(20,184,166,0.06)]" style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.12), rgba(14,165,233,0.08))' }}>
+            <div className="flex items-center gap-5 min-w-0">
+              <div className="text-[2.5rem] font-extrabold text-[#14B8A6] leading-none shrink-0">{approvals.length}</div>
+              <div>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Orders Pending Your Approval</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-1">Technicians have completed these — review and approve to return devices to service</p>
+              </div>
+            </div>
+            <button onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="shrink-0 flex items-center gap-1.5 px-5 py-2.5 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors shadow-lg shadow-teal-500/20">
+              Review Now 
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+            </button>
+          </div>
+        )}
+
+        {/* KPI Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="cursor-pointer">
+            <KPICard title="Open Work Orders" value={5 + approvals.length} trend="warn" trendLabel="+2" iconPath="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375" iconVariant="orange" />
+          </div>
+          <div onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="cursor-pointer">
+            <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl p-5 flex flex-col relative overflow-hidden transition-all duration-300 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-teal-500/10">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[rgba(20,184,166,0.15)] text-[#14B8A6]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div className="flex items-center gap-1 text-[#4ADE80] font-semibold text-[0.75rem] bg-[rgba(74,222,128,0.1)] px-2 py-0.5 rounded-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" /></svg>+1</div>
+              </div>
+              <div className="text-[1.75rem] font-bold text-[#E2E8F0] leading-tight">{approvals.length}</div>
+              <div className="text-[0.8125rem] text-[#5A6A85] font-semibold mt-1">Pending Your Approval</div>
+            </div>
+          </div>
+          <div onClick={() => navigate(ROUTES.SUPERVISOR_DEVICES)} className="cursor-pointer">
+            <KPICard title="Faulty Devices" value="4" trend="down" trendLabel="Critical" danger iconPath="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" iconVariant="red" />
+          </div>
+          <div onClick={() => navigate(ROUTES.SUPERVISOR_TEAM)} className="cursor-pointer">
+            <KPICard title="Active Technicians" value={teamData.filter(t => t.status !== 'offline').length} trendLabel="Active" iconPath="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" iconVariant="green" />
+          </div>
+        </div>
+
+        {/* Two-Col: Approvals & Alerts */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-4">
+          <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-[#1F2A40] flex justify-between items-center">
+              <div>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Orders — Pending Approval</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Completed by technicians — awaiting supervisor sign-off</p>
+              </div>
+              <button onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="text-[13px] font-semibold text-[#14B8A6] hover:text-[#0D9488]">View All</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">WO #</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Device</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Technician</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Type</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Status</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1F2A40]">
+                  {approvals.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-[#5A6A85] text-sm">✓ All work orders approved</td>
+                    </tr>
+                  ) : approvals.map(wo => (
+                    <tr key={wo.id} className="hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                      <td className="p-4 font-mono text-[12px] text-[#14B8A6] font-semibold">{wo.id}</td>
+                      <td className="p-4 text-[13px] text-[#E2E8F0] font-medium">{wo.device}</td>
+                      <td className="p-4 text-[13px] text-[#94A3B8]">{wo.tech}</td>
+                      <td className="p-4">
+                        <StatusBadge variant={wo.type === 'Repair' ? 'high' : 'medium'} label={wo.type === 'Repair' ? 'Repair' : 'PM'} />
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[rgba(20,184,166,0.12)] text-[#14B8A6]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                          Pending Approval
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button 
+                          onClick={() => { setActiveApproval(wo); setShowApproveModal(true) }}
+                          className="px-3 py-1.5 bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] rounded-md text-[11.5px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors"
+                        >
+                          Approve
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-[#1F2A40] flex justify-between items-center">
+              <div>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Department Alerts</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Active alerts for ICU & ER</p>
+              </div>
+              {!alertsDismissed && (
+                <button onClick={() => setAlertsDismissed(true)} className="text-[11px] font-semibold text-[#5A6A85] hover:text-[#94A3B8] uppercase tracking-wider">Mark all read</button>
+              )}
+            </div>
+            <div className="flex-1 p-5 flex flex-col gap-3">
+              {alertsDismissed ? (
+                <div className="py-10 text-center text-[#5A6A85] text-sm">✓ All caught up! No new alerts.</div>
+              ) : (
+                departmentAlerts.map((alert, i) => (
+                  <AlertItem 
+                    key={i} 
+                    type={alert.type} 
+                    title={alert.title} 
+                    message={alert.sub} 
+                    time={alert.time}
+                    iconOverride={
+                      alert.type === 'info' ? (
+                        <div className="w-8 h-8 rounded-full bg-[rgba(20,184,166,0.12)] text-[#14B8A6] flex items-center justify-center shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">{icons.info}</svg>
+                        </div>
+                      ) : (
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${alert.type === 'crit' ? 'bg-[rgba(239,68,68,0.15)] text-[#F87171]' : 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]'}`}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">{alert.type === 'crit' ? icons.crit : icons.warn}</svg>
+                        </div>
+                      )
+                    }
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Device Requests Panel */}
+        <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
+          <div className="p-5 border-b border-[#1F2A40]">
+            <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Device Requests — Pending Approval</h3>
+            <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Submitted by technicians — awaiting your approval before ordering</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Request ID</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Device</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Quantity</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Technician</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Work Order</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Date</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-[#5A6A85] text-sm">No pending device requests</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Two-Col: Workload & Donut */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-4">
+          <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-[#1F2A40] flex justify-between items-center">
+              <div>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Team Workload</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Active assignments per technician</p>
+              </div>
+              <button onClick={() => navigate(ROUTES.SUPERVISOR_TEAM)} className="text-[13px] font-semibold text-[#14B8A6] hover:text-[#0D9488]">Manage Team</button>
+            </div>
+            <div className="flex-1 flex flex-col">
+              {teamData.map(tech => (
+                <div key={tech.id} className="flex items-center gap-4 px-5 py-4 border-b border-[#1A2235] last:border-0 hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ backgroundColor: tech.color }}>
+                      {tech.initials}
+                    </div>
+                    <div className={clsx("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#181D2A]", tech.status === 'online' ? 'bg-[#4ADE80]' : tech.status === 'busy' ? 'bg-[#FCD34D]' : 'bg-[#5A6A85]')}></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-medium text-[#E2E8F0] truncate">{tech.name}</div>
+                    <div className="text-[11.5px] text-[#5A6A85] truncate">{tech.tasks} active task{tech.tasks !== 1 && 's'}</div>
+                  </div>
+                  <div className="flex items-center gap-3 w-[120px]">
+                    <div className="flex-1 h-[6px] bg-[#1F2A40] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(tech.tasks / tech.maxTasks) * 100}%`, backgroundColor: tech.color }}></div>
+                    </div>
+                    <span className="text-[13px] font-bold text-[#E2E8F0] w-3">{tech.tasks}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-[#1F2A40]">
+              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Order Status</h3>
+              <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">This month — dept overview</p>
+            </div>
+            <div className="flex-1 flex flex-col justify-center min-h-[260px] pt-4">
+              <div className="relative h-[200px] w-full">
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[1.5rem] font-extrabold text-[#E2E8F0]">{donutData.reduce((a, b) => a + b.value, 0)}</span>
+                  <span className="text-[0.7rem] text-[#5A6A85] font-semibold uppercase tracking-wider">Total WOs</span>
+                </div>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={donutData} innerRadius={60} outerRadius={80} paddingAngle={4} dataKey="value" nameKey="label" stroke="none">
+                      {donutData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-col gap-2.5 px-6 pb-5 mt-4">
+                {donutData.map(d => (
+                  <div key={d.label} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }}></div>
+                      <span className="text-[12.5px] text-[#94A3B8]">{d.label}</span>
+                    </div>
+                    <span className="text-[13px] font-bold text-[#E2E8F0]">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* TOAST NOTIFICATION */}
+      <div 
+        className={clsx(
+          "fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300",
+          toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+        )}
+        style={{ backgroundColor: toast.color }}
+      >
+        {toast.msg}
+      </div>
+
+      {/* ASSIGN WO MODAL */}
+      {showAssignModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.7)] backdrop-blur-[2px]" onClick={() => setShowAssignModal(false)}>
+          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
+              <h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Assign Work Order</h3>
+              <button onClick={() => setShowAssignModal(false)} className="text-[#64748B] hover:text-[#E2E8F0] transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <form onSubmit={submitAssign(handleAssign)} className="p-6 flex flex-col gap-4">
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Work Order</label>
+                <select {...regAssign('woId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
+                  <option value="">Select work order...</option>
+                  {approvals.map(wo => (
+                    <option key={wo.id} value={wo.id}>{wo.id} — {wo.device} ({wo.dept})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Assign To</label>
+                <select {...regAssign('techId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
+                  <option value="">Select technician...</option>
+                  {teamData.map(t => (
+                    <option key={t.id} value={t.id}>{t.name} — {t.tasks} active tasks</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Priority</label>
+                <select {...regAssign('priority')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]" defaultValue="Medium">
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Special Instructions (Optional)</label>
+                <textarea {...regAssign('notes')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add any special instructions..."></textarea>
+              </div>
+              <div className="flex gap-3 mt-2">
+                <button type="button" onClick={() => setShowAssignModal(false)} className="px-4 py-2 bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-bold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">Assign Technician</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* APPROVE WO MODAL */}
+      {showApproveModal && activeApproval && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.7)] backdrop-blur-[2px]" onClick={() => setShowApproveModal(false)}>
+          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
+              <h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Approve {activeApproval.id}</h3>
+              <button onClick={() => setShowApproveModal(false)} className="text-[#64748B] hover:text-[#E2E8F0] transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div className="p-6 flex flex-col gap-5">
+              <div className="bg-[#1A2235] rounded-xl p-4 flex flex-col gap-2.5">
+                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Work Order</span><span className="font-semibold text-[#14B8A6] font-mono">{activeApproval.id}</span></div>
+                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Device</span><span className="font-semibold text-[#E2E8F0]">{activeApproval.device}</span></div>
+                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Technician</span><span className="font-semibold text-[#E2E8F0]">{activeApproval.tech}</span></div>
+                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Type</span><span className="font-semibold text-[#E2E8F0]">{activeApproval.type}</span></div>
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Supervisor Notes</label>
+                <textarea value={approveNotes} onChange={e => setApproveNotes(e.target.value)} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add approval notes or observations..."></textarea>
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-[#1F2A40] bg-[#131720]">
+              <button onClick={handleReject} className="px-4 py-2 bg-transparent border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">Reject & Return</button>
+              <button onClick={() => setShowApproveModal(false)} className="px-4 py-2 bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-bold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors">Cancel</button>
+              <button onClick={handleApprove} className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">✓ Approve & Close WO</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}

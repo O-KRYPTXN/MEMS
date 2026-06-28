@@ -7,8 +7,9 @@ export const useAuthStore = create((set) => ({
     id: '1',
     name: 'Ahmed Hassan',
     email: 'ahmed@hospital.com',
-    role: ROLES.ADMIN,
-    department: 'Administration',
+    //role: ROLES.ADMIN,
+    role: ROLES.SUPERVISOR,
+    department: 'ICU',
     initials: 'AH',
   },
 
