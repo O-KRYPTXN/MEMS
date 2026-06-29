@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialDevices = [
   { id: 'DEV-0101', name: 'ICU Ventilator V-12', dept: 'ICU', status: 'Operational', lastPM: '2026-02-10', nextPM: '2026-05-10', category: 'Respiratory', type: 'Ventilator' },
@@ -100,53 +101,55 @@ export default function TechDevices() {
         </div>
       )}
 
-      {showFaultModal && selectedDevice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowFaultModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1rem] font-bold text-[#E2E8F0]">Report Fault: {selectedDevice.id}</h3><button onClick={() => setShowFaultModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleReportFault} className="p-6 flex flex-col gap-[14px]">
-              <div>
-                <label className={labelCls}>Issue Type</label>
-                <select className={inputCls} defaultValue="Electrical">
-                  <option value="Electrical">Electrical</option>
-                  <option value="Mechanical">Mechanical</option>
-                  <option value="Calibration">Calibration</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Description</label>
-                <textarea className={inputCls + " min-h-[100px] resize-y"} placeholder="Describe the fault..." required></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowFaultModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.25)] text-[#F87171] hover:bg-[rgba(239,68,68,0.2)] rounded-lg text-[13px] font-bold transition-colors">Submit Fault</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showFaultModal && !!selectedDevice}
+        onClose={() => setShowFaultModal(false)}
+        title={selectedDevice ? `Report Fault: ${selectedDevice.id}` : 'Report Fault'}
+        maxWidth="420px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowFaultModal(false)} />
+            <button type="submit" form="fault-form" className="px-4 py-2 bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.25)] text-[#F87171] hover:bg-[rgba(239,68,68,0.2)] rounded-lg text-[13px] font-bold transition-colors">Submit Fault</button>
+          </>
+        }
+      >
+        <form id="fault-form" onSubmit={handleReportFault} className="flex flex-col gap-[14px] mt-1">
+          <div>
+            <label className={labelCls}>Issue Type</label>
+            <select className={inputCls} defaultValue="Electrical">
+              <option value="Electrical">Electrical</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Calibration">Calibration</option>
+            </select>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Description</label>
+            <textarea className={inputCls + " min-h-[100px] resize-y"} placeholder="Describe the fault..." required></textarea>
+          </div>
+        </form>
+      </Modal>
 
-      {showManualsModal && selectedDevice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowManualsModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1rem] font-bold text-[#E2E8F0]">Manuals: {selectedDevice.name}</h3><button onClick={() => setShowManualsModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <div className="p-6 flex flex-col gap-3">
-              {[
-                { title: 'User Manual', size: '2.4 MB', iconColor: 'text-[#F87171]' },
-                { title: 'Service Manual', size: '18.1 MB', iconColor: 'text-[#3B72F6]' },
-              ].map((m, i) => (
-                <div key={i} className="flex flex-row justify-between items-center p-4 border border-[#1F2A40] rounded-lg bg-[#131720]">
-                  <div className="flex flex-row items-center gap-3">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={`w-7 h-7 ${m.iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-                    <div><div className="font-semibold text-[#E2E8F0] text-sm">{m.title}</div><div className="text-xs text-[#94A3B8]">PDF • {m.size}</div></div>
-                  </div>
-                  <button onClick={() => showToast(`✓ ${m.title} download started...`)} className="px-3 py-1.5 text-[11.5px] font-bold bg-transparent border border-[#1F2A40] text-[#94A3B8] rounded-md hover:bg-[#1A2235] hover:text-[#E2E8F0] transition-colors">Download</button>
-                </div>
-              ))}
+      <Modal
+        isOpen={showManualsModal && !!selectedDevice}
+        onClose={() => setShowManualsModal(false)}
+        title={selectedDevice ? `Manuals: ${selectedDevice.name}` : 'Manuals'}
+        maxWidth="460px"
+      >
+        <div className="flex flex-col gap-3 mt-2">
+          {[
+            { title: 'User Manual', size: '2.4 MB', iconColor: 'text-[#F87171]' },
+            { title: 'Service Manual', size: '18.1 MB', iconColor: 'text-[#3B72F6]' },
+          ].map((m, i) => (
+            <div key={i} className="flex flex-row justify-between items-center p-4 border border-[#1F2A40] rounded-lg bg-[#131720]">
+              <div className="flex flex-row items-center gap-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={`w-7 h-7 ${m.iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                <div><div className="font-semibold text-[#E2E8F0] text-sm">{m.title}</div><div className="text-xs text-[#94A3B8]">PDF • {m.size}</div></div>
+              </div>
+              <button onClick={() => showToast(`✓ ${m.title} download started...`)} className="px-3 py-1.5 text-[11.5px] font-bold bg-transparent border border-[#1F2A40] text-[#94A3B8] rounded-md hover:bg-[#1A2235] hover:text-[#E2E8F0] transition-colors">Download</button>
             </div>
-          </div>
+          ))}
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

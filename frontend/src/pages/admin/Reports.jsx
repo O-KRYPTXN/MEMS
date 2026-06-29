@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell,
   BarChart, Bar, Legend
 } from 'recharts'
+import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
 import { generatedReports, quickReports } from '../../data/reports'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
@@ -362,55 +363,54 @@ export default function Reports() {
         </div>
       </div>
 
-      {showViewModal && selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.7)] backdrop-blur-[2px]" onClick={() => setShowViewModal(false)}>
-          <div className="w-full max-w-2xl bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b border-[#1F2A40] bg-[#1A2235]">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[rgba(59,130,246,0.15)] text-[#3B82F6] flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-                </div>
-                <div>
-                  <div className="text-[15px] font-bold text-[#E2E8F0]">Report Viewer</div>
-                  <div className="text-[12px] text-[#94A3B8] font-mono">{selectedReport.id} • {selectedReport.name}</div>
-                </div>
-              </div>
-              <button type="button" onClick={() => setShowViewModal(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1E293B] transition-colors">✕</button>
+      <Modal
+        isOpen={showViewModal && !!selectedReport}
+        onClose={() => setShowViewModal(false)}
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[rgba(59,130,246,0.15)] text-[#3B82F6] flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
             </div>
-            
-            <div className="p-6 bg-[#131720] h-[320px] overflow-y-auto text-[13px] text-[#E2E8F0] font-mono leading-relaxed">
-              <div className="mb-4 text-[#3B82F6] font-bold">► EXECUTIVE SUMMARY</div>
-              <p className="mb-6 text-[#94A3B8]">Generated on {formatDate(selectedReport.date)} by {selectedReport.by}. This document contains system-generated analytics for the category: {selectedReport.category.toUpperCase()}.</p>
-              
-              <div className="mb-4 text-[#3B82F6] font-bold">► REPORT DETAILS</div>
-              <div className="mb-6 space-y-2 text-[#94A3B8]">
-                <div>[SYS] Querying data warehouse... OK</div>
-                <div>[SYS] Applying filters for {selectedReport.category}... OK</div>
-                <div>[SYS] Formatting data as {selectedReport.format}... OK</div>
-                <br/>
-                <div className="border-l-2 border-[#1F2A40] pl-3 text-[#E2E8F0]">
-                  Row 1: Data point Alpha - Value: {Math.floor(Math.random() * 1000)}<br/>
-                  Row 2: Data point Beta - Value: {Math.floor(Math.random() * 1000)}<br/>
-                  Row 3: Data point Gamma - Value: {Math.floor(Math.random() * 1000)}<br/>
-                  Row 4: Data point Delta - Value: {Math.floor(Math.random() * 1000)}<br/>
-                  ...<br/>
-                  Row 128: Data point Omega - Value: {Math.floor(Math.random() * 1000)}
-                </div>
-              </div>
-
-              <div className="text-center mt-10 text-[#5A6A85] font-bold">*** END OF REPORT ***</div>
-            </div>
-
-            <div className="flex justify-end gap-3 p-4 border-t border-[#1F2A40] bg-[#181D2A]">
-              <button type="button" onClick={() => setShowViewModal(false)} className="px-4 py-2 bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0] transition-colors">Close</button>
-              <button type="button" onClick={() => { showToast(`Downloading ${selectedReport.id}...`); setShowViewModal(false); }} className="px-4 py-2 bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors flex items-center gap-2">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                Download {selectedReport.format}
-              </button>
+            <div>
+              <div className="text-[15px] font-bold text-[#E2E8F0] tracking-normal leading-tight">Report Viewer</div>
+              <div className="text-[12px] text-[#94A3B8] font-mono leading-tight mt-0.5">{selectedReport?.id} • {selectedReport?.name}</div>
             </div>
           </div>
+        }
+        maxWidth="42rem"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>
+            <button type="button" onClick={() => { showToast(`Downloading ${selectedReport?.id}...`); setShowViewModal(false); }} className="px-[20px] py-[10px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors flex items-center gap-[6px]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+              Download {selectedReport?.format}
+            </button>
+          </>
+        }
+      >
+        <div className="p-5 bg-[#131720] rounded-xl h-[320px] overflow-y-auto text-[13px] text-[#E2E8F0] font-mono leading-relaxed mt-1 border border-[#1F2A40]">
+          <div className="mb-4 text-[#3B82F6] font-bold">► EXECUTIVE SUMMARY</div>
+          <p className="mb-6 text-[#94A3B8]">Generated on {selectedReport && formatDate(selectedReport.date)} by {selectedReport?.by}. This document contains system-generated analytics for the category: {selectedReport?.category.toUpperCase()}.</p>
+          
+          <div className="mb-4 text-[#3B82F6] font-bold">► REPORT DETAILS</div>
+          <div className="mb-6 space-y-2 text-[#94A3B8]">
+            <div>[SYS] Querying data warehouse... OK</div>
+            <div>[SYS] Applying filters for {selectedReport?.category}... OK</div>
+            <div>[SYS] Formatting data as {selectedReport?.format}... OK</div>
+            <br/>
+            <div className="border-l-2 border-[#1F2A40] pl-3 text-[#E2E8F0]">
+              Row 1: Data point Alpha - Value: {Math.floor(Math.random() * 1000)}<br/>
+              Row 2: Data point Beta - Value: {Math.floor(Math.random() * 1000)}<br/>
+              Row 3: Data point Gamma - Value: {Math.floor(Math.random() * 1000)}<br/>
+              Row 4: Data point Delta - Value: {Math.floor(Math.random() * 1000)}<br/>
+              ...<br/>
+              Row 128: Data point Omega - Value: {Math.floor(Math.random() * 1000)}
+            </div>
+          </div>
+
+          <div className="text-center mt-10 text-[#5A6A85] font-bold">*** END OF REPORT ***</div>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

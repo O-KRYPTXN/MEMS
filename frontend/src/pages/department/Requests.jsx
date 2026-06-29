@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialRequests = [
   { id: 'DR-1045', device: 'ICU Ventilator V500', desc: 'Screen flickering intermittently during operation.', date: '25/06/2026', status: 'In Progress', techMessage: 'Parts ordered, expected tomorrow.' },
@@ -155,39 +156,40 @@ export default function DeptRequests() {
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Report Device Problem</h3>
-              <button onClick={() => setShowModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-[14px]">
-              <div>
-                <label className={labelCls}>Affected Device</label>
-                <select value={formData.device} onChange={e => setFormData({ ...formData, device: e.target.value })} className={inputCls} required>
-                  <option value="" disabled>Select a device...</option>
-                  {mockDevices.map((d, i) => <option key={i} value={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Problem Description</label>
-                <textarea 
-                  value={formData.desc} 
-                  onChange={e => setFormData({ ...formData, desc: e.target.value })} 
-                  className={inputCls + " min-h-[100px] resize-y"} 
-                  placeholder="Please describe the issue in detail..." 
-                  required
-                ></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#EC4899] hover:bg-[#BE185D] text-white rounded-lg text-[13px] font-bold transition-colors">Submit Report</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Report Device Problem"
+        maxWidth="460px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowModal(false)} />
+            <ModalPrimaryBtn type="submit" form="report-problem-form" color="#EC4899">
+              Submit Report
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="report-problem-form" onSubmit={handleSubmit} className="flex flex-col gap-[14px] mt-1">
+          <div>
+            <label className={labelCls}>Affected Device</label>
+            <select value={formData.device} onChange={e => setFormData({ ...formData, device: e.target.value })} className={inputCls} required>
+              <option value="" disabled>Select a device...</option>
+              {mockDevices.map((d, i) => <option key={i} value={d}>{d}</option>)}
+            </select>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Problem Description</label>
+            <textarea 
+              value={formData.desc} 
+              onChange={e => setFormData({ ...formData, desc: e.target.value })} 
+              className={inputCls + " min-h-[100px] resize-y"} 
+              placeholder="Please describe the issue in detail..." 
+              required
+            ></textarea>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

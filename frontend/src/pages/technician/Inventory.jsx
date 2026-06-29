@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialRequests = [
   { id: 'REQ-1092', part: 'O2 Sensor – Nellcor', qty: 2, wo: 'WO-2034', date: '2026-06-27', status: 'Pending' },
@@ -186,38 +187,42 @@ export default function TechnicianInventory() {
         </div>
       )}
 
-      {showReqModal && selectedPart && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowReqModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1rem] font-bold text-[#E2E8F0]">Request Spare Part</h3><button onClick={() => setShowReqModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleRequestSubmit} className="p-6 flex flex-col gap-[14px]">
-              <div>
-                <label className={labelCls}>Selected Part</label>
-                <div className="w-full bg-[#131823] border border-[#1F2A40] text-[#94A3B8] px-3 py-2.5 rounded-lg text-[0.875rem] font-semibold">{selectedPart.name}</div>
-              </div>
-              <div>
-                <label className={labelCls}>Assign to Work Order</label>
-                <select name="wo" className={inputCls} required>
-                  <option value="" disabled selected>Select an active WO...</option>
-                  {mockWOs.map((wo, i) => <option key={i} value={wo}>{wo}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Quantity Required</label>
-                <input name="qty" type="number" min="1" defaultValue="1" className={inputCls} required />
-              </div>
-              <div>
-                <label className={labelCls}>Reason / Notes</label>
-                <textarea name="notes" className={inputCls + " min-h-[80px] resize-y"} placeholder="Why is this part needed?" required></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowReqModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#F59E0B] hover:bg-[#D97706] text-white rounded-lg text-[13px] font-bold transition-colors">Submit Request</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showReqModal && !!selectedPart}
+        onClose={() => setShowReqModal(false)}
+        title="Request Spare Part"
+        maxWidth="420px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowReqModal(false)} />
+            <ModalPrimaryBtn type="submit" form="request-form" color="#F59E0B">
+              Submit Request
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="request-form" onSubmit={handleRequestSubmit} className="flex flex-col gap-[14px] mt-1">
+          <div>
+            <label className={labelCls}>Selected Part</label>
+            <div className="w-full bg-[#131823] border border-[#1F2A40] text-[#94A3B8] px-3 py-2.5 rounded-lg text-[0.875rem] font-semibold">{selectedPart?.name}</div>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Assign to Work Order</label>
+            <select name="wo" className={inputCls} required defaultValue="">
+              <option value="" disabled>Select an active WO...</option>
+              {mockWOs.map((wo, i) => <option key={i} value={wo}>{wo}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Quantity Required</label>
+            <input name="qty" type="number" min="1" defaultValue="1" className={inputCls} required />
+          </div>
+          <div>
+            <label className={labelCls}>Reason / Notes</label>
+            <textarea name="notes" className={inputCls + " min-h-[80px] resize-y"} placeholder="Why is this part needed?" required></textarea>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

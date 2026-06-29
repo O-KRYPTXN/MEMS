@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { users as rawUsers } from '../../data/users'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
@@ -325,59 +326,54 @@ export default function Users() {
         {renderPagination()}
       </div>
 
-      {(showAddModal || showEditModal) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.8)]" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>
-          <div className="w-full max-w-md bg-[#181D2A] border border-[#1F2A40] rounded-[14px] p-[20px] animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-[20px]">
-              <div className="text-[16px] font-bold text-[#E2E8F0]">
-                {showAddModal ? "Add New User" : "Edit User"}
-              </div>
-              <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            
-            <form onSubmit={handleSubmit(showAddModal ? onAddSubmit : onEditSubmit)} className="flex flex-col gap-4">
-              <div>
-                <label className={labelCls}>Full Name</label>
-                <input {...register('name', { required: true })} className={inputCls} placeholder="e.g. John Doe" />
-              </div>
-              
-              <div>
-                <label className={labelCls}>Email Address</label>
-                <input type="email" {...register('email', { required: true })} className={inputCls} placeholder="e.g. jdoe@hospital.com" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Role</label>
-                  <select {...register('role', { required: true })} className={inputCls}>
-                    <option value="">Select Role</option>
-                    {ROLE_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Department Scope</label>
-                  <select {...register('department', { required: true })} className={inputCls}>
-                    <option value="">Select Department</option>
-                    <option value="System-wide">System-wide</option>
-                    <option value="ICU">ICU</option>
-                    <option value="ER">ER</option>
-                    <option value="Radiology">Radiology</option>
-                    <option value="Surgery">Surgery</option>
-                    <option value="Central Stores">Central Stores</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-[10px] mt-[10px]">
-                <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="px-[16px] py-[8px] bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0]">Cancel</button>
-                <button type="submit" className="px-[16px] py-[8px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors">
-                  {showAddModal ? "Submit" : "Save Changes"}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddModal || showEditModal}
+        onClose={() => { setShowAddModal(false); setShowEditModal(false); }}
+        title={showAddModal ? "Add New User" : "Edit User"}
+        maxWidth="28rem"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => { setShowAddModal(false); setShowEditModal(false); }} />
+            <ModalPrimaryBtn type="submit" form="user-form" color="#3B72F6">
+              {showAddModal ? "Submit" : "Save Changes"}
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="user-form" onSubmit={handleSubmit(showAddModal ? onAddSubmit : onEditSubmit)} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Full Name</label>
+            <input {...register('name', { required: true })} className={inputCls} placeholder="e.g. John Doe" />
           </div>
-        </div>
-      )}
+          
+          <div>
+            <label className={labelCls}>Email Address</label>
+            <input type="email" {...register('email', { required: true })} className={inputCls} placeholder="e.g. jdoe@hospital.com" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>Role</label>
+              <select {...register('role', { required: true })} className={inputCls}>
+                <option value="">Select Role</option>
+                {ROLE_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Department Scope</label>
+              <select {...register('department', { required: true })} className={inputCls}>
+                <option value="">Select Department</option>
+                <option value="System-wide">System-wide</option>
+                <option value="ICU">ICU</option>
+                <option value="ER">ER</option>
+                <option value="Radiology">Radiology</option>
+                <option value="Surgery">Surgery</option>
+                <option value="Central Stores">Central Stores</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

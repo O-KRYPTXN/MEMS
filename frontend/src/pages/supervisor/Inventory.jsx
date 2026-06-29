@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialParts = [
   { id: 'PART-1001', name: 'O2 Sensor – Nellcor', category: 'Sensors', stock: 12, min: 10, status: 'In Stock' },
@@ -174,38 +175,42 @@ export default function SupervisorInventory() {
 
       <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
-      {showRequestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowRequestModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Request Spare Part</h3><button onClick={() => setShowRequestModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleRequestPart} className="p-6 flex flex-col gap-4">
-              <div className="bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] text-[#FCD34D] p-2.5 rounded-lg flex items-start gap-2.5 text-sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 mt-0.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                <span className="text-[0.8rem] font-medium leading-relaxed">Submit a request to the Central Store. Subject to approval.</span>
-              </div>
-              <div>
-                <label className={labelCls}>Select Part</label>
-                <select name="partId" value={selectedPartId} onChange={e => setSelectedPartId(e.target.value)} className={inputCls}>
-                  <option value="" disabled>Select a part from inventory...</option>
-                  {parts.map(p => <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock})</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Quantity Required</label>
-                <input name="qty" type="number" min="1" defaultValue="1" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Reason / Notes</label>
-                <textarea name="notes" className={inputCls + " min-h-[80px] resize-none"} placeholder="Reason for request or urgency..."></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowRequestModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">Submit Request</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
+        title="Request Spare Part"
+        maxWidth="420px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowRequestModal(false)} />
+            <ModalPrimaryBtn type="submit" form="request-form" color="#14B8A6">
+              Submit Request
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="request-form" onSubmit={handleRequestPart} className="flex flex-col gap-4 mt-1">
+          <div className="bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] text-[#FCD34D] p-2.5 rounded-lg flex items-start gap-2.5 text-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 mt-0.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span className="text-[0.8rem] font-medium leading-relaxed">Submit a request to the Central Store. Subject to approval.</span>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Select Part</label>
+            <select name="partId" value={selectedPartId} onChange={e => setSelectedPartId(e.target.value)} className={inputCls}>
+              <option value="" disabled>Select a part from inventory...</option>
+              {parts.map(p => <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock})</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Quantity Required</label>
+            <input name="qty" type="number" min="1" defaultValue="1" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Reason / Notes</label>
+            <textarea name="notes" className={inputCls + " min-h-[80px] resize-none"} placeholder="Reason for request or urgency..."></textarea>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

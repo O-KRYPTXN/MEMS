@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialOrders = [
   { id: 'PO-9101', supplier: 'MedTech Supply Co.', item: 'Suction Catheters', qty: 100, date: '2026-05-26', status: 'pending' },
@@ -170,71 +171,70 @@ export default function StoreOrders() {
         </div>
       )}
 
-      {showResponseModal && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowResponseModal(false)}>
-          <div className="w-full max-w-[500px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Log Supplier Response Email</h3>
-              <button onClick={() => setShowResponseModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            
-            <div className="px-6 py-3 bg-[rgba(139,92,246,0.07)] border-b border-[#8B5CF6]/20 text-[#5A6A85] text-xs font-semibold">
-              Order: <span className="text-[#94A3B8]">{selectedOrder.id}</span> • Supplier: <span className="text-[#94A3B8]">{selectedOrder.supplier}</span>
-            </div>
-
-            <form onSubmit={handleLogResponse} className="p-6 flex flex-col gap-[14px]">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelCls}>Sender Name</label>
-                  <input type="text" className={inputCls} placeholder="e.g. John Doe" required />
-                </div>
-                <div>
-                  <label className={labelCls}>Sender Email</label>
-                  <input type="email" className={inputCls} placeholder="e.g. rep@supplier.com" required />
-                </div>
-                <div>
-                  <label className={labelCls}>Date/Time</label>
-                  <input type="datetime-local" className={inputCls} required />
-                </div>
-                <div>
-                  <label className={labelCls}>Subject Line</label>
-                  <input type="text" className={inputCls} placeholder="Re: PO-9101..." required />
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>Response Outcome</label>
-                <div className="flex gap-3">
-                  <button 
-                    type="button" 
-                    onClick={() => setOutcome('exists')}
-                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'exists' ? "bg-[rgba(74,222,128,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#4ADE80]")}
-                  >
-                    ✓ Exists
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => setOutcome('not_exists')}
-                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'not_exists' ? "bg-[rgba(248,113,113,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#F87171]")}
-                  >
-                    ✕ Not Exists
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>Email Content / Notes</label>
-                <textarea className={inputCls + " min-h-[88px] resize-y"} placeholder="Paste email body or notes here..." required></textarea>
-              </div>
-
-              <div className="flex gap-3 mt-2 border-t border-[#1F2A40] pt-5">
-                <button type="button" onClick={() => setShowResponseModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg text-[13px] font-bold transition-colors">Save Log</button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showResponseModal && !!selectedOrder}
+        onClose={() => setShowResponseModal(false)}
+        title="Log Supplier Response Email"
+        maxWidth="500px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowResponseModal(false)} />
+            <ModalPrimaryBtn type="submit" form="log-response-form" color="#8B5CF6">
+              Save Log
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <div className="-mx-[22px] -mt-[22px] mb-4 px-[22px] py-3 bg-[rgba(139,92,246,0.07)] border-b border-[#8B5CF6]/20 text-[#5A6A85] text-xs font-semibold">
+          Order: <span className="text-[#94A3B8]">{selectedOrder?.id}</span> • Supplier: <span className="text-[#94A3B8]">{selectedOrder?.supplier}</span>
         </div>
-      )}
+
+        <form id="log-response-form" onSubmit={handleLogResponse} className="flex flex-col gap-[14px]">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Sender Name</label>
+              <input type="text" className={inputCls} placeholder="e.g. John Doe" required />
+            </div>
+            <div>
+              <label className={labelCls}>Sender Email</label>
+              <input type="email" className={inputCls} placeholder="e.g. rep@supplier.com" required />
+            </div>
+            <div>
+              <label className={labelCls}>Date/Time</label>
+              <input type="datetime-local" className={inputCls} required />
+            </div>
+            <div>
+              <label className={labelCls}>Subject Line</label>
+              <input type="text" className={inputCls} placeholder="Re: PO-9101..." required />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Response Outcome</label>
+            <div className="flex gap-3">
+              <button 
+                type="button" 
+                onClick={() => setOutcome('exists')}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'exists' ? "bg-[rgba(74,222,128,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#4ADE80]")}
+              >
+                ✓ Exists
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setOutcome('not_exists')}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'not_exists' ? "bg-[rgba(248,113,113,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#F87171]")}
+              >
+                ✕ Not Exists
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Email Content / Notes</label>
+            <textarea className={inputCls + " min-h-[88px] resize-y"} placeholder="Paste email body or notes here..." required></textarea>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

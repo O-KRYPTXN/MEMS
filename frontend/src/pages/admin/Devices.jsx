@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
 import { devices } from '../../data/devices'
 import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
@@ -216,24 +217,19 @@ const Devices = () => {
         {renderPagination()}
       </div>
 
-      {showModal && viewDevice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowModal(false)}>
-          <div className="w-[400px] bg-[#181D2A] border border-[#1F2A40] rounded-xl p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between pb-4 border-b border-[#1F2A40]">
-              <h2 className="text-[1.1rem] font-bold text-[#E2E8F0]">Device Details</h2>
-              <button type="button" onClick={() => setShowModal(false)} className="w-7 h-7 rounded-md text-[#94A3B8] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              {modalFields.map(([label, val]) => (
-                <div key={label}><div className="text-[0.75rem] text-[#5A6A85]">{label}</div><div className="text-[#E2E8F0] font-semibold mt-0.5">{val}</div></div>
-              ))}
-            </div>
-            <div className="mt-6 text-right">
-              <button type="button" onClick={() => setShowModal(false)} className="py-2 px-4 rounded-lg bg-[rgba(236,72,153,0.12)] border border-[rgba(236,72,153,0.25)] text-[#F472B6] text-[0.8125rem] font-semibold">Close</button>
-            </div>
-          </div>
+      <Modal
+        isOpen={showModal && !!viewDevice}
+        onClose={() => setShowModal(false)}
+        title="Device Details"
+        maxWidth="400px"
+        footer={<ModalCancelBtn onClick={() => setShowModal(false)}>Close</ModalCancelBtn>}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          {modalFields?.map(([label, val]) => (
+            <div key={label}><div className="text-[0.75rem] text-[#5A6A85]">{label}</div><div className="text-[#E2E8F0] font-semibold mt-0.5">{val}</div></div>
+          ))}
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

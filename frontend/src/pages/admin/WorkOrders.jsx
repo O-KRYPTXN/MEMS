@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { workOrders as initialWorkOrders } from '../../data/workOrders'
 import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
@@ -261,118 +262,103 @@ export default function WorkOrders() {
         {renderPagination()}
       </div>
 
-      {showViewModal && selectedWO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.82)]" onClick={() => setShowViewModal(false)}>
-          <div className="w-full max-w-[480px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] p-[28px] animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-[22px]">
-              <div className="flex items-center gap-[10px] text-[17px] font-bold text-[#E2E8F0]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[20px] h-[20px] text-[#3B72F6]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                Work Order Details
-              </div>
-              <button type="button" onClick={() => setShowViewModal(false)} className="w-[32px] h-[32px] rounded-lg border border-[#1F2A40] flex items-center justify-center text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1E293B]">✕</button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-[16px]">
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Work Order ID</div><div className="text-[13px] font-mono text-[#3B82F6]">{selectedWO.id}</div></div>
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Created Date</div><div className="text-[13px] text-[#E2E8F0]">{formatDate(selectedWO.created)}</div></div>
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Device Name</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO.device}</div></div>
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Department</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO.dept}</div></div>
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Type/Priority</div><div className="mt-1"><TypeBadge type={selectedWO.type} /></div></div>
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Status</div><div className="mt-1"><StatusBadge variant={selectedWO.status} /></div></div>
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Assigned To</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO.assigned}</div></div>
-              <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Due Date</div><div className="text-[13px] text-[#E2E8F0]">{formatDate(selectedWO.dueDate)}</div></div>
-              
-              <div className="col-span-2 mt-2">
-                <div className="text-[11px] text-[#5A6A85] uppercase mb-[6px]">Issue Description</div>
-                <div className="bg-[#0d1117] border border-[#1F2A40] rounded-lg p-3 max-h-[140px] overflow-y-auto text-[13px] text-[#CBD5E1] whitespace-pre-wrap">
-                  {selectedWO.issue}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-[10px] border-t border-[#1F2A40] pt-[18px] mt-[24px]">
-              <button type="button" onClick={() => setShowViewModal(false)} className="px-[20px] py-[10px] bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0]">Close</button>
-              <button type="button" onClick={openEditModal} className="px-[20px] py-[10px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors">Edit</button>
+      <Modal
+        isOpen={showViewModal && !!selectedWO}
+        onClose={() => setShowViewModal(false)}
+        title="Work Order Details"
+        maxWidth="480px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>
+            <ModalPrimaryBtn onClick={openEditModal} color="#3B72F6">Edit</ModalPrimaryBtn>
+          </>
+        }
+      >
+        <div className="grid grid-cols-2 gap-[16px]">
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Work Order ID</div><div className="text-[13px] font-mono text-[#3B82F6]">{selectedWO?.id}</div></div>
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Created Date</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO && formatDate(selectedWO.created)}</div></div>
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Device Name</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO?.device}</div></div>
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Department</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO?.dept}</div></div>
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Type/Priority</div><div className="mt-1">{selectedWO && <TypeBadge type={selectedWO.type} />}</div></div>
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Status</div><div className="mt-1">{selectedWO && <StatusBadge variant={selectedWO.status} />}</div></div>
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Assigned To</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO?.assigned}</div></div>
+          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">Due Date</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO && formatDate(selectedWO.dueDate)}</div></div>
+          
+          <div className="col-span-2 mt-2">
+            <div className="text-[11px] text-[#5A6A85] uppercase mb-[6px]">Issue Description</div>
+            <div className="bg-[#0d1117] border border-[#1F2A40] rounded-lg p-3 max-h-[140px] overflow-y-auto text-[13px] text-[#CBD5E1] whitespace-pre-wrap">
+              {selectedWO?.issue}
             </div>
           </div>
         </div>
-      )}
+      </Modal>
 
-      {showFormModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.82)]" onClick={() => setShowFormModal(false)}>
-          <div className="w-full max-w-[480px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] p-[28px] animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-[22px]">
-              <div className="flex items-center gap-[10px] text-[17px] font-bold text-[#E2E8F0]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[20px] h-[20px] text-[#3B72F6]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
-                </svg>
-                {editingWO ? `Edit Work Order ${editingWO.id}` : 'New Work Order'}
-              </div>
-              <button type="button" onClick={() => setShowFormModal(false)} className="w-[32px] h-[32px] rounded-lg border border-[#1F2A40] flex items-center justify-center text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1E293B]">✕</button>
-            </div>
-            
-            <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
-              <div>
-                <label className={labelCls}>Device Name</label>
-                <input {...register('device', { required: true })} className={inputCls} placeholder="e.g. Philips IntelliVue MX800" />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Department</label>
-                  <select {...register('dept', { required: true })} className={inputCls}>
-                    <option value="">Select Dept</option>
-                    {DEPT_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Priority/Type</label>
-                  <select {...register('type', { required: true })} className={inputCls}>
-                    <option value="">Select Type</option>
-                    {TYPE_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {editingWO && (
-                <div>
-                  <label className={labelCls}>Status</label>
-                  <select {...register('status')} className={inputCls}>
-                    {STATUS_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className={labelCls}>Issue Description</label>
-                <textarea {...register('issue', { required: true })} className={clsx(inputCls, "min-h-[80px] resize-y")} placeholder="Describe the issue in detail…" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Assign To</label>
-                  <select {...register('assigned', { required: true })} className={inputCls}>
-                    <option value="">Select Assignee</option>
-                    {ASSIGN_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Due Date</label>
-                  <input type="date" {...register('dueDate')} className={inputCls} />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-[10px] border-t border-[#1F2A40] pt-[18px] mt-[8px]">
-                <button type="button" onClick={() => setShowFormModal(false)} className="px-[20px] py-[10px] bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0]">Cancel</button>
-                <button type="submit" className="px-[20px] py-[10px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors">{editingWO ? 'Save Changes' : 'Create Work Order'}</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showFormModal}
+        onClose={() => setShowFormModal(false)}
+        title={editingWO ? `Edit Work Order ${editingWO.id}` : 'New Work Order'}
+        maxWidth="480px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowFormModal(false)} />
+            <ModalPrimaryBtn type="submit" form="wo-form" color="#3B72F6">
+              {editingWO ? 'Save Changes' : 'Create Work Order'}
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="wo-form" onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Device Name</label>
+            <input {...register('device', { required: true })} className={inputCls} placeholder="e.g. Philips IntelliVue MX800" />
           </div>
-        </div>
-      )}
+          
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>Department</label>
+              <select {...register('dept', { required: true })} className={inputCls}>
+                <option value="">Select Dept</option>
+                {DEPT_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Priority/Type</label>
+              <select {...register('type', { required: true })} className={inputCls}>
+                <option value="">Select Type</option>
+                {TYPE_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {editingWO && (
+            <div>
+              <label className={labelCls}>Status</label>
+              <select {...register('status')} className={inputCls}>
+                {STATUS_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label className={labelCls}>Issue Description</label>
+            <textarea {...register('issue', { required: true })} className={clsx(inputCls, "min-h-[80px] resize-y")} placeholder="Describe the issue in detail…" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>Assign To</label>
+              <select {...register('assigned', { required: true })} className={inputCls}>
+                <option value="">Select Assignee</option>
+                {ASSIGN_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Due Date</label>
+              <input type="date" {...register('dueDate')} className={inputCls} />
+            </div>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

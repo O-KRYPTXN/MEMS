@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
 import AlertItem from '../../components/ui/AlertItem'
@@ -367,81 +368,82 @@ export default function SupervisorDashboard() {
       </div>
 
       {/* ASSIGN WO MODAL */}
-      {showAssignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.7)] backdrop-blur-[2px]" onClick={() => setShowAssignModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Assign Work Order</h3>
-              <button onClick={() => setShowAssignModal(false)} className="text-[#64748B] hover:text-[#E2E8F0] transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-            </div>
-            <form onSubmit={submitAssign(handleAssign)} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Work Order</label>
-                <select {...regAssign('woId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
-                  <option value="">Select work order...</option>
-                  {approvals.map(wo => (
-                    <option key={wo.id} value={wo.id}>{wo.id} — {wo.device} ({wo.dept})</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Assign To</label>
-                <select {...regAssign('techId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
-                  <option value="">Select technician...</option>
-                  {teamData.map(t => (
-                    <option key={t.id} value={t.id}>{t.name} — {t.tasks} active tasks</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Priority</label>
-                <select {...regAssign('priority')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]" defaultValue="Medium">
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Special Instructions (Optional)</label>
-                <textarea {...regAssign('notes')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add any special instructions..."></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowAssignModal(false)} className="px-4 py-2 bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-bold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">Assign Technician</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        title="Assign Work Order"
+        maxWidth="460px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowAssignModal(false)} />
+            <ModalPrimaryBtn type="submit" form="assign-wo-form" color="#14B8A6">
+              Assign Technician
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="assign-wo-form" onSubmit={submitAssign(handleAssign)} className="flex flex-col gap-4 mt-1">
+          <div>
+            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Work Order</label>
+            <select {...regAssign('woId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
+              <option value="">Select work order...</option>
+              {approvals.map(wo => (
+                <option key={wo.id} value={wo.id}>{wo.id} — {wo.device} ({wo.dept})</option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Assign To</label>
+            <select {...regAssign('techId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
+              <option value="">Select technician...</option>
+              {teamData.map(t => (
+                <option key={t.id} value={t.id}>{t.name} — {t.tasks} active tasks</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Priority</label>
+            <select {...regAssign('priority')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]" defaultValue="Medium">
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Special Instructions (Optional)</label>
+            <textarea {...regAssign('notes')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add any special instructions..."></textarea>
+          </div>
+        </form>
+      </Modal>
 
-      {/* APPROVE WO MODAL */}
-      {showApproveModal && activeApproval && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.7)] backdrop-blur-[2px]" onClick={() => setShowApproveModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Approve {activeApproval.id}</h3>
-              <button onClick={() => setShowApproveModal(false)} className="text-[#64748B] hover:text-[#E2E8F0] transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-            </div>
-            <div className="p-6 flex flex-col gap-5">
-              <div className="bg-[#1A2235] rounded-xl p-4 flex flex-col gap-2.5">
-                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Work Order</span><span className="font-semibold text-[#14B8A6] font-mono">{activeApproval.id}</span></div>
-                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Device</span><span className="font-semibold text-[#E2E8F0]">{activeApproval.device}</span></div>
-                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Technician</span><span className="font-semibold text-[#E2E8F0]">{activeApproval.tech}</span></div>
-                <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Type</span><span className="font-semibold text-[#E2E8F0]">{activeApproval.type}</span></div>
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Supervisor Notes</label>
-                <textarea value={approveNotes} onChange={e => setApproveNotes(e.target.value)} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add approval notes or observations..."></textarea>
-              </div>
-            </div>
-            <div className="flex gap-3 px-6 py-4 border-t border-[#1F2A40] bg-[#131720]">
-              <button onClick={handleReject} className="px-4 py-2 bg-transparent border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">Reject & Return</button>
-              <button onClick={() => setShowApproveModal(false)} className="px-4 py-2 bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-bold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors">Cancel</button>
-              <button onClick={handleApprove} className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">✓ Approve & Close WO</button>
-            </div>
+      <Modal
+        isOpen={showApproveModal && !!activeApproval}
+        onClose={() => setShowApproveModal(false)}
+        title={activeApproval ? `Approve ${activeApproval.id}` : 'Approve Work Order'}
+        maxWidth="460px"
+        footer={
+          <>
+            <button onClick={handleReject} className="px-4 py-2 bg-transparent border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">Reject & Return</button>
+            <ModalCancelBtn onClick={() => setShowApproveModal(false)} />
+            <ModalPrimaryBtn onClick={handleApprove} color="#14B8A6">
+              ✓ Approve & Close WO
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-5 mt-2">
+          <div className="bg-[#1A2235] rounded-xl p-4 flex flex-col gap-2.5 border border-[#1F2A40]">
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Work Order</span><span className="font-semibold text-[#14B8A6] font-mono">{activeApproval?.id}</span></div>
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Device</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.device}</span></div>
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Technician</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.tech}</span></div>
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Type</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.type}</span></div>
+          </div>
+          <div>
+            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Supervisor Notes</label>
+            <textarea value={approveNotes} onChange={e => setApproveNotes(e.target.value)} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add approval notes or observations..."></textarea>
           </div>
         </div>
-      )}
+      </Modal>
     </>
   )
 }

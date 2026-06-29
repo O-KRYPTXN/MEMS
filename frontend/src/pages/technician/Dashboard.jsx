@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { ROUTES } from '../../constants/routes'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const myTasks = [
   { id: 'WO-2039', device: 'ECG Monitor E-12', type: 'Repair', dept: 'ICU', priority: 'High', status: 'In Progress', tech: 'A. Hassan' },
@@ -112,35 +113,39 @@ export default function TechnicianDashboard() {
         </div>
       )}
 
-      {showModal && activeWO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-[480px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1rem] font-bold text-[#E2E8F0]">Update {activeWO.id}</h3><button onClick={() => setShowModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleUpdate} className="p-6 flex flex-col gap-[14px]">
-              <div>
-                <label className={labelCls}>Status</label>
-                <select value={updateStatus} onChange={e => setUpdateStatus(e.target.value)} className={inputCls}>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Waiting on Parts">Waiting on Parts</option>
-                  <option value="Completed / Solved (Sent for Approval)">Completed / Solved (Sent for Approval)</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Hours Logged</label>
-                <input type="number" min="0.5" step="0.5" value={hours} onChange={e => setHours(e.target.value)} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Work Notes</label>
-                <textarea placeholder="Describe work performed..." value={notes} onChange={e => setNotes(e.target.value)} className={inputCls + " min-h-[80px] resize-y"}></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#F59E0B] hover:bg-[#D97706] text-white rounded-lg text-[13px] font-bold transition-colors">Save Update</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal && !!activeWO}
+        onClose={() => setShowModal(false)}
+        title={activeWO ? `Update ${activeWO.id}` : 'Update Work Order'}
+        maxWidth="480px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowModal(false)} />
+            <ModalPrimaryBtn type="submit" form="update-wo-form" color="#F59E0B">
+              Save Update
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="update-wo-form" onSubmit={handleUpdate} className="flex flex-col gap-[14px] mt-1">
+          <div>
+            <label className={labelCls}>Status</label>
+            <select value={updateStatus} onChange={e => setUpdateStatus(e.target.value)} className={inputCls}>
+              <option value="In Progress">In Progress</option>
+              <option value="Waiting on Parts">Waiting on Parts</option>
+              <option value="Completed / Solved (Sent for Approval)">Completed / Solved (Sent for Approval)</option>
+            </select>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Hours Logged</label>
+            <input type="number" min="0.5" step="0.5" value={hours} onChange={e => setHours(e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Work Notes</label>
+            <textarea placeholder="Describe work performed..." value={notes} onChange={e => setNotes(e.target.value)} className={inputCls + " min-h-[80px] resize-y"}></textarea>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

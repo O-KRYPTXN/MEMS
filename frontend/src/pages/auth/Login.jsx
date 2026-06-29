@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAuthStore, getHomeRoute } from '../../store/authStore';
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal';
 
 const DEMO_ACCOUNTS = {
   'admin@hospital.org': { role: 'admin', name: 'Admin User', initials: 'AD', dept: 'Administration' },
@@ -215,46 +216,37 @@ export default function Login() {
       </div>
 
       {/* Forgot Password Modal */}
-      {showForgotModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.8)] backdrop-blur-[2px]" onClick={() => setShowForgotModal(false)}>
-          <div className="w-full max-w-sm bg-[#181D2A] border border-[#1F2A40] rounded-xl p-6 animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="mb-5">
-              <h3 className="text-[1.125rem] font-bold text-[#E2E8F0] mb-1">Reset Password</h3>
-              <p className="text-[13px] text-[#94A3B8]">Enter your registered email and we'll send a reset link.</p>
+      <Modal
+        isOpen={showForgotModal}
+        onClose={() => setShowForgotModal(false)}
+        title="Reset Password"
+        maxWidth="400px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowForgotModal(false)} />
+            <ModalPrimaryBtn type="submit" form="forgot-password-form" color="#3B82F6">
+              Send Link
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <p className="text-[13px] text-[#94A3B8] mb-4 mt-2">Enter your registered email and we'll send a reset link.</p>
+        <form id="forgot-password-form" onSubmit={handleForgotSubmit}>
+          <div className="relative">
+            <div className="absolute top-[10px] left-[13px] text-[#5A6A85] pointer-events-none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
             </div>
-            <form onSubmit={handleForgotSubmit}>
-              <div className="mb-6 relative">
-                <div className="absolute top-[10px] left-[13px] text-[#5A6A85] pointer-events-none">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-                </div>
-                <input 
-                  type="email" 
-                  value={resetEmail} 
-                  onChange={e => setResetEmail(e.target.value)} 
-                  className={inputCls} 
-                  placeholder="name@hospital.org" 
-                  required
-                />
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setShowForgotModal(false)} 
-                  className="w-[100px] h-[38px] rounded-lg border border-[#1F2A40] text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1E293B] text-[13px] font-bold transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 h-[38px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold transition-colors"
-                >
-                  Send Link
-                </button>
-              </div>
-            </form>
+            <input 
+              type="email" 
+              value={resetEmail} 
+              onChange={e => setResetEmail(e.target.value)} 
+              className={inputCls} 
+              placeholder="name@hospital.org" 
+              required
+            />
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

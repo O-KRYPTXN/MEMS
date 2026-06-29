@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialWOs = [
   { id: 'WO-2039', device: 'ECG Monitor E-12', type: 'Repair', dept: 'ICU', priority: 'High', status: 'In Progress', date: '2026-06-28', timeLog: '1.5', parts: 'None', notes: '' },
@@ -178,72 +179,76 @@ export default function TechnicianWorkOrders() {
         </div>
       )}
 
-      {showUpdateModal && selectedWO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowUpdateModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1rem] font-bold text-[#E2E8F0]">Update {selectedWO.id}</h3><button onClick={() => setShowUpdateModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleUpdateSubmit} className="p-6 flex flex-col gap-[14px]">
-              <div>
-                <label className={labelCls}>Status</label>
-                <select value={updateForm.status} onChange={e => setUpdateForm({ ...updateForm, status: e.target.value })} className={inputCls}>
-                  <option value="Unassigned">To Do (Unassigned)</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Waiting Parts">Waiting Parts</option>
-                  <option value="Solved Tasks">Solved Tasks</option>
-                </select>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className={labelCls}>Hours Logged</label>
-                  <input type="number" step="0.5" min="0" value={updateForm.timeLog} onChange={e => setUpdateForm({ ...updateForm, timeLog: e.target.value })} className={inputCls} />
-                </div>
-                <div className="flex-1">
-                  <label className={labelCls}>Parts Used</label>
-                  <input type="text" value={updateForm.parts} onChange={e => setUpdateForm({ ...updateForm, parts: e.target.value })} placeholder="e.g. O2 Sensor" className={inputCls} />
-                </div>
-              </div>
-              <div>
-                <label className={labelCls}>Work Notes</label>
-                <textarea value={updateForm.notes} onChange={e => setUpdateForm({ ...updateForm, notes: e.target.value })} className={inputCls + " min-h-[80px] resize-y"} placeholder="Describe work performed..."></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowUpdateModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#F59E0B] hover:bg-[#D97706] text-white rounded-lg text-[13px] font-bold transition-colors">Save Update</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showUpdateModal && !!selectedWO}
+        onClose={() => setShowUpdateModal(false)}
+        title={selectedWO ? `Update ${selectedWO.id}` : 'Update Work Order'}
+        maxWidth="460px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowUpdateModal(false)} />
+            <ModalPrimaryBtn type="submit" form="update-form" color="#F59E0B">
+              Save Update
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="update-form" onSubmit={handleUpdateSubmit} className="flex flex-col gap-[14px] mt-1">
+          <div>
+            <label className={labelCls}>Status</label>
+            <select value={updateForm.status} onChange={e => setUpdateForm({ ...updateForm, status: e.target.value })} className={inputCls}>
+              <option value="Unassigned">To Do (Unassigned)</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Waiting Parts">Waiting Parts</option>
+              <option value="Solved Tasks">Solved Tasks</option>
+            </select>
           </div>
-        </div>
-      )}
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className={labelCls}>Hours Logged</label>
+              <input type="number" step="0.5" min="0" value={updateForm.timeLog} onChange={e => setUpdateForm({ ...updateForm, timeLog: e.target.value })} className={inputCls} />
+            </div>
+            <div className="flex-1">
+              <label className={labelCls}>Parts Used</label>
+              <input type="text" value={updateForm.parts} onChange={e => setUpdateForm({ ...updateForm, parts: e.target.value })} placeholder="e.g. O2 Sensor" className={inputCls} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Work Notes</label>
+            <textarea value={updateForm.notes} onChange={e => setUpdateForm({ ...updateForm, notes: e.target.value })} className={inputCls + " min-h-[80px] resize-y"} placeholder="Describe work performed..."></textarea>
+          </div>
+        </form>
+      </Modal>
 
-      {showViewModal && selectedWO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowViewModal(false)}>
-          <div className="w-full max-w-[500px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Order Details: {selectedWO.id}</h3><button onClick={() => setShowViewModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <div className="p-6">
-              <div className="grid grid-cols-2 gap-2.5 mb-4">
-                {[
-                  { l: 'Device', v: selectedWO.device }, { l: 'Dept', v: selectedWO.dept },
-                  { l: 'Type', v: <TypeBadge type={selectedWO.type} /> }, { l: 'Priority', v: <PriorityBadge priority={selectedWO.priority} /> },
-                  { l: 'Status', v: <StatusBadge status={selectedWO.status} /> }, { l: 'Date Assigned', v: selectedWO.date },
-                  { l: 'Logged Hours', v: `${selectedWO.timeLog} hrs` }, { l: 'Parts Used', v: selectedWO.parts || 'None' }
-                ].map((item, idx) => (
-                  <div key={idx} className="bg-[#1A2235] rounded-lg p-3">
-                    <div className="text-[11px] font-semibold text-[#5A6A85] mb-1">{item.l}</div>
-                    <div className="text-[13px] font-bold text-[#E2E8F0]">{item.v}</div>
-                  </div>
-                ))}
+      <Modal
+        isOpen={showViewModal && !!selectedWO}
+        onClose={() => setShowViewModal(false)}
+        title={selectedWO ? `Work Order Details: ${selectedWO.id}` : 'Work Order Details'}
+        maxWidth="500px"
+        footer={
+          <ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>
+        }
+      >
+        <div className="mt-2">
+          <div className="grid grid-cols-2 gap-2.5 mb-4">
+            {[
+              { l: 'Device', v: selectedWO?.device }, { l: 'Dept', v: selectedWO?.dept },
+              { l: 'Type', v: selectedWO ? <TypeBadge type={selectedWO.type} /> : null }, { l: 'Priority', v: selectedWO ? <PriorityBadge priority={selectedWO.priority} /> : null },
+              { l: 'Status', v: selectedWO ? <StatusBadge status={selectedWO.status} /> : null }, { l: 'Date Assigned', v: selectedWO?.date },
+              { l: 'Logged Hours', v: `${selectedWO?.timeLog} hrs` }, { l: 'Parts Used', v: selectedWO?.parts || 'None' }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-[#1A2235] rounded-lg p-3">
+                <div className="text-[11px] font-semibold text-[#5A6A85] mb-1">{item.l}</div>
+                <div className="text-[13px] font-bold text-[#E2E8F0]">{item.v}</div>
               </div>
-              <div className="bg-[#1A2235] rounded-lg p-3">
-                <div className="text-[11px] font-semibold text-[#5A6A85] mb-1">Work Notes</div>
-                <div className="text-[13px] text-[#94A3B8] whitespace-pre-wrap">{selectedWO.notes || 'No notes provided yet.'}</div>
-              </div>
-            </div>
-            <div className="flex justify-end px-6 py-4 border-t border-[#1F2A40] bg-[#131720]">
-              <button onClick={() => setShowViewModal(false)} className="px-5 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Close</button>
-            </div>
+            ))}
+          </div>
+          <div className="bg-[#1A2235] rounded-lg p-3">
+            <div className="text-[11px] font-semibold text-[#5A6A85] mb-1">Work Notes</div>
+            <div className="text-[13px] text-[#94A3B8] whitespace-pre-wrap">{selectedWO?.notes || 'No notes provided yet.'}</div>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

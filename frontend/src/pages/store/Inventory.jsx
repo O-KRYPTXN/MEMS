@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialParts = [
   { id: 'PRT-1001', name: 'O2 Sensor – Nellcor', category: 'Sensors', qty: 12, min: 10 },
@@ -227,79 +228,79 @@ export default function StoreInventory() {
         </div>
       )}
 
-      {showRestockModal && selectedPart && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowRestockModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Restock Part</h3>
-              <button onClick={() => setShowRestockModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            <form onSubmit={handleRestock} className="p-6 flex flex-col gap-[14px]">
-              <div>
-                <label className={labelCls}>Selected Part</label>
-                <input type="text" readOnly value={`${selectedPart.name} (${selectedPart.id})`} className={inputCls + " opacity-70 cursor-not-allowed"} />
-              </div>
-              <div>
-                <label className={labelCls}>Quantity to Add</label>
-                <input type="number" min="1" value={restockQty} onChange={e => setRestockQty(e.target.value)} className={inputCls} required />
-              </div>
-              <div>
-                <label className={labelCls}>Delivery Notes (Optional)</label>
-                <textarea className={inputCls + " min-h-[80px] resize-y"} placeholder="Order #, Supplier, etc..."></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowRestockModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg text-[13px] font-bold transition-colors">Update Stock</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showRestockModal && !!selectedPart}
+        onClose={() => setShowRestockModal(false)}
+        title="Restock Part"
+        maxWidth="420px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowRestockModal(false)} />
+            <ModalPrimaryBtn type="submit" form="restock-form" color="#8B5CF6">
+              Update Stock
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="restock-form" onSubmit={handleRestock} className="flex flex-col gap-[14px]">
+          <div>
+            <label className={labelCls}>Selected Part</label>
+            <input type="text" readOnly value={`${selectedPart?.name} (${selectedPart?.id})`} className={inputCls + " opacity-70 cursor-not-allowed"} />
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Quantity to Add</label>
+            <input type="number" min="1" value={restockQty} onChange={e => setRestockQty(e.target.value)} className={inputCls} required />
+          </div>
+          <div>
+            <label className={labelCls}>Delivery Notes (Optional)</label>
+            <textarea className={inputCls + " min-h-[80px] resize-y"} placeholder="Order #, Supplier, etc..."></textarea>
+          </div>
+        </form>
+      </Modal>
 
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowAddModal(false)}>
-          <div className="w-full max-w-[500px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Add New Part</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            <form onSubmit={handleAddPart} className="p-6 flex flex-col gap-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelCls}>Part Code</label>
-                  <input type="text" value={addFormData.id} onChange={e => setAddFormData(f => ({...f, id: e.target.value}))} className={inputCls} placeholder="e.g. PRT-2050" required />
-                </div>
-                <div>
-                  <label className={labelCls}>Category</label>
-                  <select value={addFormData.category} onChange={e => setAddFormData(f => ({...f, category: e.target.value}))} className={inputCls} required>
-                    <option value="Sensors">Sensors</option>
-                    <option value="Cables">Cables</option>
-                    <option value="Consumables">Consumables</option>
-                    <option value="Accessories">Accessories</option>
-                    <option value="Power">Power</option>
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className={labelCls}>Part Name</label>
-                  <input type="text" value={addFormData.name} onChange={e => setAddFormData(f => ({...f, name: e.target.value}))} className={inputCls} placeholder="Full descriptive name" required />
-                </div>
-                <div>
-                  <label className={labelCls}>Initial Stock</label>
-                  <input type="number" min="0" value={addFormData.qty} onChange={e => setAddFormData(f => ({...f, qty: e.target.value}))} className={inputCls} required />
-                </div>
-                <div>
-                  <label className={labelCls}>Minimum Level</label>
-                  <input type="number" min="1" value={addFormData.min} onChange={e => setAddFormData(f => ({...f, min: e.target.value}))} className={inputCls} required />
-                </div>
-              </div>
-              <div className="flex gap-3 mt-2 border-t border-[#1F2A40] pt-5">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg text-[13px] font-bold transition-colors">Save Part</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add New Part"
+        maxWidth="500px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowAddModal(false)} />
+            <ModalPrimaryBtn type="submit" form="add-part-form" color="#8B5CF6">
+              Save Part
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="add-part-form" onSubmit={handleAddPart} className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Part Code</label>
+            <input type="text" value={addFormData.id} onChange={e => setAddFormData(f => ({...f, id: e.target.value}))} className={inputCls} placeholder="e.g. PRT-2050" required />
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Category</label>
+            <select value={addFormData.category} onChange={e => setAddFormData(f => ({...f, category: e.target.value}))} className={inputCls} required>
+              <option value="Sensors">Sensors</option>
+              <option value="Cables">Cables</option>
+              <option value="Consumables">Consumables</option>
+              <option value="Accessories">Accessories</option>
+              <option value="Power">Power</option>
+            </select>
+          </div>
+          <div className="col-span-2">
+            <label className={labelCls}>Part Name</label>
+            <input type="text" value={addFormData.name} onChange={e => setAddFormData(f => ({...f, name: e.target.value}))} className={inputCls} placeholder="Full descriptive name" required />
+          </div>
+          <div>
+            <label className={labelCls}>Initial Stock</label>
+            <input type="number" min="0" value={addFormData.qty} onChange={e => setAddFormData(f => ({...f, qty: e.target.value}))} className={inputCls} required />
+          </div>
+          <div>
+            <label className={labelCls}>Minimum Level</label>
+            <input type="number" min="1" value={addFormData.min} onChange={e => setAddFormData(f => ({...f, min: e.target.value}))} className={inputCls} required />
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { pmTasks as initialPMTasks } from '../../data/pmTasks'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
@@ -396,119 +397,94 @@ export default function PreventiveMaintenance() {
       <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
         <DataTable columns={columns} data={paginated} emptyMessage="No PM tasks match your filters." rowClassName={(row) => row.status === 'Overdue' ? 'bg-[rgba(239,68,68,0.04)] hover:bg-[rgba(239,68,68,0.08)]' : ''} />
         {renderPagination()}
-      </div>
-
-      {showViewModal && selectedPM && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.82)]" onClick={() => setShowViewModal(false)}>
-          <div className="w-full max-w-[480px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] p-[28px] animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-[22px]">
-              <div className="flex items-center gap-[10px] text-[17px] font-bold text-[#E2E8F0]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[20px] h-[20px] text-[#3B72F6]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                PM Task Details
-              </div>
-              <button type="button" onClick={() => setShowViewModal(false)} className="w-[32px] h-[32px] rounded-lg border border-[#1F2A40] flex items-center justify-center text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1E293B]">✕</button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-[16px]">
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">PM ID</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM.id}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Device</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM.device}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Department</div><div className="mt-1"><DeptTag dept={selectedPM.dept} /></div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Type</div><div className="mt-1"><PMTypeBadge type={selectedPM.type} /></div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Scheduled Date</div><div className="text-[13px] text-[#E2E8F0] mt-1">{formatDate(selectedPM.scheduled)}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Last PM</div><div className="text-[13px] text-[#E2E8F0] mt-1">{formatDate(selectedPM.lastPm)}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Technician</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM.tech}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Status</div><div className="mt-1"><PMStatusBadge status={selectedPM.status} /></div></div>
-            </div>
-
-            <div className="flex justify-end gap-[10px] border-t border-[#1F2A40] pt-[18px] mt-[24px]">
-              <button type="button" onClick={() => setShowViewModal(false)} className="px-[20px] py-[10px] bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0]">Close</button>
-            </div>
+        <Modal
+          isOpen={showViewModal && !!selectedPM}
+          onClose={() => setShowViewModal(false)}
+          title="PM Task Details"
+          maxWidth="480px"
+          footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>}
+        >
+          <div className="grid grid-cols-2 gap-[16px]">
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">PM ID</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM?.id}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Device</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.device}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Department</div><div className="mt-1">{selectedPM && <DeptTag dept={selectedPM.dept} />}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Type</div><div className="mt-1">{selectedPM && <PMTypeBadge type={selectedPM.type} />}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Scheduled Date</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.scheduled)}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Last PM</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.lastPm)}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Technician</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.tech}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Status</div><div className="mt-1">{selectedPM && <PMStatusBadge status={selectedPM.status} />}</div></div>
           </div>
-        </div>
-      )}
+        </Modal>
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.82)]" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-[480px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] p-[28px] animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-[22px]">
-              <div className="flex items-center gap-[10px] text-[17px] font-bold text-[#E2E8F0]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[20px] h-[20px] text-[#3B72F6]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                </svg>
-                Schedule PM Task
-              </div>
-              <button type="button" onClick={() => setShowModal(false)} className="w-[32px] h-[32px] rounded-lg border border-[#1F2A40] flex items-center justify-center text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1E293B]">✕</button>
+        <Modal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          title="Schedule PM Task"
+          maxWidth="480px"
+          footer={
+            <>
+              <ModalCancelBtn onClick={() => setShowModal(false)} />
+              <ModalPrimaryBtn type="submit" form="pm-form" color="#3B72F6">
+                Schedule Task
+              </ModalPrimaryBtn>
+            </>
+          }
+        >
+          <form id="pm-form" onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
+            <div>
+              <label className={labelCls}>Device Name</label>
+              <input {...register('device', { required: true })} className={inputCls} placeholder="e.g. Philips IntelliVue MX800" />
             </div>
 
-            <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-[14px]">
               <div>
-                <label className={labelCls}>Device Name</label>
-                <input {...register('device', { required: true })} className={inputCls} placeholder="e.g. Philips IntelliVue MX800" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Department</label>
-                  <select {...register('dept', { required: true })} className={inputCls}>
-                    <option value="">Select Dept</option>
-                    {DEPT_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>PM Type</label>
-                  <select {...register('type', { required: true })} className={inputCls}>
-                    <option value="">Select Type</option>
-                    {TYPE_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Scheduled Date</label>
-                  <input type="date" {...register('scheduled', { required: true })} className={inputCls} />
-                </div>
-                <div>
-                  <label className={labelCls}>Assign Technician</label>
-                  <select {...register('tech', { required: true })} className={inputCls}>
-                    <option value="">Select Assignee</option>
-                    {TECH_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>Recurrence</label>
-                <select {...register('recurrence')} className={inputCls}>
-                  <option value="">One-time</option>
-                  <option value="Monthly">Monthly</option>
-                  <option value="Quarterly">Quarterly</option>
-                  <option value="Semi-Annual">Semi-Annual</option>
-                  <option value="Annual">Annual</option>
+                <label className={labelCls}>Department</label>
+                <select {...register('dept', { required: true })} className={inputCls}>
+                  <option value="">Select Dept</option>
+                  {DEPT_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
               </div>
-
               <div>
-                <label className={labelCls}>Notes</label>
-                <textarea {...register('notes')} className={clsx(inputCls, "min-h-[80px] resize-y")} placeholder="Any special instructions…" />
+                <label className={labelCls}>PM Type</label>
+                <select {...register('type', { required: true })} className={inputCls}>
+                  <option value="">Select Type</option>
+                  {TYPE_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
               </div>
+            </div>
 
-              <div className="flex justify-end gap-[10px] border-t border-[#1F2A40] pt-[18px] mt-[8px]">
-                <button type="button" onClick={() => setShowModal(false)} className="px-[20px] py-[10px] bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0]">Cancel</button>
-                <button type="submit" className="px-[20px] py-[10px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors flex items-center gap-[6px]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                  Schedule Task
-                </button>
+            <div className="grid grid-cols-2 gap-[14px]">
+              <div>
+                <label className={labelCls}>Scheduled Date</label>
+                <input type="date" {...register('scheduled', { required: true })} className={inputCls} />
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+              <div>
+                <label className={labelCls}>Assign Technician</label>
+                <select {...register('tech', { required: true })} className={inputCls}>
+                  <option value="">Select Assignee</option>
+                  {TECH_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className={labelCls}>Recurrence</label>
+              <select {...register('recurrence')} className={inputCls}>
+                <option value="">One-time</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Quarterly">Quarterly</option>
+                <option value="Semi-Annual">Semi-Annual</option>
+                <option value="Annual">Annual</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={labelCls}>Notes</label>
+              <textarea {...register('notes')} className={clsx(inputCls, "min-h-[80px] resize-y")} placeholder="Any special instructions…" />
+            </div>
+          </form>
+        </Modal>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialRequests = [
   { id: 'REQ-1092', requester: 'Ahmed (Tech)', dept: 'Maintenance', itemName: 'O2 Sensor – Nellcor', qty: 2, date: '2026-06-28', status: 'Pending' },
@@ -191,90 +192,86 @@ export default function StoreRequests() {
         </div>
       )}
 
-      {showModal && selectedReq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-[480px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">{actionType === 'review' ? 'Review Request' : 'Fulfill Request'}</h3>
-              <button onClick={() => setShowModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
+      <Modal
+        isOpen={showModal && !!selectedReq}
+        onClose={() => setShowModal(false)}
+        title={actionType === 'review' ? 'Review Request' : 'Fulfill Request'}
+        maxWidth="480px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowModal(false)} />
+            <ModalPrimaryBtn 
+              type="submit" 
+              form="action-form" 
+              color={actionType === 'review' && reviewDecision === 'Reject' ? '#EF4444' : '#10B981'}
+            >
+              {actionType === 'review' ? 'Submit Decision' : 'Confirm Fulfillment'}
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="action-form" onSubmit={handleAction} className="flex flex-col gap-5">
+          <div className="bg-[#131720] p-4 rounded-lg border border-[#1F2A40] flex flex-col gap-2">
+            <div className="flex justify-between items-start">
+              <span className="text-[#E2E8F0] font-bold">{selectedReq?.id}</span>
+              <span className="text-[#94A3B8] text-sm">{selectedReq?.date}</span>
             </div>
-            <form onSubmit={handleAction} className="p-6 flex flex-col gap-5">
-              <div className="bg-[#131720] p-4 rounded-lg border border-[#1F2A40] flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <span className="text-[#E2E8F0] font-bold">{selectedReq.id}</span>
-                  <span className="text-[#94A3B8] text-sm">{selectedReq.date}</span>
-                </div>
-                <div className="text-[#D8B4FE] text-sm font-semibold">{selectedReq.qty}x {selectedReq.itemName}</div>
-                <div className="text-[#5A6A85] text-xs">Requested by: <span className="text-[#E2E8F0]">{selectedReq.requester}</span> ({selectedReq.dept})</div>
-              </div>
-
-              {actionType === 'review' && (
-                <>
-                  <div>
-                    <label className="block text-[12px] text-[#94A3B8] font-semibold mb-2">Decision</label>
-                    <div className="flex gap-3">
-                      <button 
-                        type="button"
-                        onClick={() => setReviewDecision('Approve')}
-                        className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-[rgba(34,197,94,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#4ADE80]")}
-                      >
-                        Approve
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => setReviewDecision('Reject')}
-                        className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#F87171]")}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Notes (Optional)</label>
-                    <textarea 
-                      value={actionNotes}
-                      onChange={e => setActionNotes(e.target.value)}
-                      className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
-                      placeholder="Reason for rejection or approval notes..."
-                    />
-                  </div>
-                </>
-              )}
-
-              {actionType === 'fulfill' && (
-                <>
-                  <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] rounded-lg p-3.5 flex items-center gap-3 text-sm text-[#D8B4FE]">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-                    <span>Marking this as fulfilled will notify the requester that the item is ready for pickup and deduct the quantity from inventory.</span>
-                  </div>
-                  <div>
-                    <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Collection Notes (Optional)</label>
-                    <textarea 
-                      value={actionNotes}
-                      onChange={e => setActionNotes(e.target.value)}
-                      className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
-                      placeholder="e.g. Please sign the collection log upon arrival..."
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="flex gap-3 mt-2 border-t border-[#1F2A40] pt-5">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold transition-colors">Cancel</button>
-                <button 
-                  type="submit" 
-                  className={clsx(
-                    "flex-1 px-4 py-2 text-white rounded-lg text-[13px] font-bold transition-colors",
-                    actionType === 'review' && reviewDecision === 'Reject' ? "bg-[#EF4444] hover:bg-[#DC2626]" : "bg-[#10B981] hover:bg-[#059669]"
-                  )}
-                >
-                  {actionType === 'review' ? 'Submit Decision' : 'Confirm Fulfillment'}
-                </button>
-              </div>
-            </form>
+            <div className="text-[#D8B4FE] text-sm font-semibold">{selectedReq?.qty}x {selectedReq?.itemName}</div>
+            <div className="text-[#5A6A85] text-xs">Requested by: <span className="text-[#E2E8F0]">{selectedReq?.requester}</span> ({selectedReq?.dept})</div>
           </div>
-        </div>
-      )}
+
+          {actionType === 'review' && (
+            <>
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-2">Decision</label>
+                <div className="flex gap-3">
+                  <button 
+                    type="button"
+                    onClick={() => setReviewDecision('Approve')}
+                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-[rgba(34,197,94,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#4ADE80]")}
+                  >
+                    Approve
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setReviewDecision('Reject')}
+                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#F87171]")}
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Notes (Optional)</label>
+                <textarea 
+                  value={actionNotes}
+                  onChange={e => setActionNotes(e.target.value)}
+                  className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
+                  placeholder="Reason for rejection or approval notes..."
+                />
+              </div>
+            </>
+          )}
+
+          {actionType === 'fulfill' && (
+            <>
+              <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] rounded-lg p-3.5 flex items-center gap-3 text-sm text-[#D8B4FE]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+                <span>Marking this as fulfilled will notify the requester that the item is ready for pickup and deduct the quantity from inventory.</span>
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Collection Notes (Optional)</label>
+                <textarea 
+                  value={actionNotes}
+                  onChange={e => setActionNotes(e.target.value)}
+                  className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
+                  placeholder="e.g. Please sign the collection log upon arrival..."
+                />
+              </div>
+            </>
+          )}
+        </form>
+      </Modal>
     </div>
   )
 }

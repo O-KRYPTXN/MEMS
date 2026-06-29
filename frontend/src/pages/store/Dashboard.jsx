@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialInventory = [
   { id: 'PART-1001', name: 'O2 Sensor – Nellcor', qty: 12, min: 10 },
@@ -118,32 +119,31 @@ export default function StoreDashboard() {
         </div>
       )}
 
-      {showFulfillModal && selectedReq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowFulfillModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Fulfill Request: {selectedReq.id}</h3>
-              <button onClick={() => setShowFulfillModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            <form onSubmit={handleFulfill} className="p-6 flex flex-col gap-4">
-              <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] text-[#D8B4FE] p-4 rounded-lg text-sm leading-relaxed">
-                You are about to fulfill <strong>{selectedReq.qty}x {selectedReq.itemName}</strong> for the <strong>{selectedReq.dept}</strong> department. This will deduct from current inventory.
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Fulfillment Notes</label>
-                <textarea 
-                  className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
-                  placeholder="Optional fulfillment notes..."
-                ></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowFulfillModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg text-[13px] font-bold transition-colors">Confirm Fulfillment</button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showFulfillModal && !!selectedReq}
+        onClose={() => setShowFulfillModal(false)}
+        title={`Fulfill Request: ${selectedReq?.id}`}
+        maxWidth="460px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowFulfillModal(false)} />
+            <ModalPrimaryBtn onClick={handleFulfill} color="#8B5CF6">
+              Confirm Fulfillment
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] text-[#D8B4FE] p-4 rounded-lg text-sm leading-relaxed">
+          You are about to fulfill <strong>{selectedReq?.qty}x {selectedReq?.itemName}</strong> for the <strong>{selectedReq?.dept}</strong> department. This will deduct from current inventory.
         </div>
-      )}
+        <div>
+          <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Fulfillment Notes</label>
+          <textarea 
+            className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
+            placeholder="Optional fulfillment notes..."
+          ></textarea>
+        </div>
+      </Modal>
     </div>
   )
 }

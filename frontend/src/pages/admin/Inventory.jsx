@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { inventory as initialInventory } from '../../data/inventory'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
@@ -305,116 +306,92 @@ export default function Inventory() {
         {renderPagination()}
       </div>
 
-      {showViewModal && selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.82)]" onClick={() => setShowViewModal(false)}>
-          <div className="w-full max-w-[520px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] p-[28px] animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-[22px]">
-              <div className="flex items-center gap-[10px] text-[17px] font-bold text-[#E2E8F0]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[20px] h-[20px] text-[#3B72F6]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                Part Details
-              </div>
-              <button type="button" onClick={() => setShowViewModal(false)} className="w-[32px] h-[32px] rounded-lg border border-[#1F2A40] flex items-center justify-center text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1E293B]">✕</button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-[16px]">
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Part Code</div><div className="text-[13px] font-mono font-semibold text-[#E2E8F0] mt-1">{selectedItem.code}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Part Name</div><div className="text-[13px] font-medium text-[#E2E8F0] mt-1">{selectedItem.name}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Category</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem.category}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Unit</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem.unit}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Min Level</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem.min}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Stock Qty</div><div className={`text-[13px] mt-1 font-bold ${getQtyColor(selectedItem)}`}>{selectedItem.qty}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Location</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem.location}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Unit Price</div><div className="text-[13px] text-[#E2E8F0] mt-1">{fmt(selectedItem.price)}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Total Value</div><div className="text-[13px] font-semibold text-[#E2E8F0] mt-1">{fmt(selectedItem.qty * selectedItem.price)}</div></div>
-              <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Status</div><div className="mt-1"><StockStatusBadge item={selectedItem} /></div></div>
-            </div>
+      <Modal
+        isOpen={showViewModal && !!selectedItem}
+        onClose={() => setShowViewModal(false)}
+        title="Part Details"
+        maxWidth="520px"
+        footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>}
+      >
+        <div className="grid grid-cols-2 gap-[16px]">
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Part Code</div><div className="text-[13px] font-mono font-semibold text-[#E2E8F0] mt-1">{selectedItem?.code}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Part Name</div><div className="text-[13px] font-medium text-[#E2E8F0] mt-1">{selectedItem?.name}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Category</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.category}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Unit</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.unit}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Min Level</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.min}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Stock Qty</div><div className={`text-[13px] mt-1 font-bold ${selectedItem ? getQtyColor(selectedItem) : ''}`}>{selectedItem?.qty}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Location</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.location}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Unit Price</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.price)}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Total Value</div><div className="text-[13px] font-semibold text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.qty * selectedItem.price)}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Status</div><div className="mt-1">{selectedItem && <StockStatusBadge item={selectedItem} />}</div></div>
+        </div>
+      </Modal>
 
-            <div className="flex justify-end gap-[10px] border-t border-[#1F2A40] pt-[18px] mt-[24px]">
-              <button type="button" onClick={() => setShowViewModal(false)} className="px-[20px] py-[10px] bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0]">Close</button>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add Inventory Item"
+        maxWidth="480px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowAddModal(false)} />
+            <ModalPrimaryBtn type="submit" form="add-item-form" color="#3B72F6">
+              Save Item
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="add-item-form" onSubmit={handleSubmit(onAddSubmit)} className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>Part Code</label>
+              <input {...register('code', { required: true })} className={inputCls} placeholder="e.g. INV-0348" />
+            </div>
+            <div>
+              <label className={labelCls}>Unit</label>
+              <input {...register('unit', { required: true })} className={inputCls} placeholder="e.g. pcs, set, box" />
             </div>
           </div>
-        </div>
-      )}
-
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,15,0.82)]" onClick={() => setShowAddModal(false)}>
-          <div className="w-full max-w-[480px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] p-[28px] animate-in fade-in slide-in-from-bottom-4 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-[22px]">
-              <div className="flex items-center gap-[10px] text-[17px] font-bold text-[#E2E8F0]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[20px] h-[20px] text-[#3B72F6]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                </svg>
-                Add Inventory Item
-              </div>
-              <button type="button" onClick={() => setShowAddModal(false)} className="w-[32px] h-[32px] rounded-lg border border-[#1F2A40] flex items-center justify-center text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1E293B]">✕</button>
-            </div>
-            
-            <form onSubmit={handleSubmit(onAddSubmit)} className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Part Code</label>
-                  <input {...register('code', { required: true })} className={inputCls} placeholder="e.g. INV-0348" />
-                </div>
-                <div>
-                  <label className={labelCls}>Unit</label>
-                  <input {...register('unit', { required: true })} className={inputCls} placeholder="e.g. pcs, set, box" />
-                </div>
-              </div>
-              
-              <div>
-                <label className={labelCls}>Part Name</label>
-                <input {...register('name', { required: true })} className={inputCls} placeholder="Full part / item name" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Category</label>
-                  <select {...register('category', { required: true })} className={inputCls}>
-                    <option value="">Select Category</option>
-                    {CAT_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Location</label>
-                  <select {...register('location', { required: true })} className={inputCls}>
-                    <option value="">Select Location</option>
-                    {LOC_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-[14px]">
-                <div>
-                  <label className={labelCls}>Stock Qty</label>
-                  <input type="number" min="0" {...register('qty', { required: true, min: 0 })} className={inputCls} />
-                </div>
-                <div>
-                  <label className={labelCls}>Min Level</label>
-                  <input type="number" min="0" {...register('min', { required: true, min: 0 })} className={inputCls} />
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>Unit Price</label>
-                <input type="number" min="0" step="0.01" {...register('price', { required: true, min: 0 })} className={inputCls} placeholder="0.00" />
-              </div>
-
-              <div className="flex justify-end gap-[10px] border-t border-[#1F2A40] pt-[18px] mt-[8px]">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-[20px] py-[10px] bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-medium hover:bg-[#1E293B] hover:text-[#E2E8F0]">Cancel</button>
-                <button type="submit" className="px-[20px] py-[10px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors flex items-center gap-[6px]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                  Save Item
-                </button>
-              </div>
-            </form>
+          
+          <div>
+            <label className={labelCls}>Part Name</label>
+            <input {...register('name', { required: true })} className={inputCls} placeholder="Full part / item name" />
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>Category</label>
+              <select {...register('category', { required: true })} className={inputCls}>
+                <option value="">Select Category</option>
+                {CAT_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Location</label>
+              <select {...register('location', { required: true })} className={inputCls}>
+                <option value="">Select Location</option>
+                {LOC_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>Stock Qty</label>
+              <input type="number" min="0" {...register('qty', { required: true, min: 0 })} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Min Level</label>
+              <input type="number" min="0" {...register('min', { required: true, min: 0 })} className={inputCls} />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Unit Price</label>
+            <input type="number" min="0" step="0.01" {...register('price', { required: true, min: 0 })} className={inputCls} placeholder="0.00" />
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

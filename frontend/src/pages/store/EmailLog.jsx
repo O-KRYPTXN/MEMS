@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
 
 const initialLogs = [
   { 
@@ -134,37 +135,28 @@ export default function StoreEmailLog() {
         </div>
       )}
 
-      {showModal && selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-[600px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Email Thread: {selectedLog.po}</h3>
-              <button onClick={() => setShowModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button>
-            </div>
-            <div className="p-5 max-h-[60vh] overflow-y-auto flex flex-col gap-4">
-              <div className="mb-2">
-                <h4 className="font-bold text-lg text-white mb-1 leading-snug">{selectedLog.subject}</h4>
-                <p className="text-sm text-[#D8B4FE]">With: {selectedLog.supplier}</p>
-              </div>
-              {selectedLog.thread.map((msg, i) => (
-                <div key={i} className="bg-[#131720] border border-[#1F2A40] rounded-lg p-4 relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold text-[#E2E8F0] text-sm">{msg.from}</span>
-                    <span className="w-1 h-1 rounded-full bg-[#5A6A85]" />
-                    <span className="text-xs text-[#5A6A85]">{msg.date}</span>
-                  </div>
-                  <div className="text-sm text-[#94A3B8] whitespace-pre-wrap leading-relaxed">{msg.body}</div>
-                </div>
-              ))}
-            </div>
-            <div className="p-4 border-t border-[#1F2A40] bg-[#131720] flex justify-end">
-              <button onClick={() => setShowModal(false)} className="px-5 py-2 bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-bold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors">
-                Close
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={showModal && !!selectedLog}
+        onClose={() => setShowModal(false)}
+        title={`Email Thread: ${selectedLog?.po}`}
+        maxWidth="600px"
+        footer={<ModalCancelBtn onClick={() => setShowModal(false)}>Close</ModalCancelBtn>}
+      >
+        <div className="mb-2">
+          <h4 className="font-bold text-lg text-white mb-1 leading-snug">{selectedLog?.subject}</h4>
+          <p className="text-sm text-[#D8B4FE]">With: {selectedLog?.supplier}</p>
         </div>
-      )}
+        {selectedLog?.thread.map((msg, i) => (
+          <div key={i} className="bg-[#131720] border border-[#1F2A40] rounded-lg p-4 relative">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="font-semibold text-[#E2E8F0] text-sm">{msg.from}</span>
+              <span className="w-1 h-1 rounded-full bg-[#5A6A85]" />
+              <span className="text-xs text-[#5A6A85]">{msg.date}</span>
+            </div>
+            <div className="text-sm text-[#94A3B8] whitespace-pre-wrap leading-relaxed">{msg.body}</div>
+          </div>
+        ))}
+      </Modal>
     </div>
   )
 }

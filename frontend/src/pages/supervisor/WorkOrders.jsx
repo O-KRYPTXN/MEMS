@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialWOs = [
   { id:'WO-2041', device:'ICU Ventilator', type:'Repair', dept:'ICU', priority:'High', tech:'Unassigned', status:'Unassigned', created:'2026-06-28', desc:'' },
@@ -207,61 +208,74 @@ export default function WorkOrders() {
 
       <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
-      {showAssignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowAssignModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Assign Work Order</h3><button onClick={() => setShowAssignModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <div className="p-6 flex flex-col gap-4">
-              <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Work Order</label><select value={assignForm.woId} onChange={e => setAssignForm({ ...assignForm, woId: e.target.value })} className={inputCls + " w-full"}><option value="">Select work order...</option>{wos.filter(w => w.status !== 'Closed').map(w => <option key={w.id} value={w.id}>{w.id} — {w.device} ({w.tech})</option>)}</select></div>
-              <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Assign To Technician</label><select value={assignForm.tech} onChange={e => setAssignForm({ ...assignForm, tech: e.target.value })} className={inputCls + " w-full"}><option value="">Select Technician...</option>{teamData.map(t => <option key={t.name} value={t.name}>{t.name} ({t.status})</option>)}</select></div>
-              <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Priority</label><select value={assignForm.priority} onChange={e => setAssignForm({ ...assignForm, priority: e.target.value })} className={inputCls + " w-full"}><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
-              <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Notes</label><textarea value={assignForm.notes} onChange={e => setAssignForm({ ...assignForm, notes: e.target.value })} className={inputCls + " w-full min-h-[80px] resize-none"} placeholder="Special instructions…"></textarea></div>
-              <div className="flex gap-3 mt-2"><button onClick={() => setShowAssignModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0]">Cancel</button><button onClick={handleAssign} className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold">Assign Technician</button></div>
-            </div>
-          </div>
+      <Modal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        title="Assign Work Order"
+        maxWidth="460px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowAssignModal(false)} />
+            <ModalPrimaryBtn onClick={handleAssign} color="#14B8A6">
+              Assign Technician
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4 mt-1">
+          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Work Order</label><select value={assignForm.woId} onChange={e => setAssignForm({ ...assignForm, woId: e.target.value })} className={inputCls + " w-full"}><option value="">Select work order...</option>{wos.filter(w => w.status !== 'Closed').map(w => <option key={w.id} value={w.id}>{w.id} — {w.device} ({w.tech})</option>)}</select></div>
+          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Assign To Technician</label><select value={assignForm.tech} onChange={e => setAssignForm({ ...assignForm, tech: e.target.value })} className={inputCls + " w-full"}><option value="">Select Technician...</option>{teamData.map(t => <option key={t.name} value={t.name}>{t.name} ({t.status})</option>)}</select></div>
+          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Priority</label><select value={assignForm.priority} onChange={e => setAssignForm({ ...assignForm, priority: e.target.value })} className={inputCls + " w-full"}><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Notes</label><textarea value={assignForm.notes} onChange={e => setAssignForm({ ...assignForm, notes: e.target.value })} className={inputCls + " w-full min-h-[80px] resize-none"} placeholder="Special instructions…"></textarea></div>
         </div>
-      )}
+      </Modal>
 
-      {showApproveModal && activeApproval && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowApproveModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Approve {activeApproval.id}</h3><button onClick={() => setShowApproveModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <div className="p-6 flex flex-col gap-5">
-              <div className="grid grid-cols-2 gap-2.5">
-                {[['Work Order', activeApproval.id], ['Device', activeApproval.device], ['Technician', activeApproval.tech], ['Type', activeApproval.type]].map(([l, v]) => (
-                  <div key={l} className="bg-[#1A2235] rounded-lg p-3"><div className="text-[0.72rem] text-[#5A6A85] uppercase">{l}</div><div className="text-[0.875rem] font-semibold text-[#E2E8F0] mt-1">{v}</div></div>
-                ))}
-              </div>
-              <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Supervisor Notes</label><textarea value={approveNotes} onChange={e => setApproveNotes(e.target.value)} className={inputCls + " w-full min-h-[80px] resize-none"} placeholder="Add approval notes…"></textarea></div>
-            </div>
-            <div className="flex gap-3 px-6 py-4 border-t border-[#1F2A40] bg-[#131720]">
-              <button onClick={handleReject} className="px-4 py-2 border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)]">Reject</button>
-              <button onClick={() => setShowApproveModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0]">Cancel</button>
-              <button onClick={handleApprove} className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold">✓ Approve & Close</button>
-            </div>
+      <Modal
+        isOpen={showApproveModal && !!activeApproval}
+        onClose={() => setShowApproveModal(false)}
+        title={activeApproval ? `Approve ${activeApproval.id}` : 'Approve Work Order'}
+        maxWidth="460px"
+        footer={
+          <>
+            <button onClick={handleReject} className="px-4 py-2 border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">Reject</button>
+            <ModalCancelBtn onClick={() => setShowApproveModal(false)} />
+            <ModalPrimaryBtn onClick={handleApprove} color="#14B8A6">
+              ✓ Approve & Close
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-5 mt-2">
+          <div className="grid grid-cols-2 gap-2.5">
+            {[['Work Order', activeApproval?.id], ['Device', activeApproval?.device], ['Technician', activeApproval?.tech], ['Type', activeApproval?.type]].map(([l, v]) => (
+              <div key={l} className="bg-[#1A2235] rounded-lg p-3"><div className="text-[0.72rem] text-[#5A6A85] uppercase">{l}</div><div className="text-[0.875rem] font-semibold text-[#E2E8F0] mt-1">{v}</div></div>
+            ))}
           </div>
+          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Supervisor Notes</label><textarea value={approveNotes} onChange={e => setApproveNotes(e.target.value)} className={inputCls + " w-full min-h-[80px] resize-none"} placeholder="Add approval notes…"></textarea></div>
         </div>
-      )}
+      </Modal>
 
-      {showViewModal && viewWO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowViewModal(false)}>
-          <div className="w-full max-w-[460px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Work Order {viewWO.id}</h3><button onClick={() => setShowViewModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <div className="p-6 flex flex-col gap-5">
-              <div className="grid grid-cols-2 gap-2.5">
-                {[['Work Order', viewWO.id], ['Device', viewWO.device], ['Technician', viewWO.tech], ['Type', viewWO.type], ['Department', viewWO.dept], ['Status', viewWO.status]].map(([l, v]) => (
-                  <div key={l} className="bg-[#1A2235] rounded-lg p-3"><div className="text-[0.72rem] text-[#5A6A85] uppercase">{l}</div><div className="text-[0.875rem] font-semibold text-[#E2E8F0] mt-1">{v}</div></div>
-                ))}
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Description / Notes</label>
-                <div className="bg-[#1A2235] p-2.5 rounded-md text-[0.85rem] color-[#94A3B8] whitespace-pre-wrap">{viewWO.desc || 'No additional notes provided.'}</div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-[#1F2A40] bg-[#131720]"><button onClick={() => setShowViewModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0]">Close</button></div>
+      <Modal
+        isOpen={showViewModal && !!viewWO}
+        onClose={() => setShowViewModal(false)}
+        title={viewWO ? `Work Order ${viewWO.id}` : 'Work Order'}
+        maxWidth="460px"
+        footer={
+          <ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>
+        }
+      >
+        <div className="flex flex-col gap-5 mt-2">
+          <div className="grid grid-cols-2 gap-2.5">
+            {[['Work Order', viewWO?.id], ['Device', viewWO?.device], ['Technician', viewWO?.tech], ['Type', viewWO?.type], ['Department', viewWO?.dept], ['Status', viewWO?.status]].map(([l, v]) => (
+              <div key={l} className="bg-[#1A2235] rounded-lg p-3"><div className="text-[0.72rem] text-[#5A6A85] uppercase">{l}</div><div className="text-[0.875rem] font-semibold text-[#E2E8F0] mt-1">{v}</div></div>
+            ))}
+          </div>
+          <div>
+            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Description / Notes</label>
+            <div className="bg-[#1A2235] p-2.5 rounded-md text-[0.85rem] text-[#94A3B8] whitespace-pre-wrap">{viewWO?.desc || 'No additional notes provided.'}</div>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

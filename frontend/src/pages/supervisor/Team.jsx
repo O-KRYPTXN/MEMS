@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialTeam = [
   { id: 'tech-1', name: 'James Smith', initials: 'JS', title: 'Senior Biomedical Technician', color: '#3B72F6', status: 'busy', phone: '+20 100 234 5678', email: 'j.smith@hospital.eg', shift: 'Morning (07:00-15:00)', tasksActive: 2, tasksCompleted: 14, maxTasks: 5, tasks: [{ id: 'WO-2038', device: 'Defibrillator AED-7', priority: 'High' }, { id: 'WO-2040', device: 'Defibrillator AED-9', priority: 'Medium' }] },
@@ -208,72 +209,80 @@ export default function SupervisorTeam() {
 
       <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
-      {showAssignModal && activeTech && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowAssignModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Assign Task to {activeTech.name}</h3><button onClick={() => setShowAssignModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleAssignTask} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className={labelCls}>Select Work Order</label>
-                <select name="wo" className={inputCls} defaultValue="">
-                  <option value="" disabled>Select work order...</option>
-                  <option value="WO-2050">WO-2050 — Ventilator Calibration</option>
-                  <option value="WO-2051">WO-2051 — Monitor Repair (Urgent)</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Priority</label>
-                <select name="priority" className={inputCls} defaultValue="Medium">
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Notes (Optional)</label>
-                <textarea name="notes" className={inputCls + " min-h-[80px] resize-none"} placeholder="Special instructions…"></textarea>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowAssignModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">Assign Task</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAssignModal && !!activeTech}
+        onClose={() => setShowAssignModal(false)}
+        title={activeTech ? `Assign Task to ${activeTech.name}` : 'Assign Task'}
+        maxWidth="420px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowAssignModal(false)} />
+            <ModalPrimaryBtn type="submit" form="assign-task-form" color="#14B8A6">
+              Assign Task
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="assign-task-form" onSubmit={handleAssignTask} className="flex flex-col gap-4 mt-1">
+          <div>
+            <label className={labelCls}>Select Work Order</label>
+            <select name="wo" className={inputCls} defaultValue="">
+              <option value="" disabled>Select work order...</option>
+              <option value="WO-2050">WO-2050 — Ventilator Calibration</option>
+              <option value="WO-2051">WO-2051 — Monitor Repair (Urgent)</option>
+            </select>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Priority</label>
+            <select name="priority" className={inputCls} defaultValue="Medium">
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Notes (Optional)</label>
+            <textarea name="notes" className={inputCls + " min-h-[80px] resize-none"} placeholder="Special instructions…"></textarea>
+          </div>
+        </form>
+      </Modal>
 
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowAddModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Add New Technician</h3><button onClick={() => setShowAddModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleAddTech} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className={labelCls}>Select Technician</label>
-                <select name="techEmail" className={inputCls} defaultValue="">
-                  <option value="" disabled>Select from system users...</option>
-                  {mockSystemTechs.map(t => <option key={t.email} value={t.email}>{t.name} ({t.email})</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Phone Number</label>
-                <input name="phone" type="text" className={inputCls} defaultValue="+20 109 999 9999" />
-              </div>
-              <div>
-                <label className={labelCls}>Assigned Shift</label>
-                <select name="shift" className={inputCls} defaultValue="Morning (07:00-15:00)">
-                  <option value="Morning (07:00-15:00)">Morning (07:00-15:00)</option>
-                  <option value="Afternoon (15:00-23:00)">Afternoon (15:00-23:00)</option>
-                  <option value="Night (23:00-07:00)">Night (23:00-07:00)</option>
-                </select>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">Add Technician</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add New Technician"
+        maxWidth="420px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowAddModal(false)} />
+            <ModalPrimaryBtn type="submit" form="add-tech-form" color="#14B8A6">
+              Add Technician
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="add-tech-form" onSubmit={handleAddTech} className="flex flex-col gap-4 mt-1">
+          <div>
+            <label className={labelCls}>Select Technician</label>
+            <select name="techEmail" className={inputCls} defaultValue="">
+              <option value="" disabled>Select from system users...</option>
+              {mockSystemTechs.map(t => <option key={t.email} value={t.email}>{t.name} ({t.email})</option>)}
+            </select>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Phone Number</label>
+            <input name="phone" type="text" className={inputCls} defaultValue="+20 109 999 9999" />
+          </div>
+          <div>
+            <label className={labelCls}>Assigned Shift</label>
+            <select name="shift" className={inputCls} defaultValue="Morning (07:00-15:00)">
+              <option value="Morning (07:00-15:00)">Morning (07:00-15:00)</option>
+              <option value="Afternoon (15:00-23:00)">Afternoon (15:00-23:00)</option>
+              <option value="Night (23:00-07:00)">Night (23:00-07:00)</option>
+            </select>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

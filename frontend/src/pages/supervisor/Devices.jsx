@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
 const initialDevices = [
   { id: 'DEV-0101', name: 'ICU Ventilator V-12', category: 'Ventilators', dept: 'ICU', status: 'Faulty', lastPM: '2026-02-10', nextPM: '2026-05-10' },
@@ -209,82 +210,86 @@ export default function SupervisorDevices() {
 
       <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
-      {showFaultModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowFaultModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Report Device Fault</h3><button onClick={() => setShowFaultModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <form onSubmit={handleReportFault} className="p-6 flex flex-col gap-4">
-              <div className="bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] text-[#FCD34D] p-2.5 rounded-lg flex items-start gap-2.5 text-sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 mt-0.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                <span className="text-[0.8rem] font-medium leading-relaxed">A Work Order will be automatically created and status set to Faulty.</span>
-              </div>
-              <div>
-                <label className={labelCls}>Select Device</label>
-                <select value={faultDeviceId} onChange={e => setFaultDeviceId(e.target.value)} className={inputCls}>
-                  <option value="" disabled>Select an operational device...</option>
-                  {devices.filter(d => d.status === 'Operational').map(d => <option key={d.id} value={d.id}>{d.name} ({d.id})</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Fault Type</label>
-                <select className={inputCls} defaultValue="Electrical Fault">
-                  <option value="Electrical Fault">Electrical Fault</option>
-                  <option value="Mechanical Damage">Mechanical Damage</option>
-                  <option value="Software Issue">Software Issue</option>
-                  <option value="Calibration Error">Calibration Error</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Description</label>
-                <textarea className={inputCls + " min-h-[80px] resize-none"} placeholder="Describe the fault symptoms…" required></textarea>
-              </div>
-              <div>
-                <label className={labelCls}>Priority</label>
-                <select className={inputCls} defaultValue="High">
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-              <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowFaultModal(false)} className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg text-[13px] font-bold transition-colors">Submit Fault Report</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showFaultModal}
+        onClose={() => setShowFaultModal(false)}
+        title="Report Device Fault"
+        maxWidth="420px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowFaultModal(false)} />
+            <ModalPrimaryBtn type="submit" form="fault-form" color="#14B8A6">
+              Submit Fault Report
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="fault-form" onSubmit={handleReportFault} className="flex flex-col gap-4 mt-1">
+          <div className="bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] text-[#FCD34D] p-2.5 rounded-lg flex items-start gap-2.5 text-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 mt-0.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span className="text-[0.8rem] font-medium leading-relaxed">A Work Order will be automatically created and status set to Faulty.</span>
           </div>
-        </div>
-      )}
+          <div>
+            <label className={labelCls}>Select Device</label>
+            <select value={faultDeviceId} onChange={e => setFaultDeviceId(e.target.value)} className={inputCls}>
+              <option value="" disabled>Select an operational device...</option>
+              {devices.filter(d => d.status === 'Operational').map(d => <option key={d.id} value={d.id}>{d.name} ({d.id})</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Fault Type</label>
+            <select className={inputCls} defaultValue="Electrical Fault">
+              <option value="Electrical Fault">Electrical Fault</option>
+              <option value="Mechanical Damage">Mechanical Damage</option>
+              <option value="Software Issue">Software Issue</option>
+              <option value="Calibration Error">Calibration Error</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Description</label>
+            <textarea className={inputCls + " min-h-[80px] resize-none"} placeholder="Describe the fault symptoms…" required></textarea>
+          </div>
+          <div>
+            <label className={labelCls}>Priority</label>
+            <select className={inputCls} defaultValue="High">
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </form>
+      </Modal>
 
-      {showHistoryModal && selectedDevice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)] backdrop-blur-sm" onClick={() => setShowHistoryModal(false)}>
-          <div className="w-full max-w-[420px] bg-[#181D2A] border border-[#1F2A40] rounded-[14px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#1F2A40]"><h3 className="text-[1.1rem] font-bold text-[#E2E8F0]">Maintenance History</h3><button onClick={() => setShowHistoryModal(false)} className="text-[#64748B] hover:text-[#E2E8F0]">✕</button></div>
-            <div className="p-6 max-h-[380px] overflow-y-auto">
-              <div className="mb-4 text-[#94A3B8] text-[0.85rem] font-semibold">{selectedDevice.name}</div>
-              {!mockHistory[selectedDevice.id] ? (
-                <div className="text-center py-6 text-[#5A6A85] text-sm">No maintenance history found.</div>
-              ) : (
-                <div className="flex flex-col">
-                  {mockHistory[selectedDevice.id].map((record, idx) => (
-                    <div key={idx} className="flex gap-4 py-3 border-b border-[#1F2A40] last:border-0 relative">
-                      <div className={clsx("w-2.5 h-2.5 rounded-full mt-1.5 shrink-0", record.type === 'Repair' ? "bg-[#F87171]" : "bg-[#14B8A6]")}></div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1"><span className="text-[13px] font-bold text-[#E2E8F0]">{record.type}</span><span className="text-[#5A6A85] text-[11px] font-semibold">— {formatDate(record.date)}</span></div>
-                        <div className="text-[11px] text-[#94A3B8] font-semibold mb-1">Tech: {record.tech}</div>
-                        <div className="text-[12px] text-[#5A6A85] leading-relaxed">{record.notes}</div>
-                      </div>
-                    </div>
-                  ))}
+      <Modal
+        isOpen={showHistoryModal && !!selectedDevice}
+        onClose={() => setShowHistoryModal(false)}
+        title="Maintenance History"
+        maxWidth="420px"
+        footer={
+          <ModalCancelBtn onClick={() => setShowHistoryModal(false)}>Close</ModalCancelBtn>
+        }
+      >
+        <div className="flex flex-col gap-4 mt-2">
+          <div className="text-[#94A3B8] text-[0.85rem] font-semibold">{selectedDevice?.name}</div>
+          {!mockHistory[selectedDevice?.id] ? (
+            <div className="text-center py-6 text-[#5A6A85] text-sm">No maintenance history found.</div>
+          ) : (
+            <div className="flex flex-col">
+              {mockHistory[selectedDevice.id].map((record, idx) => (
+                <div key={idx} className="flex gap-4 py-3 border-b border-[#1F2A40] last:border-0 relative">
+                  <div className={clsx("w-2.5 h-2.5 rounded-full mt-1.5 shrink-0", record.type === 'Repair' ? "bg-[#F87171]" : "bg-[#14B8A6]")}></div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1"><span className="text-[13px] font-bold text-[#E2E8F0]">{record.type}</span><span className="text-[#5A6A85] text-[11px] font-semibold">— {formatDate(record.date)}</span></div>
+                    <div className="text-[11px] text-[#94A3B8] font-semibold mb-1">Tech: {record.tech}</div>
+                    <div className="text-[12px] text-[#5A6A85] leading-relaxed">{record.notes}</div>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
-            <div className="flex justify-end px-6 py-4 border-t border-[#1F2A40] bg-[#131720]">
-              <button onClick={() => setShowHistoryModal(false)} className="px-5 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] hover:border-[#94A3B8] hover:text-[#E2E8F0] font-bold">Close</button>
-            </div>
-          </div>
+          )}
         </div>
-      )}
+      </Modal>
     </div>
   )
 }
