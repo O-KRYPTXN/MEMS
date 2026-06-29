@@ -36,15 +36,17 @@ import TechDashboard from '../pages/technician/Dashboard'
 import TechWorkOrders from '../pages/technician/WorkOrders'
 import TechDevices from '../pages/technician/Devices'
 import TechNotifications from '../pages/technician/Notifications'
+import TechInventory from '../pages/technician/Inventory'
 
 // Department pages
 import DeptDashboard from '../pages/department/Dashboard'
 import DeptRequests from '../pages/department/Requests'
-import DeptDevices from '../pages/department/Devices'
+
 
 // Store pages
 import StoreDashboard from '../pages/store/Dashboard'
 import StoreInventory from '../pages/store/Inventory'
+import StoreRequests from '../pages/store/Requests'
 import StoreOrders from '../pages/store/Orders'
 import StoreCreateOrder from '../pages/store/CreateOrder'
 import StoreRejected from '../pages/store/RejectedOrders'
@@ -120,6 +122,7 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to={ROUTES.TECH_DASHBOARD} replace /> },
       { path: 'dashboard', element: <TechDashboard /> },
       { path: 'work-orders', element: <TechWorkOrders /> },
+      { path: 'inventory', element: <TechInventory /> },
       { path: 'devices', element: <TechDevices /> },
       { path: 'notifications', element: <TechNotifications /> },
       { path: 'profile', element: <Profile /> },
@@ -138,7 +141,6 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to={ROUTES.DEPT_DASHBOARD} replace /> },
       { path: 'dashboard', element: <DeptDashboard /> },
       { path: 'requests', element: <DeptRequests /> },
-      { path: 'devices', element: <DeptDevices /> },
       { path: 'profile', element: <Profile /> },
     ],
   },
@@ -155,6 +157,7 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to={ROUTES.STORE_DASHBOARD} replace /> },
       { path: 'dashboard', element: <StoreDashboard /> },
       { path: 'inventory', element: <StoreInventory /> },
+      { path: 'requests', element: <StoreRequests /> },
       { path: 'orders', element: <StoreOrders /> },
       { path: 'orders/create', element: <StoreCreateOrder /> },
       { path: 'orders/rejected', element: <StoreRejected /> },
