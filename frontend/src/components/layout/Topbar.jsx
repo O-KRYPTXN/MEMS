@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNotificationStore } from '../../store/notificationStore'
 import { useDebounce } from '../../hooks/useDebounce'
+import LanguageSwitcher from '../ui/LanguageSwitcher'
 
 const Topbar = ({ title, onSearch, onNotificationClick }) => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -38,6 +39,8 @@ const Topbar = ({ title, onSearch, onNotificationClick }) => {
           className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]"
         />
       </div>
+
+      <LanguageSwitcher />
 
       <button
         type="button"

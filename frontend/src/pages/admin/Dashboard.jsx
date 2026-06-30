@@ -13,6 +13,14 @@ import { workOrders } from '../../data/workOrders'
 import { inventory } from '../../data/inventory'
 import { alerts as alertsData } from '../../data/alerts'
 import { ROUTES } from '../../constants/routes'
+import { useTranslation } from 'react-i18next'
+
+const statusKeyMap = {
+  open: 'open',
+  progress: 'inProgress',
+  waiting: 'waitingParts',
+  done: 'done',
+}
 
 const ICON_DEVICE = 'M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3'
 const ICON_WARN = 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z'
@@ -57,6 +65,7 @@ const linkBtn = 'text-[0.8125rem] font-semibold text-[#5E8FFF] hover:text-[#7AA3
 
 const Dashboard = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [alertsCleared, setAlertsCleared] = useState(false)
 
   const openWOCount = workOrders.filter((w) => w.status !== 'done').length
@@ -90,19 +99,19 @@ const Dashboard = () => {
   const lowInventory = useMemo(() => inventory.filter((i) => i.stock <= i.minLevel), [])
 
   const woColumns = [
-    { key: 'id', label: 'WO #', primary: true },
-    { key: 'device', label: 'Device' },
-    { key: 'department', label: 'Department' },
-    { key: 'priority', label: 'Priority', render: (val) => <StatusBadge variant={val} /> },
-    { key: 'status', label: 'Status', render: (val) => <StatusBadge variant={val} /> },
+    { key: 'id', label: t('dashboard.woNumber'), primary: true },
+    { key: 'device', label: t('dashboard.device') },
+    { key: 'department', label: t('dashboard.department') },
+    { key: 'priority', label: t('common.priority'), render: (val) => <StatusBadge variant={val} label={t(`priority.${val}`)} /> },
+    { key: 'status', label: t('common.status'), render: (val) => <StatusBadge variant={val} label={t(`status.${statusKeyMap[val]}`)} /> },
   ]
 
   const invColumns = [
-    { key: 'name', label: 'Part', primary: true },
-    { key: 'stock', label: 'Stock', render: (val, row) => (
+    { key: 'name', label: t('dashboard.part'), primary: true },
+    { key: 'stock', label: t('dashboard.stock'), render: (val, row) => (
       <span className={clsx(val <= row.minLevel * 0.5 ? 'text-[#F87171]' : 'text-[#FCD34D]')}>{val}</span>
     ) },
-    { key: 'minLevel', label: 'Min' },
+    { key: 'minLevel', label: t('dashboard.min') },
   ]
 
   const technicians = ['J. Smith', 'A. Hassan', 'M. Youssef', 'S. Khalid']
@@ -116,8 +125,8 @@ const Dashboard = () => {
       {/* Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-[#E2E8F0]">Overview</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Hospital-wide equipment status and operations summary</p>
+          <h1 className="text-xl font-bold text-[#E2E8F0]">{t('dashboard.overview')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('dashboard.overviewSubtitle')}</p>
         </div>
         <button
           type="button"
@@ -127,33 +136,33 @@ const Dashboard = () => {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px]">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Generate PM
+          {t('dashboard.generatePM')}
         </button>
       </div>
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <KPICard title="Total Device Count" value="2,418" iconPath={ICON_DEVICE} iconVariant="blue" trend={{ type: 'up', text: '4.2%' }} />
-        <KPICard title="System Fault Rate" value="1.8%" iconPath={ICON_WARN} iconVariant="red" danger trend={{ type: 'down', text: '+2' }} />
-        <KPICard title="Open Work Orders" value={openWOCount} iconPath={ICON_WO} iconVariant="orange" trend={{ type: 'warn', text: `${urgentCount} urgent` }} />
-        <KPICard title="PM Compliance Percentage" value="94%" iconPath={ICON_BOX} iconVariant="green" trend={{ type: 'warn', text: 'Warning' }} />
+        <KPICard title={t('dashboard.totalDevices')} value="2,418" iconPath={ICON_DEVICE} iconVariant="blue" trend={{ type: 'up', text: '4.2%' }} />
+        <KPICard title={t('dashboard.faultRate')} value="1.8%" iconPath={ICON_WARN} iconVariant="red" danger trend={{ type: 'down', text: '+2' }} />
+        <KPICard title={t('dashboard.openWorkOrders')} value={openWOCount} iconPath={ICON_WO} iconVariant="orange" trend={{ type: 'warn', text: `${urgentCount} ${t('dashboard.urgent')}` }} />
+        <KPICard title={t('dashboard.pmCompliance')} value="94%" iconPath={ICON_BOX} iconVariant="green" trend={{ type: 'warn', text: 'Warning' }} />
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        <Panel title="Fault Trend & MTBF" subtitle="Trend of reported faults across all departments"
-          action={<button type="button" className={linkBtn}>View Report</button>}>
+        <Panel title={t('dashboard.faultTrendTitle')} subtitle={t('dashboard.faultTrendSubtitle')}
+          action={<button type="button" className={linkBtn}>{t('dashboard.viewReport')}</button>}>
           <div className="p-5">
             <FaultTrendLineChart data={faultData} />
           </div>
         </Panel>
 
-        <Panel title="Work Orders by Department" subtitle="Distribution this month">
+        <Panel title={t('dashboard.woByDeptTitle')} subtitle={t('dashboard.woByDeptSubtitle')}>
           <div className="py-5">
             <StatusDonutChart
               data={deptData.map(d => ({ ...d, displayValue: totalWOs ? Math.round((d.value / totalWOs) * 100) + '%' : '0%' }))}
               centerLabel={totalWOs}
-              centerSubLabel="Total WOs"
+              centerSubLabel={t('dashboard.totalWOs')}
             />
           </div>
         </Panel>
@@ -161,15 +170,15 @@ const Dashboard = () => {
 
       {/* Work Orders + Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        <Panel title="Recent Urgent Work Orders" subtitle="Last 5 unresolved high-priority tickets"
-          action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_WORK_ORDERS)}>View All</button>}>
+        <Panel title={t('dashboard.recentUrgentTitle')} subtitle={t('dashboard.recentUrgentSubtitle')}
+          action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_WORK_ORDERS)}>{t('dashboard.viewAll')}</button>}>
           <DataTable columns={woColumns} data={recentWOs} />
         </Panel>
 
-        <Panel title="System Alerts" subtitle="Prioritized notifications"
-          action={<button type="button" className={linkBtn} onClick={() => setAlertsCleared(true)}>Mark all read</button>}>
+        <Panel title={t('dashboard.systemAlertsTitle')} subtitle={t('dashboard.systemAlertsSubtitle')}
+          action={<button type="button" className={linkBtn} onClick={() => setAlertsCleared(true)}>{t('dashboard.markAllRead')}</button>}>
           {alertsCleared ? (
-            <p className="py-8 text-center text-[0.8125rem] text-[#5A6A85]">All caught up! No active alerts.</p>
+            <p className="py-8 text-center text-[0.8125rem] text-[#5A6A85]">{t('dashboard.allCaughtUp')}</p>
           ) : (
             alertsData.map((a, i) => (
               <AlertItem key={a.id} type={a.type} title={a.title} subtitle={a.subtitle} time={a.time}
@@ -181,21 +190,21 @@ const Dashboard = () => {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <Panel title="Technician Workload" subtitle="Open tasks per technician">
+        <Panel title={t('dashboard.technicianWorkloadTitle')} subtitle={t('dashboard.technicianWorkloadSubtitle')}>
           <div className="py-2 px-5">
             {technicians.map((tech, i) => (
-              <ProgressBar key={tech} label={tech} value={`${techCounts[i]} tasks`}
+              <ProgressBar key={tech} label={tech} value={`${techCounts[i]} ${techCounts[i] === 1 ? t('dashboard.task') : t('dashboard.tasks')}`}
                 percentage={Math.round((techCounts[i] / maxTechCount) * 100)} color={techColors[i]} />
             ))}
           </div>
         </Panel>
 
-        <Panel title="Inventory Status" subtitle="Parts at or below minimum level"
-          action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_INVENTORY)}>View All</button>}>
+        <Panel title={t('dashboard.inventoryStatusTitle')} subtitle={t('dashboard.inventoryStatusSubtitle')}
+          action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_INVENTORY)}>{t('dashboard.viewAll')}</button>}>
           <DataTable columns={invColumns} data={lowInventory} />
         </Panel>
 
-        <Panel title="Devices by Department" subtitle="Active device count">
+        <Panel title={t('dashboard.devicesByDeptTitle')} subtitle={t('dashboard.devicesByDeptSubtitle')}>
           <div>
             <DevicesByDeptBarChart data={DEPT_DEVICES} />
           </div>

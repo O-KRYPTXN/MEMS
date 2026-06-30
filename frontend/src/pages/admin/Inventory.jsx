@@ -5,6 +5,7 @@ import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Moda
 import { inventory as initialInventory } from '../../data/inventory'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
+import { useTranslation } from 'react-i18next'
 
 function getStatus(item) {
   if (item.qty === 0) return 'critical'
@@ -86,6 +87,7 @@ const getPageNums = (cur, total) => {
 }
 
 export default function Inventory() {
+  const { t } = useTranslation()
   const [inventoryList, setInventoryList] = useState(initialInventory)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -99,6 +101,13 @@ export default function Inventory() {
   const [selectedItem, setSelectedItem] = useState(null)
 
   const { register, handleSubmit, reset } = useForm()
+
+  const TABS = useMemo(() => [
+    { label: t('inventory.allItems'), value: 'all' },
+    { label: t('inventory.lowStock'), value: 'warning' },
+    { label: t('inventory.outOfStock'), value: 'critical' },
+    { label: t('inventory.recentlyAdded'), value: 'recent' },
+  ], [t])
 
   const totalParts = inventoryList.length
   const lowStock = inventoryList.filter(i => getStatus(i) === 'warning').length
@@ -161,22 +170,22 @@ export default function Inventory() {
   }
 
   const columns = useMemo(() => [
-    { key:'code', label:'Part Code', render: val => <span className="font-mono text-[0.775rem] text-[#94A3B8]">{val}</span> },
-    { key:'name', label:'Part Name', primary: true },
-    { key:'category', label:'Category' },
-    { key:'unit', label:'Unit' },
-    { key:'qty', label:'Stock Qty', render: (val, row) => <span className={`font-bold ${getQtyColor(row)}`}>{val}</span> },
-    { key:'min', label:'Min Level' },
-    { key:'location', label:'Location' },
-    { key:'price', label:'Unit Price', render: val => fmt(val) },
-    { key:'total', label:'Total Value', render: (_, row) => fmt(row.qty * row.price) },
-    { key:'status', label:'Status', render: (_, row) => <StockStatusBadge item={row} /> },
-    { key:'actions', label:'Actions', render: (_, row) => (
+    { key:'code', label: t('inventory.partCode'), render: val => <span className="font-mono text-[0.775rem] text-[#94A3B8]">{val}</span> },
+    { key:'name', label: t('inventory.partName'), primary: true },
+    { key:'category', label: t('reports.category') },
+    { key:'unit', label: t('inventory.unit') },
+    { key:'qty', label: t('inventory.stockQty'), render: (val, row) => <span className={`font-bold ${getQtyColor(row)}`}>{val}</span> },
+    { key:'min', label: t('inventory.minLevel') },
+    { key:'location', label: t('inventory.location') },
+    { key:'price', label: t('inventory.unitPrice'), render: val => fmt(val) },
+    { key:'total', label: t('inventory.totalValue'), render: (_, row) => fmt(row.qty * row.price) },
+    { key:'status', label: t('common.status'), render: (_, row) => <StockStatusBadge item={row} /> },
+    { key:'actions', label: t('reports.actions'), render: (_, row) => (
         <div className="flex gap-1.5">
           <button
             onClick={e => { e.stopPropagation(); setSelectedItem(row); setShowViewModal(true) }}
             className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]"
-            title="View details"
+            title={t('reports.view')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -186,12 +195,12 @@ export default function Inventory() {
         </div>
       )
     },
-  ], [])
+  ], [t])
 
   const renderPagination = () => (
     <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
       <span className="text-[0.8rem] text-[#5A6A85]">
-        Showing {start}–{end} of {filtered.length} items
+        {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
@@ -229,16 +238,16 @@ export default function Inventory() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Inventory</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Manage medical equipment parts, supplies and stock levels</p>
+        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('inventory.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('inventory.pageSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-[16px]">
-        <KPICard title="Total Parts" value={totalParts} iconVariant="blue" iconPath="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-        <KPICard title="Low Stock" value={lowStock} iconVariant="orange" iconPath="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-        <KPICard title="Out of Stock" value={outOfStock} danger iconVariant="red" iconPath="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <KPICard title={t('inventory.totalParts')} value={totalParts} iconVariant="blue" iconPath="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        <KPICard title={t('inventory.lowStock')} value={lowStock} iconVariant="orange" iconPath="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        <KPICard title={t('inventory.outOfStock')} value={outOfStock} danger iconVariant="red" iconPath="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         <div className="[&_.bg-\\[rgba\\(59\\,114\\,246\\,0\\.15\\)\\]]:bg-[rgba(20,184,166,0.15)] [&_.text-\\[\\#5E8FFF\\]]:text-[#2DD4BF]">
-          <KPICard title="Total Value" value={fmt(totalValue)} iconVariant="blue" iconPath="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <KPICard title={t('inventory.totalValue')} value={fmt(totalValue)} iconVariant="blue" iconPath="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </div>
       </div>
 
@@ -250,13 +259,13 @@ export default function Inventory() {
             </svg>
           </div>
           <div className="flex-1">
-            <div className="text-[0.875rem] font-bold text-[#F87171]">Critical Inventory Alert</div>
+            <div className="text-[0.875rem] font-bold text-[#F87171]">{t('inventory.criticalAlert')}</div>
             <div className="text-[0.775rem] text-[#94A3B8] mt-[2px]">
-              {outOfStock} items are out of stock and {lowStock} are below minimum level. Immediate reorder required.
+              {t('inventory.alertMessage', { outOfStock, lowStock })}
             </div>
           </div>
           <button type="button" onClick={() => setBannerDismissed(true)} className="shrink-0 bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.3)] text-[#F87171] rounded-[8px] py-[7px] px-[14px] text-[0.8125rem] font-semibold hover:bg-[rgba(239,68,68,0.25)] transition-colors">
-            Reorder All Critical
+            {t('inventory.reorderAll')}
           </button>
         </div>
       )}
@@ -266,17 +275,17 @@ export default function Inventory() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[#5A6A85] shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
           </svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search part code, name, category…"
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('inventory.searchPlaceholder')}
             className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
         </div>
         <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={selectCls}>
-          {CAT_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `Category: ${l}` : 'Category: All'}</option>)}
+          {CAT_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('reports.category')}: ${l}` : `${t('reports.category')}: ${t('common.allStatuses')}`}</option>)}
         </select>
         <select value={statusFilter} onChange={handleStatusFilterChange} className={selectCls}>
-          {STAT_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `Stock Status: ${l}` : 'Stock Status: All'}</option>)}
+          {STAT_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('common.status')}: ${l}` : `${t('common.status')}: ${t('common.allStatuses')}`}</option>)}
         </select>
         <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className={selectCls}>
-          {LOC_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `Location: ${l}` : 'Location: All'}</option>)}
+          {LOC_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('inventory.location')}: ${l}` : `${t('inventory.location')}: ${t('common.allStatuses')}`}</option>)}
         </select>
         <div className="w-[1px] h-[20px] bg-[#1F2A40]"></div>
         {/* Add Item Button hidden per phase 6 requirement */}
@@ -285,7 +294,7 @@ export default function Inventory() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Add Item
+            {t('inventory.addItem')}
           </button>
         )}
       </div>
@@ -302,41 +311,41 @@ export default function Inventory() {
       </div>
 
       <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
-        <DataTable columns={columns} data={paginated} emptyMessage="No items match your current filters." />
+        <DataTable columns={columns} data={paginated} emptyMessage={t('common.noResults')} />
         {renderPagination()}
       </div>
 
       <Modal
         isOpen={showViewModal && !!selectedItem}
         onClose={() => setShowViewModal(false)}
-        title="Part Details"
+        title={t('inventory.partDetails')}
         maxWidth="520px"
-        footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>}
+        footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>}
       >
         <div className="grid grid-cols-2 gap-[16px]">
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Part Code</div><div className="text-[13px] font-mono font-semibold text-[#E2E8F0] mt-1">{selectedItem?.code}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Part Name</div><div className="text-[13px] font-medium text-[#E2E8F0] mt-1">{selectedItem?.name}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Category</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.category}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Unit</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.unit}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Min Level</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.min}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Stock Qty</div><div className={`text-[13px] mt-1 font-bold ${selectedItem ? getQtyColor(selectedItem) : ''}`}>{selectedItem?.qty}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Location</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.location}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Unit Price</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.price)}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Total Value</div><div className="text-[13px] font-semibold text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.qty * selectedItem.price)}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Status</div><div className="mt-1">{selectedItem && <StockStatusBadge item={selectedItem} />}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.partCode')}</div><div className="text-[13px] font-mono font-semibold text-[#E2E8F0] mt-1">{selectedItem?.code}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.partName')}</div><div className="text-[13px] font-medium text-[#E2E8F0] mt-1">{selectedItem?.name}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('reports.category')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.category}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.unit')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.unit}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.minLevel')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.min}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.stockQty')}</div><div className={`text-[13px] mt-1 font-bold ${selectedItem ? getQtyColor(selectedItem) : ''}`}>{selectedItem?.qty}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.location')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.location}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.unitPrice')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.price)}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.totalValue')}</div><div className="text-[13px] font-semibold text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.qty * selectedItem.price)}</div></div>
+          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedItem && <StockStatusBadge item={selectedItem} />}</div></div>
         </div>
       </Modal>
 
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        title="Add Inventory Item"
+        title={t('inventory.addItem')}
         maxWidth="480px"
         footer={
           <>
-            <ModalCancelBtn onClick={() => setShowAddModal(false)} />
+            <ModalCancelBtn onClick={() => setShowAddModal(false)}>{t('common.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn type="submit" form="add-item-form" color="#3B72F6">
-              Save Item
+              {t('inventory.saveItem')}
             </ModalPrimaryBtn>
           </>
         }
@@ -344,30 +353,30 @@ export default function Inventory() {
         <form id="add-item-form" onSubmit={handleSubmit(onAddSubmit)} className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-[14px]">
             <div>
-              <label className={labelCls}>Part Code</label>
+              <label className={labelCls}>{t('inventory.partCode')}</label>
               <input {...register('code', { required: true })} className={inputCls} placeholder="e.g. INV-0348" />
             </div>
             <div>
-              <label className={labelCls}>Unit</label>
+              <label className={labelCls}>{t('inventory.unit')}</label>
               <input {...register('unit', { required: true })} className={inputCls} placeholder="e.g. pcs, set, box" />
             </div>
           </div>
           
           <div>
-            <label className={labelCls}>Part Name</label>
+            <label className={labelCls}>{t('inventory.partName')}</label>
             <input {...register('name', { required: true })} className={inputCls} placeholder="Full part / item name" />
           </div>
 
           <div className="grid grid-cols-2 gap-[14px]">
             <div>
-              <label className={labelCls}>Category</label>
+              <label className={labelCls}>{t('reports.category')}</label>
               <select {...register('category', { required: true })} className={inputCls}>
-                <option value="">Select Category</option>
+                <option value="">{t('addDevice.selectCategory')}</option>
                 {CAT_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Location</label>
+              <label className={labelCls}>{t('inventory.location')}</label>
               <select {...register('location', { required: true })} className={inputCls}>
                 <option value="">Select Location</option>
                 {LOC_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
@@ -377,17 +386,17 @@ export default function Inventory() {
 
           <div className="grid grid-cols-2 gap-[14px]">
             <div>
-              <label className={labelCls}>Stock Qty</label>
+              <label className={labelCls}>{t('inventory.stockQty')}</label>
               <input type="number" min="0" {...register('qty', { required: true, min: 0 })} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Min Level</label>
+              <label className={labelCls}>{t('inventory.minLevel')}</label>
               <input type="number" min="0" {...register('min', { required: true, min: 0 })} className={inputCls} />
             </div>
           </div>
 
           <div>
-            <label className={labelCls}>Unit Price</label>
+            <label className={labelCls}>{t('inventory.unitPrice')}</label>
             <input type="number" min="0" step="0.01" {...register('price', { required: true, min: 0 })} className={inputCls} placeholder="0.00" />
           </div>
         </form>

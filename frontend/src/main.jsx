@@ -5,6 +5,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import router from './router/index'
 import './index.css'
 import Toast from './components/ui/Toast'
+import './i18n/config'
+
+const savedLang = localStorage.getItem('mems_lang') || 'en'
+document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr'
+document.documentElement.lang = savedLang
 
 const queryClient = new QueryClient({
   defaultOptions: {

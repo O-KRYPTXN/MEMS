@@ -7,6 +7,7 @@ import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
 import DataTable from '../../components/tables/DataTable'
 import { ROUTES } from '../../constants/routes'
+import { useTranslation } from 'react-i18next'
 
 const ROWS_PER_PAGE = 5
 const DEPT_OPTS = [
@@ -15,11 +16,11 @@ const DEPT_OPTS = [
 ]
 
 const TABS = [
-  { label: 'All', value: '' },
-  { label: 'Active', value: 'operational' },
-  { label: 'Faulty', value: 'faulty' },
-  { label: 'Maintenance', value: 'maintenance' },
-  { label: 'Retired', value: 'decommissioned' },
+  { tKey: 'devices.tabAll', value: '' },
+  { tKey: 'devices.tabActive', value: 'operational' },
+  { tKey: 'devices.tabOffline', value: 'faulty' },
+  { tKey: 'devices.tabMaintenance', value: 'maintenance' },
+  { tKey: 'devices.tabRetired', value: 'decommissioned' },
 ]
 
 const ICON_GRID = 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z'
@@ -40,6 +41,7 @@ const getPageNums = (cur, total) => {
 
 const Devices = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [deptFilter, setDeptFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -82,15 +84,15 @@ const Devices = () => {
   const end = Math.min(currentPage * ROWS_PER_PAGE, filtered.length)
 
   const columns = useMemo(() => [
-    { key: 'id', label: 'Asset ID', render: (val) => <span className={monoCls}>{val}</span> },
-    { key: 'name', label: 'Device Name', primary: true },
-    { key: 'category', label: 'Category' },
-    { key: 'serial', label: 'Serial No.', render: (val) => <span className={monoCls}>{val}</span> },
-    { key: 'dept', label: 'Department' },
-    { key: 'status', label: 'Status', render: (val) => <StatusBadge variant={val} /> },
-    { key: 'lastPm', label: 'Last PM' },
-    { key: 'nextPm', label: 'Next PM' },
-    { key: 'actions', label: 'Actions', render: (_, row) => (
+    { key: 'id', label: t('devices.assetId'), render: (val) => <span className={monoCls}>{val}</span> },
+    { key: 'name', label: t('devices.deviceName'), primary: true },
+    { key: 'category', label: t('devices.category') },
+    { key: 'serial', label: t('devices.serialNo'), render: (val) => <span className={monoCls}>{val}</span> },
+    { key: 'dept', label: t('devices.department') },
+    { key: 'status', label: t('devices.status'), render: (val) => <StatusBadge variant={val} label={t(`status.${val}`)} /> },
+    { key: 'lastPm', label: t('devices.lastPM') },
+    { key: 'nextPm', label: t('devices.nextPM') },
+    { key: 'actions', label: t('devices.actions'), render: (_, row) => (
       <button type="button" onClick={(e) => { e.stopPropagation(); openDevice(row) }}
         className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-3.5 h-3.5">
@@ -99,14 +101,14 @@ const Devices = () => {
         </svg>
       </button>
     ) },
-  ], [openDevice])
+  ], [openDevice, t])
 
   const handleTab = (value) => { setActiveTab(value); setStatusFilter(''); setCurrentPage(1) }
 
   const renderPagination = () => (
     <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
       <span className="text-[0.8rem] text-[#5A6A85]">
-        {filtered.length === 0 ? 'No devices found' : `Showing ${start}–${end} of ${filtered.length} devices`}
+        {filtered.length === 0 ? t('devices.noDevicesFound') : t('devices.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
@@ -122,23 +124,23 @@ const Devices = () => {
   )
 
   const modalFields = viewDevice && [
-    ['Device ID', viewDevice.id], ['Name', viewDevice.name], ['Category', viewDevice.category],
-    ['Serial No.', viewDevice.serial], ['Department', viewDevice.dept],
-    ['Status', <StatusBadge key="s" variant={viewDevice.status} />], ['Last PM', viewDevice.lastPm], ['Next PM Due', viewDevice.nextPm],
+    [t('devices.deviceId'), viewDevice.id], [t('devices.name'), viewDevice.name], [t('devices.category'), viewDevice.category],
+    [t('devices.serialNo'), viewDevice.serial], [t('devices.department'), viewDevice.dept],
+    [t('devices.status'), <StatusBadge key="s" variant={viewDevice.status} label={t(`status.${viewDevice.status}`)} />], [t('devices.lastPM'), viewDevice.lastPm], [t('devices.nextPMDue'), viewDevice.nextPm],
   ]
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-bold text-[#E2E8F0]">Device Catalog</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Browse and manage all hospital medical equipment</p>
+        <h1 className="text-xl font-bold text-[#E2E8F0]">{t('devices.catalogTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('devices.catalogSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <KPICard title="Total Devices" value={devices.length} iconPath={ICON_GRID} iconVariant="blue" />
-        <KPICard title="Operational" value={tabCounts.operational} iconPath={ICON_CHECK} iconVariant="green" />
-        <KPICard title="Faulty" value={tabCounts.faulty} iconPath={ICON_WARN} iconVariant="red" danger />
-        <KPICard title="Under Maintenance" value={tabCounts.maintenance} iconPath={ICON_WRENCH} iconVariant="orange" />
+        <KPICard title={t('devices.totalDevices')} value={devices.length} iconPath={ICON_GRID} iconVariant="blue" />
+        <KPICard title={t('devices.operational')} value={tabCounts.operational} iconPath={ICON_CHECK} iconVariant="green" />
+        <KPICard title={t('devices.faulty')} value={tabCounts.faulty} iconPath={ICON_WARN} iconVariant="red" danger />
+        <KPICard title={t('devices.underMaintenance')} value={tabCounts.maintenance} iconPath={ICON_WRENCH} iconVariant="orange" />
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -146,27 +148,27 @@ const Devices = () => {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[#5A6A85] shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
           </svg>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, asset ID, serial..."
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('devices.searchPlaceholder')}
             className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
         </div>
         <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className={selectCls}>
-          {DEPT_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{l}</option>)}
+          {DEPT_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v === '' ? t('devices.allDepartments') : l}</option>)}
         </select>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
-          <option value="">All Statuses</option>
-          <option value="operational">Operational</option>
-          <option value="faulty">Faulty</option>
-          <option value="maintenance">Maintenance</option>
-          <option value="decommissioned">Decommissioned</option>
+          <option value="">{t('devices.allStatuses')}</option>
+          <option value="operational">{t('devices.operational')}</option>
+          <option value="faulty">{t('devices.faulty')}</option>
+          <option value="maintenance">{t('devices.underMaintenance')}</option>
+          <option value="decommissioned">{t('status.decommissioned')}</option>
         </select>
         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls}>
-          <option value="">All Categories</option>
+          <option value="">{t('devices.allCategories')}</option>
           {categories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <div className="w-px h-6 bg-[#1F2A40]" />
         <div className="flex gap-1">
           {['table', 'grid'].map((v) => (
-            <button key={v} type="button" onClick={() => setView(v)} aria-label={`${v} view`}
+            <button key={v} type="button" onClick={() => setView(v)} title={v === 'table' ? t('devices.tableView') : t('devices.gridView')} aria-label={v === 'table' ? t('devices.tableView') : t('devices.gridView')}
               className={clsx('w-8 h-8 rounded-md flex items-center justify-center', view === v ? 'bg-[#3B72F6] text-white' : 'bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d={v === 'table' ? ICON_TABLE : ICON_GRID} />
@@ -179,37 +181,37 @@ const Devices = () => {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px]">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Add Device
+          {t('devices.addDevice')}
         </button>
       </div>
 
       <div className="flex border-b border-[#1F2A40]">
         {TABS.map((tab) => (
-          <button key={tab.label} type="button" onClick={() => handleTab(tab.value)}
+          <button key={tab.tKey} type="button" onClick={() => handleTab(tab.value)}
             className={clsx('px-4 py-2.5 text-[0.8125rem] font-medium border-b-2 transition-colors',
               activeTab === tab.value ? 'text-[#E2E8F0] border-[#3B72F6]' : 'text-[#94A3B8] border-transparent hover:text-[#E2E8F0]')}>
-            {tab.label}
-            <span className="ml-1.5 px-[7px] py-px rounded-full bg-[#1F2A40] text-[#94A3B8] text-[0.7rem]">{tabCounts[tab.value]}</span>
+            {t(tab.tKey)}
+            <span className="ms-1.5 px-[7px] py-px rounded-full bg-[#1F2A40] text-[#94A3B8] text-[0.7rem]">{tabCounts[tab.value]}</span>
           </button>
         ))}
       </div>
 
       <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden">
         {view === 'table' ? (
-          <DataTable columns={columns} data={paginated} emptyMessage="No devices match your filters." />
+          <DataTable columns={columns} data={paginated} emptyMessage={t('devices.noResults')} />
         ) : paginated.length === 0 ? (
-          <p className="py-8 text-center text-[0.8125rem] text-[#5A6A85]">No devices match your filters.</p>
+          <p className="py-8 text-center text-[0.8125rem] text-[#5A6A85]">{t('devices.noResults')}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
             {paginated.map((d) => (
               <div key={d.id} className="flex flex-col gap-3 p-4 border border-[#1F2A40] rounded-xl">
                 <div className="flex items-start justify-between gap-2">
                   <div><div className="text-[0.875rem] font-semibold text-[#E2E8F0]">{d.name}</div><div className="text-[0.75rem] text-[#5A6A85] font-mono">{d.id} · {d.serial}</div></div>
-                  <StatusBadge variant={d.status} />
+                  <StatusBadge variant={d.status} label={t(`status.${d.status}`)} />
                 </div>
-                <div className="flex justify-between text-[0.8rem]"><span className="text-[#5A6A85]">Department</span><span className="text-[#E2E8F0]">{d.dept}</span></div>
-                <div className="flex justify-between text-[0.8rem]"><span className="text-[#5A6A85]">Category</span><span className="text-[#E2E8F0]">{d.category}</span></div>
-                <div className="flex justify-between pt-3 border-t border-[#1F2A40]"><span className="text-[0.75rem] text-[#5A6A85]">Next PM</span><span className="text-[0.8rem] font-semibold text-[#E2E8F0]">{d.nextPm}</span></div>
+                <div className="flex justify-between text-[0.8rem]"><span className="text-[#5A6A85]">{t('devices.department')}</span><span className="text-[#E2E8F0]">{d.dept}</span></div>
+                <div className="flex justify-between text-[0.8rem]"><span className="text-[#5A6A85]">{t('devices.category')}</span><span className="text-[#E2E8F0]">{d.category}</span></div>
+                <div className="flex justify-between pt-3 border-t border-[#1F2A40]"><span className="text-[0.75rem] text-[#5A6A85]">{t('devices.nextPM')}</span><span className="text-[0.8rem] font-semibold text-[#E2E8F0]">{d.nextPm}</span></div>
               </div>
             ))}
           </div>
@@ -220,9 +222,9 @@ const Devices = () => {
       <Modal
         isOpen={showModal && !!viewDevice}
         onClose={() => setShowModal(false)}
-        title="Device Details"
+        title={t('devices.deviceDetails')}
         maxWidth="400px"
-        footer={<ModalCancelBtn onClick={() => setShowModal(false)}>Close</ModalCancelBtn>}
+        footer={<ModalCancelBtn onClick={() => setShowModal(false)}>{t('devices.close')}</ModalCancelBtn>}
       >
         <div className="grid grid-cols-2 gap-3">
           {modalFields?.map(([label, val]) => (

@@ -5,7 +5,6 @@ import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
-import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialWOs = [

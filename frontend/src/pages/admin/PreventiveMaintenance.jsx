@@ -8,6 +8,7 @@ import { pmTasks as initialPMTasks } from '../../data/pmTasks'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
 import { formatDate } from '../../utils/formatDate'
+import { useTranslation } from 'react-i18next'
 
 const TODAY = new Date()
 TODAY.setHours(0, 0, 0, 0)
@@ -94,6 +95,7 @@ const getPageNums = (cur, total) => {
 }
 
 export default function PreventiveMaintenance() {
+  const { t } = useTranslation()
   const [tasks, setTasks] = useState(initialPMTasks)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
@@ -108,6 +110,14 @@ export default function PreventiveMaintenance() {
   const [selectedPM, setSelectedPM] = useState(null)
 
   const { register, handleSubmit, reset } = useForm()
+
+  const TABS = useMemo(() => [
+    { label: t('common.allStatuses'), value: '' },
+    { label: t('pm.scheduled'), value: 'Scheduled' },
+    { label: t('pm.overdue'), value: 'Overdue' },
+    { label: t('pm.inProgress'), value: 'In Progress' },
+    { label: t('pm.completed'), value: 'Completed' },
+  ], [t])
 
   const scheduledCount = tasks.filter(t => t.status === 'Scheduled').length
   const overdueCount = tasks.filter(t => t.status === 'Overdue').length
@@ -178,12 +188,12 @@ export default function PreventiveMaintenance() {
   }, [tasks])
 
   const columns = useMemo(() => [
-    { key: 'id', label: 'PM ID', render: val => <span className="font-mono text-[#3B82F6] font-semibold text-xs">{val}</span> },
-    { key: 'device', label: 'Device Name', primary: true },
-    { key: 'dept', label: 'Department', render: val => <DeptTag dept={val} /> },
-    { key: 'type', label: 'PM Type', render: val => <PMTypeBadge type={val} /> },
+    { key: 'id', label: t('pm.pmId'), render: val => <span className="font-mono text-[#3B82F6] font-semibold text-xs">{val}</span> },
+    { key: 'device', label: t('devices.deviceName'), primary: true },
+    { key: 'dept', label: t('users.department'), render: val => <DeptTag dept={val} /> },
+    { key: 'type', label: t('pm.pmType'), render: val => <PMTypeBadge type={val} /> },
     {
-      key: 'scheduled', label: 'Scheduled Date', render: (val) => {
+      key: 'scheduled', label: t('pm.scheduledDate'), render: (val) => {
         const du = daysUntil(val)
         const duLabel = du === 0
           ? <span className="text-[#FCD34D] text-[0.72rem]">Today</span>
@@ -193,11 +203,11 @@ export default function PreventiveMaintenance() {
         return <div><div>{formatDate(val)}</div><div>{duLabel}</div></div>
       }
     },
-    { key: 'lastPm', label: 'Last PM', render: val => formatDate(val) },
-    { key: 'tech', label: 'Technician' },
-    { key: 'status', label: 'Status', render: val => <PMStatusBadge status={val} /> },
+    { key: 'lastPm', label: t('pm.lastPm'), render: val => formatDate(val) },
+    { key: 'tech', label: t('pm.technician') },
+    { key: 'status', label: t('common.status'), render: val => <PMStatusBadge status={val} /> },
     {
-      key: 'id', label: 'Actions', render: (val, row) => (
+      key: 'id', label: t('users.actions'), render: (val, row) => (
         <button
           onClick={e => { e.stopPropagation(); setSelectedPM(row); setShowViewModal(true) }}
           className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]"
@@ -209,12 +219,12 @@ export default function PreventiveMaintenance() {
         </button>
       )
     },
-  ], [])
+  ], [t])
 
   const renderPagination = () => (
     <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
       <span className="text-[0.8rem] text-[#5A6A85]">
-        Showing {start}–{end} of {filtered.length} tasks
+        {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
@@ -258,7 +268,7 @@ export default function PreventiveMaintenance() {
     return (
       <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] p-[20px] px-[24px]">
         <div className="flex justify-between items-center mb-[18px]">
-          <div className="text-[0.9375rem] font-bold text-[#E2E8F0]">Maintenance Calendar</div>
+          <div className="text-[0.9375rem] font-bold text-[#E2E8F0]">{t('pm.maintenanceCalendar')}</div>
           <div className="flex items-center">
             <button onClick={handlePrevMonth} className="w-[30px] h-[30px] rounded-[7px] bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] hover:bg-[#1F2A40] hover:text-[#E2E8F0] flex items-center justify-center">‹</button>
             <div className="text-[0.875rem] font-semibold text-[#E2E8F0] min-w-[130px] text-center">{MONTH_NAMES[calMonth]} {calYear}</div>
@@ -312,16 +322,16 @@ export default function PreventiveMaintenance() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Preventive Maintenance</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Schedule, track, and manage equipment maintenance cycles</p>
+        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('pm.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('pm.pageSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-[16px]">
-        <KPICard title="Scheduled" value={scheduledCount} iconVariant="blue" iconPath="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-        <KPICard title="Overdue" value={overdueCount} danger iconVariant="red" iconPath="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        <KPICard title="Completed This Month" value={thisMonthCount} iconVariant="green" iconPath="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <KPICard title={t('pm.scheduled')} value={scheduledCount} iconVariant="blue" iconPath="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+        <KPICard title={t('pm.overdue')} value={overdueCount} danger iconVariant="red" iconPath="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <KPICard title={t('pm.completedThisMonth')} value={thisMonthCount} iconVariant="green" iconPath="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         <div className="[&_.bg-\\[rgba\\(59\\,114\\,246\\,0\\.15\\)\\]]:bg-[rgba(20,184,166,0.15)] [&_.text-\\[\\#5E8FFF\\]]:text-[#2DD4BF]">
-          <KPICard title="Compliance Rate" value={`${compliance}%`} iconVariant="blue" iconPath="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+          <KPICard title={t('pm.complianceRate')} value={`${compliance}%`} iconVariant="blue" iconPath="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
         </div>
       </div>
 
@@ -330,7 +340,7 @@ export default function PreventiveMaintenance() {
 
         <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] flex flex-col max-h-[460px]">
           <div className="flex justify-between items-center p-[14px] px-[18px] border-b border-[#1F2A40]">
-            <div className="text-[0.875rem] font-bold text-[#E2E8F0]">Upcoming & Overdue</div>
+            <div className="text-[0.875rem] font-bold text-[#E2E8F0]">{t('pm.upcomingOverdue')}</div>
             <div className="text-[0.75rem] text-[#5A6A85]">{upcomingTasks.length} tasks</div>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -369,20 +379,20 @@ export default function PreventiveMaintenance() {
             className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
         </div>
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
-          {TYPE_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `Type: ${l}` : 'Type: All'}</option>)}
+          {TYPE_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('pm.pmType')}: ${l}` : `${t('pm.pmType')}: All`}</option>)}
         </select>
         <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className={selectCls}>
-          {DEPT_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `Dept: ${l}` : 'Dept: All'}</option>)}
+          {DEPT_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('users.department')}: ${l}` : `${t('users.department')}: All`}</option>)}
         </select>
         <select value={techFilter} onChange={e => setTechFilter(e.target.value)} className={selectCls}>
-          {TECH_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `Technician: ${l}` : 'Technician: All'}</option>)}
+          {TECH_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('pm.technician')}: ${l}` : `${t('pm.technician')}: All`}</option>)}
         </select>
         <div className="w-[1px] h-[20px] bg-[#1F2A40]"></div>
         <button type="button" onClick={openCreateModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Schedule PM
+          {t('pm.schedulePM')}
         </button>
       </div>
 
@@ -397,57 +407,57 @@ export default function PreventiveMaintenance() {
       </div>
 
       <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
-        <DataTable columns={columns} data={paginated} emptyMessage="No PM tasks match your filters." rowClassName={(row) => row.status === 'Overdue' ? 'bg-[rgba(239,68,68,0.04)] hover:bg-[rgba(239,68,68,0.08)]' : ''} />
+        <DataTable columns={columns} data={paginated} emptyMessage={t('common.noResults')} rowClassName={(row) => row.status === 'Overdue' ? 'bg-[rgba(239,68,68,0.04)] hover:bg-[rgba(239,68,68,0.08)]' : ''} />
         {renderPagination()}
         <Modal
           isOpen={showViewModal && !!selectedPM}
           onClose={() => setShowViewModal(false)}
-          title="PM Task Details"
+          title={t('pm.pmDetails')}
           maxWidth="480px"
-          footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>}
+          footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>}
         >
           <div className="grid grid-cols-2 gap-[16px]">
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">PM ID</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM?.id}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Device</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.device}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Department</div><div className="mt-1">{selectedPM && <DeptTag dept={selectedPM.dept} />}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Type</div><div className="mt-1">{selectedPM && <PMTypeBadge type={selectedPM.type} />}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Scheduled Date</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.scheduled)}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Last PM</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.lastPm)}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Technician</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.tech}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">Status</div><div className="mt-1">{selectedPM && <PMStatusBadge status={selectedPM.status} />}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.pmId')}</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM?.id}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('devices.deviceName')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.device}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('users.department')}</div><div className="mt-1">{selectedPM && <DeptTag dept={selectedPM.dept} />}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.pmType')}</div><div className="mt-1">{selectedPM && <PMTypeBadge type={selectedPM.type} />}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.scheduledDate')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.scheduled)}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.lastPm')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.lastPm)}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.technician')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.tech}</div></div>
+            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedPM && <PMStatusBadge status={selectedPM.status} />}</div></div>
           </div>
         </Modal>
 
         <Modal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          title="Schedule PM Task"
+          title={t('pm.schedulePM')}
           maxWidth="480px"
           footer={
             <>
-              <ModalCancelBtn onClick={() => setShowModal(false)} />
+              <ModalCancelBtn onClick={() => setShowModal(false)}>{t('common.cancel')}</ModalCancelBtn>
               <ModalPrimaryBtn type="submit" form="pm-form" color="#3B72F6">
-                Schedule Task
+                {t('pm.scheduleTask')}
               </ModalPrimaryBtn>
             </>
           }
         >
           <form id="pm-form" onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
-            <InputField label="Device Name" name="device" {...register('device', { required: true })} placeholder="e.g. Philips IntelliVue MX800" required />
+            <InputField label={t('devices.deviceName')} name="device" {...register('device', { required: true })} placeholder="e.g. Philips IntelliVue MX800" required />
 
             <div className="grid grid-cols-2 gap-[14px]">
-              <SelectField label="Department" name="dept" {...register('dept', { required: true })} placeholder="Select Dept" options={DEPT_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
-              <SelectField label="PM Type" name="type" {...register('type', { required: true })} placeholder="Select Type" options={TYPE_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
+              <SelectField label={t('users.department')} name="dept" {...register('dept', { required: true })} placeholder={t('addDevice.selectDepartment')} options={DEPT_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
+              <SelectField label={t('pm.pmType')} name="type" {...register('type', { required: true })} placeholder="Select Type" options={TYPE_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
             </div>
 
             <div className="grid grid-cols-2 gap-[14px]">
-              <InputField type="date" label="Scheduled Date" name="scheduled" {...register('scheduled', { required: true })} required />
-              <SelectField label="Assign Technician" name="tech" {...register('tech', { required: true })} placeholder="Select Assignee" options={TECH_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
+              <InputField type="date" label={t('pm.scheduledDate')} name="scheduled" {...register('scheduled', { required: true })} required />
+              <SelectField label={t('pm.assignTechnician')} name="tech" {...register('tech', { required: true })} placeholder={t('pm.selectAssignee')} options={TECH_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
             </div>
 
-            <SelectField label="Recurrence" name="recurrence" {...register('recurrence')} placeholder="Select Recurrence" options={[{value: '', label: 'One-time'}, 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual']} />
+            <SelectField label={t('pm.recurrence')} name="recurrence" {...register('recurrence')} placeholder="Select Recurrence" options={[{value: '', label: t('pm.oneTime')}, {value: 'Monthly', label: t('pm.monthly')}, {value: 'Quarterly', label: t('pm.quarterly')}, {value: 'Semi-Annual', label: t('pm.semiAnnual')}, {value: 'Annual', label: t('pm.annual')}]} />
 
-            <InputField type="textarea" label="Notes" name="notes" {...register('notes')} placeholder="Any special instructions…" />
+            <InputField type="textarea" label={t('addDevice.notes')} name="notes" {...register('notes')} placeholder="Any special instructions…" />
           </form>
         </Modal>
       </div>
