@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialDevices = [
   { id: 'DEV-0101', name: 'ICU Ventilator V-12', dept: 'ICU', status: 'Operational', lastPM: '2026-02-10', nextPM: '2026-05-10', category: 'Respiratory', type: 'Ventilator' },
@@ -30,12 +31,7 @@ export default function TechDevices() {
   const [showFaultModal, setShowFaultModal] = useState(false)
   const [showManualsModal, setShowManualsModal] = useState(false)
   const [selectedDevice, setSelectedDevice] = useState(null)
-  const [toast, setToast] = useState({ show: false, msg: '' })
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast({ show: false, msg: '' }), 3000)
-  }
+  const { showToast } = useToastStore()
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -46,7 +42,7 @@ export default function TechDevices() {
     e.preventDefault()
     setDevices(prev => prev.map(d => d.id === selectedDevice.id ? { ...d, status: 'Faulty' } : d))
     setShowFaultModal(false)
-    showToast(`✓ Fault logged. Work Order WO-${Math.floor(1000 + Math.random() * 9000)} created automatically.`)
+    showToast(`✓ Fault logged. Work Order WO-${Math.floor(1000 + Math.random() * 9000)} created automatically.`, TOAST_COLORS.technician)
   }
 
   return (
@@ -95,12 +91,6 @@ export default function TechDevices() {
         </div>
       </div>
 
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#F59E0B] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
-
       <Modal
         isOpen={showFaultModal && !!selectedDevice}
         onClose={() => setShowFaultModal(false)}
@@ -145,7 +135,7 @@ export default function TechDevices() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={`w-7 h-7 ${m.iconColor}`}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
                 <div><div className="font-semibold text-[#E2E8F0] text-sm">{m.title}</div><div className="text-xs text-[#94A3B8]">PDF • {m.size}</div></div>
               </div>
-              <button onClick={() => showToast(`✓ ${m.title} download started...`)} className="px-3 py-1.5 text-[11.5px] font-bold bg-transparent border border-[#1F2A40] text-[#94A3B8] rounded-md hover:bg-[#1A2235] hover:text-[#E2E8F0] transition-colors">Download</button>
+              <button onClick={() => showToast(`✓ ${m.title} download started...`, TOAST_COLORS.info)} className="px-3 py-1.5 text-[11.5px] font-bold bg-transparent border border-[#1F2A40] text-[#94A3B8] rounded-md hover:bg-[#1A2235] hover:text-[#E2E8F0] transition-colors">Download</button>
             </div>
           ))}
         </div>

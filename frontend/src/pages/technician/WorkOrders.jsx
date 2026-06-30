@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialWOs = [
   { id: 'WO-2039', device: 'ECG Monitor E-12', type: 'Repair', dept: 'ICU', priority: 'High', status: 'In Progress', date: '2026-06-28', timeLog: '1.5', parts: 'None', notes: '' },
@@ -52,13 +53,8 @@ export default function TechnicianWorkOrders() {
   const [selectedWO, setSelectedWO] = useState(null)
   const [updateForm, setUpdateForm] = useState({ status: '', timeLog: '', parts: '', notes: '' })
   
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  const { showToast } = useToastStore()
   const ROWS = 8
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast({ show: false, msg: '' }), 3000)
-  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -94,7 +90,7 @@ export default function TechnicianWorkOrders() {
     e.preventDefault()
     setWos(prev => prev.map(w => w.id === selectedWO.id ? { ...w, ...updateForm } : w))
     setShowUpdateModal(false)
-    showToast(`✓ Task ${selectedWO.id} updated successfully.`)
+    showToast(`✓ Task ${selectedWO.id} updated successfully.`, TOAST_COLORS.technician)
   }
 
   return (
@@ -172,12 +168,6 @@ export default function TechnicianWorkOrders() {
           </div>
         </div>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#F59E0B] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showUpdateModal && !!selectedWO}

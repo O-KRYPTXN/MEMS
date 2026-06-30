@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialRequests = [
   { id: 'REQ-1092', part: 'O2 Sensor – Nellcor', qty: 2, wo: 'WO-2034', date: '2026-06-27', status: 'Pending' },
@@ -50,12 +51,7 @@ export default function TechnicianInventory() {
   const [showReqModal, setShowReqModal] = useState(false)
   const [selectedPart, setSelectedPart] = useState(null)
   
-  const [toast, setToast] = useState({ show: false, msg: '' })
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
+  const { showToast } = useToastStore()
 
   const filteredParts = useMemo(() => {
     const q = search.toLowerCase()
@@ -91,7 +87,7 @@ export default function TechnicianInventory() {
     
     setRequests(prev => [newReq, ...prev])
     setShowReqModal(false)
-    showToast('✓ Request submitted to Central Store.')
+    showToast('✓ Request submitted to Central Store.', TOAST_COLORS.technician)
   }
 
   return (
@@ -180,12 +176,6 @@ export default function TechnicianInventory() {
           </table>
         </div>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#F59E0B] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showReqModal && !!selectedPart}

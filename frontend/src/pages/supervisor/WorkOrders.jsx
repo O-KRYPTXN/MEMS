@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialWOs = [
   { id:'WO-2041', device:'ICU Ventilator', type:'Repair', dept:'ICU', priority:'High', tech:'Unassigned', status:'Unassigned', created:'2026-06-28', desc:'' },
@@ -64,16 +65,11 @@ export default function WorkOrders() {
   const [assignTargetId, setAssignTargetId] = useState(null)
   const [activeApproval, setActiveApproval] = useState(null)
   const [viewWO, setViewWO] = useState(null)
-  const [toast, setToast] = useState({ show: false, msg: '', color: '#14B8A6' })
+  const { showToast } = useToastStore()
   
   const [assignForm, setAssignForm] = useState({ woId: '', tech: '', priority: 'Medium', notes: '' })
   const [approveNotes, setApproveNotes] = useState('')
   const ROWS = 8
-
-  const showToast = (msg, color = '#14B8A6') => {
-    setToast({ show: true, msg, color })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500)
-  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -104,22 +100,22 @@ export default function WorkOrders() {
   }, [showAssignModal, assignTargetId])
 
   const handleAssign = () => {
-    if (!assignForm.woId) return showToast('Select a work order', '#F87171')
-    if (!assignForm.tech) return showToast('Select a technician', '#F87171')
+    if (!assignForm.woId) return showToast('Select a work order', TOAST_COLORS.error)
+    if (!assignForm.tech) return showToast('Select a technician', TOAST_COLORS.error)
     setWos(prev => prev.map(w => w.id === assignForm.woId ? { ...w, tech: assignForm.tech, priority: assignForm.priority, status: 'In Progress' } : w))
-    showToast('✓ Work order assigned successfully')
+    showToast('✓ Work order assigned successfully', TOAST_COLORS.supervisor)
     setShowAssignModal(false)
   }
 
   const handleApprove = () => {
     setWos(prev => prev.map(w => w.id === activeApproval.id ? { ...w, status: 'Closed' } : w))
-    showToast('✓ Work order approved — device returned to service!')
+    showToast('✓ Work order approved — device returned to service!', TOAST_COLORS.supervisor)
     setShowApproveModal(false)
   }
 
   const handleReject = () => {
     setWos(prev => prev.map(w => w.id === activeApproval.id ? { ...w, status: 'In Progress' } : w))
-    showToast('⚠️ Returned to technician for revision', '#F59E0B')
+    showToast('⚠️ Returned to technician for revision', TOAST_COLORS.warning)
     setShowApproveModal(false)
   }
 
@@ -205,8 +201,6 @@ export default function WorkOrders() {
           </div>
         </div>
       </div>
-
-      <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
       <Modal
         isOpen={showAssignModal}

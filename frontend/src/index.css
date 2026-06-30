@@ -14,3 +14,12 @@
 .animate-modal-in {
   animation: modalIn 0.2s ease forwards;
 }
+
+.toast-enter {
+  transform: translateY(0);
+  opacity: 1;
+}
+.toast-exit {
+  transform: translateY(80px);
+  opacity: 0;
+}

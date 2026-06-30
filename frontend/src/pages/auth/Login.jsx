@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAuthStore, getHomeRoute } from '../../store/authStore';
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore';
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal';
 
 const DEMO_ACCOUNTS = {
@@ -21,15 +22,10 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
 
   const login = useAuthStore(state => state.login);
+  const { showToast } = useToastStore();
   const navigate = useNavigate();
-
-  const showToast = (msg) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(''), 3000);
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -54,7 +50,7 @@ export default function Login() {
     e.preventDefault();
     if (!resetEmail) return;
     setShowForgotModal(false);
-    showToast(`Password reset link sent to ${resetEmail}`);
+    showToast(`Password reset link sent to ${resetEmail}`, TOAST_COLORS.success);
     setResetEmail('');
   };
 
@@ -63,13 +59,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] relative overflow-hidden p-4">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed top-6 right-6 z-[100] bg-[#10B981] text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span className="text-sm font-semibold">{toastMsg}</span>
-        </div>
-      )}
 
       {/* Background SVG Animation */}
       <style>{`

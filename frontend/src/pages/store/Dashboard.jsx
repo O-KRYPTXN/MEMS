@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialInventory = [
   { id: 'PART-1001', name: 'O2 Sensor – Nellcor', qty: 12, min: 10 },
@@ -21,23 +22,19 @@ export default function StoreDashboard() {
   const [requests, setRequests] = useState(initialRequests)
   const [showFulfillModal, setShowFulfillModal] = useState(false)
   const [selectedReq, setSelectedReq] = useState(null)
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  
+  const { showToast } = useToastStore()
 
   const totalParts = inventory.length
   const stockAlerts = inventory.filter(i => i.qty <= i.min)
   const pendingCount = requests.length
   const fulfillmentRate = "94%"
 
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
-
   const handleFulfill = (e) => {
     e.preventDefault()
     setRequests(prev => prev.filter(r => r.id !== selectedReq.id))
     setShowFulfillModal(false)
-    showToast('✓ Request fulfilled and inventory deducted.')
+    showToast('✓ Request fulfilled and inventory deducted.', TOAST_COLORS.store)
   }
 
   const kpis = [
@@ -112,12 +109,6 @@ export default function StoreDashboard() {
           </div>
         </div>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#8B5CF6] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showFulfillModal && !!selectedReq}

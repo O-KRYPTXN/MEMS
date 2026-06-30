@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialDevices = [
   { id: 'DEV-0101', name: 'ICU Ventilator V-12', category: 'Ventilators', dept: 'ICU', status: 'Faulty', lastPM: '2026-02-10', nextPM: '2026-05-10' },
@@ -58,13 +59,8 @@ export default function SupervisorDevices() {
   const [selectedDevice, setSelectedDevice] = useState(null)
   const [faultDeviceId, setFaultDeviceId] = useState('')
   
-  const [toast, setToast] = useState({ show: false, msg: '', color: '#14B8A6' })
+  const { showToast } = useToastStore()
   const ROWS = 8
-
-  const showToast = (msg, color = '#14B8A6') => {
-    setToast({ show: true, msg, color })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500)
-  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -103,10 +99,10 @@ export default function SupervisorDevices() {
 
   const handleReportFault = (e) => {
     e.preventDefault()
-    if (!faultDeviceId) return showToast('Please select a device', '#F87171')
+    if (!faultDeviceId) return showToast('Please select a device', TOAST_COLORS.error)
     setDevices(prev => prev.map(d => d.id === faultDeviceId ? { ...d, status: 'Faulty' } : d))
     setShowFaultModal(false)
-    showToast('✓ Fault reported — Work Order created & assigned.')
+    showToast('✓ Fault reported — Work Order created & assigned.', TOAST_COLORS.supervisor)
   }
 
   return (
@@ -207,8 +203,6 @@ export default function SupervisorDevices() {
           </div>
         </div>
       </div>
-
-      <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
       <Modal
         isOpen={showFaultModal}

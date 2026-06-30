@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import clsx from 'clsx'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialNotifications = [
   { id: 'REQ-1092', itemName: 'O2 Sensor – Nellcor', qty: 2, wo: 'WO-2034', date: '2026-06-27', acknowledged: false },
@@ -9,18 +10,13 @@ const initialNotifications = [
 
 export default function TechnicianNotifications() {
   const [notifications, setNotifications] = useState(initialNotifications)
-  const [toast, setToast] = useState({ show: false, msg: '', color: '#4ADE80' })
+  const { showToast } = useToastStore()
 
   const unreadNotifications = notifications.filter(n => !n.acknowledged)
 
-  const showToast = (msg, color) => {
-    setToast({ show: true, msg, color })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
-
   const handleAcknowledge = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, acknowledged: true } : n))
-    showToast('✓ Marked as read', '#4ADE80')
+    showToast('✓ Marked as read', TOAST_COLORS.success)
   }
 
   return (
@@ -60,10 +56,6 @@ export default function TechnicianNotifications() {
             </div>
           ))
         )}
-      </div>
-
-      <div className={clsx("fixed bottom-7 right-7 z-[2000] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300", toast.show ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none")} style={{ backgroundColor: toast.color }}>
-        {toast.msg}
       </div>
     </div>
   )

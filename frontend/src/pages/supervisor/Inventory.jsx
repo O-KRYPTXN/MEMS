@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialParts = [
   { id: 'PART-1001', name: 'O2 Sensor – Nellcor', category: 'Sensors', stock: 12, min: 10, status: 'In Stock' },
@@ -36,13 +37,8 @@ export default function SupervisorInventory() {
   const [selectedPartId, setSelectedPartId] = useState('')
   const [pendingRequestsCount, setPendingRequestsCount] = useState(3)
   
-  const [toast, setToast] = useState({ show: false, msg: '', color: '#14B8A6' })
+  const { showToast } = useToastStore()
   const ROWS = 8
-
-  const showToast = (msg, color = '#14B8A6') => {
-    setToast({ show: true, msg, color })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500)
-  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -79,11 +75,11 @@ export default function SupervisorInventory() {
     const partId = formData.get('partId')
     const qty = formData.get('qty')
     
-    if (!partId) return showToast('Please select a part to request', '#F87171')
+    if (!partId) return showToast('Please select a part to request', TOAST_COLORS.error)
     
     setPendingRequestsCount(prev => prev + 1)
     setShowRequestModal(false)
-    showToast(`✓ Request sent to Storekeeper — ${qty} unit(s) requested`)
+    showToast(`✓ Request sent to Storekeeper — ${qty} unit(s) requested`, TOAST_COLORS.supervisor)
   }
 
   return (
@@ -172,8 +168,6 @@ export default function SupervisorInventory() {
           </div>
         </div>
       </div>
-
-      <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
       <Modal
         isOpen={showRequestModal}

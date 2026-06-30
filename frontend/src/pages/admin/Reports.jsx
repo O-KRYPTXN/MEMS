@@ -6,6 +6,7 @@ import {
   BarChart, Bar, Legend
 } from 'recharts'
 import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { generatedReports, quickReports } from '../../data/reports'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
@@ -90,12 +91,7 @@ export default function Reports() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedReport, setSelectedReport] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [toastMsg, setToastMsg] = useState('')
-
-  const showToast = (msg) => {
-    setToastMsg(msg)
-    setTimeout(() => setToastMsg(''), 3000)
-  }
+  const { showToast } = useToastStore()
 
   const filteredReports = useMemo(() => {
     const q = search.toLowerCase()
@@ -126,7 +122,7 @@ export default function Reports() {
       size: `${Math.floor(Math.random() * 500 + 100)} KB`
     }
     setReportsList([newReport, ...reportsList])
-    showToast(`${req.label} generated successfully!`)
+    showToast(`${req.label} generated successfully!`, TOAST_COLORS.success)
   }
 
   const columns = useMemo(() => [
@@ -143,7 +139,7 @@ export default function Reports() {
           <button onClick={() => { setSelectedReport(row); setShowViewModal(true) }} className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]" title="View Report">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
           </button>
-          <button onClick={() => showToast(`Downloading ${row.name}...`)} className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]" title="Download">
+          <button onClick={() => showToast(`Downloading ${row.name}...`, TOAST_COLORS.admin)} className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]" title="Download">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
           </button>
         </div>
@@ -184,14 +180,6 @@ export default function Reports() {
 
   return (
     <div className="flex flex-col gap-6 relative pb-10">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-[100] bg-[#10B981] text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span className="text-sm font-semibold">{toastMsg}</span>
-        </div>
-      )}
-
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Reports & Analytics</h1>
@@ -381,7 +369,7 @@ export default function Reports() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>
-            <button type="button" onClick={() => { showToast(`Downloading ${selectedReport?.id}...`); setShowViewModal(false); }} className="px-[20px] py-[10px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors flex items-center gap-[6px]">
+            <button type="button" onClick={() => { showToast(`Downloading ${selectedReport?.id}...`, TOAST_COLORS.admin); setShowViewModal(false); }} className="px-[20px] py-[10px] bg-[#3B72F6] hover:bg-[#2558D8] rounded-lg text-white text-[13px] font-medium transition-colors flex items-center gap-[6px]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
               Download {selectedReport?.format}
             </button>

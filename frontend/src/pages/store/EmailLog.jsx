@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialLogs = [
   { 
@@ -36,7 +37,8 @@ export default function StoreEmailLog() {
   const [poFilter, setPoFilter] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [selectedLog, setSelectedLog] = useState(null)
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  
+  const { showToast } = useToastStore()
 
   const uniquePOs = useMemo(() => Array.from(new Set(logs.map(l => l.po))), [logs])
 
@@ -49,15 +51,11 @@ export default function StoreEmailLog() {
     })
   }, [logs, search, poFilter])
 
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
 
   const handleDelete = (e, id) => {
     e.stopPropagation()
     setLogs(prev => prev.filter(l => l.id !== id))
-    showToast('✓ Entry deleted.')
+    showToast('✓ Entry deleted.', TOAST_COLORS.warning)
   }
 
   return (
@@ -128,12 +126,6 @@ export default function StoreEmailLog() {
           ))
         )}
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#8B5CF6] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showModal && !!selectedLog}

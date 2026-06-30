@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors"
 const labelCls = "block text-[0.8rem] text-[#94A3B8] font-semibold mb-1.5"
@@ -13,17 +14,13 @@ export default function StoreCreateOrder() {
     qty: 1,
     date: ''
   })
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  
+  const { showToast } = useToastStore()
 
   useEffect(() => {
     const prefillItem = searchParams.get('item')
     if (prefillItem) setFormData(prev => ({ ...prev, item: prefillItem }))
   }, [searchParams])
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -46,7 +43,7 @@ export default function StoreCreateOrder() {
     orders.push({ ...formData, id, status: 'pending' })
     localStorage.setItem('mems_custom_orders', JSON.stringify(orders))
 
-    showToast('✓ Order submitted and email sent to supplier.')
+    showToast('✓ Order submitted and email sent to supplier.', TOAST_COLORS.store)
     setFormData({ supplier: '', email: '', item: '', qty: 1, date: '' })
   }
 
@@ -103,12 +100,6 @@ export default function StoreCreateOrder() {
           </div>
         </form>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#8B5CF6] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
     </div>
   )
 }

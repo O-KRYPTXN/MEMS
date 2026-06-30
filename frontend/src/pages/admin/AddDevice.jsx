@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { ROUTES } from '../../constants/routes'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import clsx from 'clsx'
 
 const categories = ['Respiratory', 'Monitoring', 'Resuscitation', 'Pumps', 'Other']
@@ -18,19 +19,14 @@ const secHeaderCls = "text-[0.7rem] font-bold text-[#5A6A85] uppercase tracking-
 export default function AddDevice() {
   const { register, handleSubmit, formState: { errors } } = useForm()
   const [isLoading, setIsLoading] = useState(false)
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  const { showToast } = useToastStore()
   const navigate = useNavigate()
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
 
   const onSubmit = (data) => {
     setIsLoading(true)
     setTimeout(() => {
       setIsLoading(false)
-      showToast('✓ Device added successfully!')
+      showToast('✓ Device added successfully!', TOAST_COLORS.success)
       setTimeout(() => {
         navigate(ROUTES.ADMIN_DEVICES)
       }, 1500)
@@ -173,12 +169,6 @@ export default function AddDevice() {
           </div>
         </form>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#3B72F6] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
     </div>
   )
 }

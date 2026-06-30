@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialParts = [
   { id: 'PRT-1001', name: 'O2 Sensor – Nellcor', category: 'Sensors', qty: 12, min: 10 },
@@ -40,14 +41,10 @@ export default function StoreInventory() {
   
   const [restockQty, setRestockQty] = useState(1)
   const [addFormData, setAddFormData] = useState({ id: '', name: '', category: 'Sensors', qty: 0, min: 1 })
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  
+  const { showToast } = useToastStore()
 
   const ROWS_PER_PAGE = 8
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
 
   const kpiTotal = parts.length
   const kpiLow = parts.filter(p => p.qty > 0 && p.qty <= p.min).length
@@ -76,7 +73,7 @@ export default function StoreInventory() {
     setParts(prev => prev.map(p => p.id === selectedPart.id ? { ...p, qty: p.qty + parseInt(restockQty, 10) } : p))
     setShowRestockModal(false)
     setRestockQty(1)
-    showToast('✓ Stock updated successfully.')
+    showToast('✓ Stock updated successfully.', TOAST_COLORS.store)
   }
 
   const handleAddPart = (e) => {
@@ -91,7 +88,7 @@ export default function StoreInventory() {
     setParts(prev => [newPart, ...prev])
     setShowAddModal(false)
     setAddFormData({ id: '', name: '', category: 'Sensors', qty: 0, min: 1 })
-    showToast('✓ New part added to catalog.')
+    showToast('✓ New part added to catalog.', TOAST_COLORS.store)
   }
 
   const kpis = [
@@ -221,12 +218,6 @@ export default function StoreInventory() {
           </div>
         )}
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#8B5CF6] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showRestockModal && !!selectedPart}

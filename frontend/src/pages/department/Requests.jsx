@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialRequests = [
   { id: 'DR-1045', device: 'ICU Ventilator V500', desc: 'Screen flickering intermittently during operation.', date: '25/06/2026', status: 'In Progress', techMessage: 'Parts ordered, expected tomorrow.' },
@@ -29,12 +30,8 @@ export default function DeptRequests() {
   const [activeTab, setActiveTab] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [formData, setFormData] = useState({ device: '', desc: '' })
-  const [toast, setToast] = useState({ show: false, msg: '' })
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
+  
+  const { showToast } = useToastStore()
 
   const filtered = useMemo(() => {
     return requests.filter(r => {
@@ -71,7 +68,7 @@ export default function DeptRequests() {
     setRequests(prev => [newReq, ...prev])
     setShowModal(false)
     setFormData({ device: '', desc: '' })
-    showToast('✓ Problem report submitted successfully.')
+    showToast('✓ Problem report submitted successfully.', TOAST_COLORS.department)
   }
 
   return (
@@ -149,12 +146,6 @@ export default function DeptRequests() {
           </table>
         </div>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#EC4899] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showModal}

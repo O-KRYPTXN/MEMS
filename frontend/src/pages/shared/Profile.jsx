@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { ROLES } from '../../constants/roles'
 import clsx from 'clsx'
 
@@ -23,6 +24,7 @@ const Toggle = ({ id, checked, onChange }) => (
 
 export default function Profile() {
   const user = useAuthStore(state => state.user)
+  const { showToast } = useToastStore()
   
   const [activeTab, setActiveTab] = useState('profile')
   const [avatar, setAvatar] = useState(null)
@@ -33,7 +35,6 @@ export default function Profile() {
     twoFactor: false, darkTheme: true, compactView: false 
   })
   
-  const [toast, setToast] = useState({ show: false, msg: '', error: false })
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -44,11 +45,6 @@ export default function Profile() {
       setProfileForm({ firstName: first, lastName: last, email: user.email || '' })
     }
   }, [user])
-
-  const showToast = (msg, error = false) => {
-    setToast({ show: true, msg, error })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
@@ -61,16 +57,16 @@ export default function Profile() {
 
   const handleProfileSave = (e) => {
     e.preventDefault()
-    showToast('✓ Profile updated successfully.')
+    showToast('✓ Profile updated successfully.', TOAST_COLORS.success)
   }
 
   const handlePasswordUpdate = (e) => {
     e.preventDefault()
     if (passwords.new !== passwords.confirm) {
-      showToast('❌ New passwords do not match.', true)
+      showToast('❌ New passwords do not match.', TOAST_COLORS.error)
       return
     }
-    showToast('✓ Password updated successfully.')
+    showToast('✓ Password updated successfully.', TOAST_COLORS.success)
     setPasswords({ current: '', new: '', confirm: '' })
   }
 
@@ -283,15 +279,6 @@ export default function Profile() {
           )}
         </div>
       </div>
-
-      {toast.show && (
-        <div className={clsx(
-          "fixed bottom-7 right-7 z-[2000] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up",
-          toast.error ? "bg-[#EF4444]" : "bg-[#3B72F6]"
-        )}>
-          {toast.msg}
-        </div>
-      )}
     </div>
   )
 }

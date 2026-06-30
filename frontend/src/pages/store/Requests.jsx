@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialRequests = [
   { id: 'REQ-1092', requester: 'Ahmed (Tech)', dept: 'Maintenance', itemName: 'O2 Sensor – Nellcor', qty: 2, date: '2026-06-28', status: 'Pending' },
@@ -33,14 +34,9 @@ export default function StoreRequests() {
   const [actionNotes, setActionNotes] = useState('')
   const [reviewDecision, setReviewDecision] = useState('Approve') // for review modal
   
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  const { showToast } = useToastStore()
 
   const ROWS_PER_PAGE = 8
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
 
   const filteredReqs = useMemo(() => {
     const q = search.toLowerCase()
@@ -76,7 +72,7 @@ export default function StoreRequests() {
     setShowModal(false)
     setActionNotes('')
     setReviewDecision('Approve')
-    showToast(toastMsg)
+    showToast(toastMsg, actionType === 'review' && reviewDecision === 'Reject' ? TOAST_COLORS.error : TOAST_COLORS.store)
   }
 
   const tabs = ['All', 'Pending', 'Approved', 'Fulfilled', 'Rejected']
@@ -185,12 +181,6 @@ export default function StoreRequests() {
           </div>
         )}
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#8B5CF6] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showModal && !!selectedReq}

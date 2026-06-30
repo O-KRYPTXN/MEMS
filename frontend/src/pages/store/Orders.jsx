@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialOrders = [
   { id: 'PO-9101', supplier: 'MedTech Supply Co.', item: 'Suction Catheters', qty: 100, date: '2026-05-26', status: 'pending' },
@@ -34,12 +35,8 @@ export default function StoreOrders() {
   const [showResponseModal, setShowResponseModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [outcome, setOutcome] = useState(null)
-  const [toast, setToast] = useState({ show: false, msg: '', bg: '#8B5CF6' })
-
-  const showToast = (msg, bg = '#8B5CF6') => {
-    setToast({ show: true, msg, bg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
+  
+  const { showToast } = useToastStore()
 
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {
@@ -53,7 +50,7 @@ export default function StoreOrders() {
 
   const handleReceive = (id) => {
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'delivered' } : o))
-    showToast(`✓ ${id} received. Inventory stock incremented.`)
+    showToast(`✓ ${id} received. Inventory stock incremented.`, TOAST_COLORS.store)
   }
 
   const handleLogResponse = (e) => {
@@ -65,10 +62,10 @@ export default function StoreOrders() {
 
     if (outcome === 'exists') {
       setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: 'ordered' } : o))
-      showToast('📧 Reply received! Status updated to Ordered.')
+      showToast('📧 Reply received! Status updated to Ordered.', TOAST_COLORS.store)
     } else {
       setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: 'rejected' } : o))
-      showToast('❌ Item unavailable. Order cancelled.', '#EF4444')
+      showToast('❌ Item unavailable. Order cancelled.', TOAST_COLORS.error)
     }
 
     setShowResponseModal(false)
@@ -164,12 +161,6 @@ export default function StoreOrders() {
           </table>
         </div>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up" style={{ backgroundColor: toast.bg }}>
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showResponseModal && !!selectedOrder}

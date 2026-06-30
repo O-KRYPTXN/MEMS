@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialRejected = [
   { 
@@ -43,14 +44,10 @@ export default function StoreRejectedOrders() {
   const [supplierFilter, setSupplierFilter] = useState('')
   const [emailFilter, setEmailFilter] = useState('')
   const [expandedEmails, setExpandedEmails] = useState({})
-  const [toast, setToast] = useState({ show: false, msg: '' })
+  
+  const { showToast } = useToastStore()
 
   const uniqueSuppliers = useMemo(() => Array.from(new Set(orders.map(o => o.supplier))), [orders])
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000)
-  }
 
   const filteredOrders = useMemo(() => {
     const q = search.toLowerCase()
@@ -65,7 +62,7 @@ export default function StoreRejectedOrders() {
 
   const handleDelete = (id) => {
     setOrders(prev => prev.filter(o => o.id !== id))
-    showToast('✓ Rejected order removed from log.')
+    showToast('✓ Rejected order removed from log.', TOAST_COLORS.store)
   }
 
   const toggleEmails = (id) => {
@@ -207,12 +204,6 @@ export default function StoreRejectedOrders() {
           ))
         )}
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#EF4444] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300 animate-slide-up">
-          {toast.msg}
-        </div>
-      )}
     </div>
   )
 }

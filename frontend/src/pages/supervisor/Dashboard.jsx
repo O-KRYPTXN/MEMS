@@ -7,6 +7,7 @@ import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Moda
 import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
 import AlertItem from '../../components/ui/AlertItem'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { ROUTES } from '../../constants/routes'
 
 // --- MOCK DATA ---
@@ -51,23 +52,18 @@ export default function SupervisorDashboard() {
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [showApproveModal, setShowApproveModal] = useState(false)
   const [activeApproval, setActiveApproval] = useState(null)
-  const [toast, setToast] = useState({ show: false, msg: '', color: '#14B8A6' })
+  const { showToast } = useToastStore()
   const [approveNotes, setApproveNotes] = useState('')
 
   const { register: regAssign, handleSubmit: submitAssign, reset: resetAssign } = useForm()
 
-  const showToast = (msg, color = '#14B8A6') => {
-    setToast({ show: true, msg, color })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500)
-  }
-
   const handleAssign = (data) => {
     if (!data.woId || !data.techId) {
-      showToast('Please select a work order and technician', '#F87171')
+      showToast('Please select a work order and technician', TOAST_COLORS.error)
       return
     }
     const tech = teamData.find(t => t.id === data.techId)
-    showToast(`✓ Work order assigned to ${tech?.name || 'Technician'}`)
+    showToast(`✓ Work order assigned to ${tech?.name || 'Technician'}`, TOAST_COLORS.supervisor)
     setShowAssignModal(false)
     resetAssign()
   }
@@ -75,12 +71,12 @@ export default function SupervisorDashboard() {
   const handleApprove = () => {
     setApprovals(prev => prev.filter(w => w.id !== activeApproval.id))
     setShowApproveModal(false)
-    showToast('✓ Work Order approved — device returned to service!')
+    showToast('✓ Work Order approved — device returned to service!', TOAST_COLORS.supervisor)
   }
 
   const handleReject = () => {
     setShowApproveModal(false)
-    showToast('⚠ Work Order returned to technician for revision', '#F59E0B')
+    showToast('⚠ Work Order returned to technician for revision', TOAST_COLORS.warning)
   }
 
   const CustomTooltip = ({ active, payload }) => {
@@ -354,17 +350,6 @@ export default function SupervisorDashboard() {
           </div>
         </div>
 
-      </div>
-
-      {/* TOAST NOTIFICATION */}
-      <div 
-        className={clsx(
-          "fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300",
-          toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-        )}
-        style={{ backgroundColor: toast.color }}
-      >
-        {toast.msg}
       </div>
 
       {/* ASSIGN WO MODAL */}

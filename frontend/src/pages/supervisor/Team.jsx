@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const initialTeam = [
   { id: 'tech-1', name: 'James Smith', initials: 'JS', title: 'Senior Biomedical Technician', color: '#3B72F6', status: 'busy', phone: '+20 100 234 5678', email: 'j.smith@hospital.eg', shift: 'Morning (07:00-15:00)', tasksActive: 2, tasksCompleted: 14, maxTasks: 5, tasks: [{ id: 'WO-2038', device: 'Defibrillator AED-7', priority: 'High' }, { id: 'WO-2040', device: 'Defibrillator AED-9', priority: 'Medium' }] },
@@ -42,12 +43,7 @@ export default function SupervisorTeam() {
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [activeTech, setActiveTech] = useState(null)
-  const [toast, setToast] = useState({ show: false, msg: '', color: '#14B8A6' })
-
-  const showToast = (msg, color = '#14B8A6') => {
-    setToast({ show: true, msg, color })
-    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500)
-  }
+  const { showToast } = useToastStore()
 
   const totalTechs = team.length
   const activeTechs = team.filter(t => t.status !== 'offline').length
@@ -59,7 +55,7 @@ export default function SupervisorTeam() {
     const wo = formData.get('wo')
     const priority = formData.get('priority')
     
-    if (!wo) return showToast('Please select a work order', '#F87171')
+    if (!wo) return showToast('Please select a work order', TOAST_COLORS.error)
 
     setTeam(prev => prev.map(t => {
       if (t.id === activeTech.id) {
@@ -72,7 +68,7 @@ export default function SupervisorTeam() {
       return t
     }))
     setShowAssignModal(false)
-    showToast(`Task ${wo} assigned to ${activeTech.name}`)
+    showToast(`Task ${wo} assigned to ${activeTech.name}`, TOAST_COLORS.supervisor)
   }
 
   const handleAddTech = (e) => {
@@ -82,10 +78,10 @@ export default function SupervisorTeam() {
     const shift = formData.get('shift')
     const phone = formData.get('phone')
     
-    if (!email) return showToast('Select a technician to add', '#F87171')
+    if (!email) return showToast('Select a technician to add', TOAST_COLORS.error)
     
     const tech = mockSystemTechs.find(t => t.email === email)
-    if (team.find(t => t.email === email)) return showToast('Technician is already on your team', '#F87171')
+    if (team.find(t => t.email === email)) return showToast('Technician is already on your team', TOAST_COLORS.error)
 
     const newTech = {
       id: `tech-${Date.now()}`,
@@ -105,12 +101,12 @@ export default function SupervisorTeam() {
     
     setTeam(prev => [...prev, newTech])
     setShowAddModal(false)
-    showToast(`✓ ${tech.name} added to your team successfully!`)
+    showToast(`✓ ${tech.name} added to your team successfully!`, TOAST_COLORS.supervisor)
   }
 
   const handleRemoveTech = (id) => {
     setTeam(prev => prev.filter(t => t.id !== id))
-    showToast('Technician removed from team view', '#F59E0B')
+    showToast('Technician removed from team view', TOAST_COLORS.warning)
   }
 
   return (
@@ -201,13 +197,11 @@ export default function SupervisorTeam() {
 
             <div className="border-t border-[#1F2A40] p-3 px-5 flex gap-2">
               <button onClick={() => { setActiveTech(t); setShowAssignModal(true) }} className="flex-1 py-1.5 rounded-lg bg-[rgba(20,184,166,0.1)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] text-[12.5px] font-bold hover:bg-[rgba(20,184,166,0.15)] transition-colors">Assign Task</button>
-              <button onClick={() => showToast(`Calling ${t.phone}...`)} className="flex-1 py-1.5 rounded-lg bg-transparent border border-[#1F2A40] text-[#94A3B8] text-[12.5px] font-bold hover:bg-[#1F2A40] hover:text-[#E2E8F0] transition-colors">Call</button>
+              <button onClick={() => showToast(`Calling ${t.phone}...`, TOAST_COLORS.info)} className="flex-1 py-1.5 rounded-lg bg-transparent border border-[#1F2A40] text-[#94A3B8] text-[12.5px] font-bold hover:bg-[#1F2A40] hover:text-[#E2E8F0] transition-colors">Call</button>
             </div>
           </div>
         ))}
       </div>
-
-      <div className={clsx("fixed bottom-7 right-7 z-[100] px-5 py-3 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] text-white text-[13.5px] font-semibold transition-all duration-300", toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")} style={{ backgroundColor: toast.color }}>{toast.msg}</div>
 
       <Modal
         isOpen={showAssignModal && !!activeTech}

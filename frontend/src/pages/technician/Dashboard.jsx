@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { ROUTES } from '../../constants/routes'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 
@@ -36,12 +37,7 @@ export default function TechnicianDashboard() {
   const [updateStatus, setUpdateStatus] = useState('In Progress')
   const [hours, setHours] = useState('1.0')
   const [notes, setNotes] = useState('')
-  const [toast, setToast] = useState({ show: false, msg: '' })
-
-  const showToast = (msg) => {
-    setToast({ show: true, msg })
-    setTimeout(() => setToast({ show: false, msg: '' }), 3000)
-  }
+  const { showToast } = useToastStore()
 
   const activeTasks = tasks.filter(t => t.status !== 'Closed' && t.status !== 'Pending Approval')
   const completedCount = tasks.filter(t => t.status === 'Closed' || t.status === 'Pending Approval').length
@@ -56,7 +52,7 @@ export default function TechnicianDashboard() {
     
     setTasks(prev => prev.map(t => t.id === activeWO.id ? { ...t, status: newStatus } : t))
     setShowModal(false)
-    showToast(`✓ ${activeWO.id} updated.`)
+    showToast(`✓ ${activeWO.id} updated.`, TOAST_COLORS.technician)
   }
 
   return (
@@ -106,12 +102,6 @@ export default function TechnicianDashboard() {
           )}
         </div>
       </div>
-
-      {toast.show && (
-        <div className="fixed bottom-7 right-7 z-[2000] bg-[#F59E0B] text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-transform duration-300">
-          {toast.msg}
-        </div>
-      )}
 
       <Modal
         isOpen={showModal && !!activeWO}
