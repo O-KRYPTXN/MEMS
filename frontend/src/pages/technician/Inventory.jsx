@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -196,21 +198,9 @@ export default function TechnicianInventory() {
             <label className={labelCls}>Selected Part</label>
             <div className="w-full bg-[#131823] border border-[#1F2A40] text-[#94A3B8] px-3 py-2.5 rounded-lg text-[0.875rem] font-semibold">{selectedPart?.name}</div>
           </div>
-          <div>
-            <label className={labelCls}>Assign to Work Order</label>
-            <select name="wo" className={inputCls} required defaultValue="">
-              <option value="" disabled>Select an active WO...</option>
-              {mockWOs.map((wo, i) => <option key={i} value={wo}>{wo}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Quantity Required</label>
-            <input name="qty" type="number" min="1" defaultValue="1" className={inputCls} required />
-          </div>
-          <div>
-            <label className={labelCls}>Reason / Notes</label>
-            <textarea name="notes" className={inputCls + " min-h-[80px] resize-y"} placeholder="Why is this part needed?" required></textarea>
-          </div>
+          <SelectField label="Assign to Work Order" name="wo" required defaultValue="" placeholder="Select an active WO..." options={mockWOs} />
+          <InputField type="number" label="Quantity Required" name="qty" min="1" defaultValue="1" required />
+          <InputField type="textarea" label="Reason / Notes" name="notes" placeholder="Why is this part needed?" required />
         </form>
       </Modal>
     </div>

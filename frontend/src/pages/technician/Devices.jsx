@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
+import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -70,7 +72,7 @@ export default function TechDevices() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2A40]">
-              {filtered.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[#5A6A85]">No devices found.</td></tr> : filtered.map(d => (
+              {filtered.length === 0 ? <tr><td colSpan={7} className="p-0"><EmptyState message="No devices found." /></td></tr> : filtered.map(d => (
                 <tr key={d.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{d.id}</td>
                   <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{d.name}</td>
@@ -104,18 +106,8 @@ export default function TechDevices() {
         }
       >
         <form id="fault-form" onSubmit={handleReportFault} className="flex flex-col gap-[14px] mt-1">
-          <div>
-            <label className={labelCls}>Issue Type</label>
-            <select className={inputCls} defaultValue="Electrical">
-              <option value="Electrical">Electrical</option>
-              <option value="Mechanical">Mechanical</option>
-              <option value="Calibration">Calibration</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Description</label>
-            <textarea className={inputCls + " min-h-[100px] resize-y"} placeholder="Describe the fault..." required></textarea>
-          </div>
+          <SelectField label="Issue Type" defaultValue="Electrical" options={['Electrical', 'Mechanical', 'Calibration']} />
+          <InputField type="textarea" label="Description" placeholder="Describe the fault..." required />
         </form>
       </Modal>
 

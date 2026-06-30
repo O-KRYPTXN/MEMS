@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import clsx from 'clsx'
+import EmptyState from '../ui/EmptyState'
 
 const SKELETON_ROWS = 5
 
@@ -60,11 +61,8 @@ const DataTable = ({
           <tbody className="[&_tr:last-child_td]:border-b-0">
             {filteredData.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-8 text-center text-[0.8125rem] text-[#5A6A85]"
-                >
-                  {emptyMessage}
+                <td colSpan={columns.length} className="p-0">
+                  <EmptyState message={emptyMessage} />
                 </td>
               </tr>
             ) : (

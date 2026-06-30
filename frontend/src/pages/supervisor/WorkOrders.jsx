@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
+import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -173,7 +176,7 @@ export default function WorkOrders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2A40]">
-              {paginated.length === 0 ? <tr><td colSpan={8} className="p-8 text-center text-[#5A6A85]">No work orders found.</td></tr> : paginated.map(w => (
+              {paginated.length === 0 ? <tr><td colSpan={8} className="p-0"><EmptyState message="No work orders found." /></td></tr> : paginated.map(w => (
                 <tr key={w.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="p-4 text-[13px] font-medium text-[#E2E8F0]">{w.id}</td>
                   <td className="p-4 text-[13px] text-[#94A3B8]">{w.device}</td>
@@ -217,10 +220,10 @@ export default function WorkOrders() {
         }
       >
         <div className="flex flex-col gap-4 mt-1">
-          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Work Order</label><select value={assignForm.woId} onChange={e => setAssignForm({ ...assignForm, woId: e.target.value })} className={inputCls + " w-full"}><option value="">Select work order...</option>{wos.filter(w => w.status !== 'Closed').map(w => <option key={w.id} value={w.id}>{w.id} — {w.device} ({w.tech})</option>)}</select></div>
-          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Assign To Technician</label><select value={assignForm.tech} onChange={e => setAssignForm({ ...assignForm, tech: e.target.value })} className={inputCls + " w-full"}><option value="">Select Technician...</option>{teamData.map(t => <option key={t.name} value={t.name}>{t.name} ({t.status})</option>)}</select></div>
-          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Priority</label><select value={assignForm.priority} onChange={e => setAssignForm({ ...assignForm, priority: e.target.value })} className={inputCls + " w-full"}><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
-          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Notes</label><textarea value={assignForm.notes} onChange={e => setAssignForm({ ...assignForm, notes: e.target.value })} className={inputCls + " w-full min-h-[80px] resize-none"} placeholder="Special instructions…"></textarea></div>
+          <SelectField label="Work Order" name="woId" value={assignForm.woId} onChange={e => setAssignForm({ ...assignForm, woId: e.target.value })} placeholder="Select work order..." options={wos.filter(w => w.status !== 'Closed').map(w => ({value: w.id, label: `${w.id} — ${w.device} (${w.tech})`}))} />
+          <SelectField label="Assign To Technician" name="tech" value={assignForm.tech} onChange={e => setAssignForm({ ...assignForm, tech: e.target.value })} placeholder="Select Technician..." options={teamData.map(t => ({value: t.name, label: `${t.name} (${t.status})`}))} />
+          <SelectField label="Priority" name="priority" value={assignForm.priority} onChange={e => setAssignForm({ ...assignForm, priority: e.target.value })} placeholder="Select Priority" options={['High', 'Medium', 'Low']} />
+          <InputField type="textarea" label="Notes" name="notes" value={assignForm.notes} onChange={e => setAssignForm({ ...assignForm, notes: e.target.value })} placeholder="Special instructions…" />
         </div>
       </Modal>
 
@@ -245,7 +248,7 @@ export default function WorkOrders() {
               <div key={l} className="bg-[#1A2235] rounded-lg p-3"><div className="text-[0.72rem] text-[#5A6A85] uppercase">{l}</div><div className="text-[0.875rem] font-semibold text-[#E2E8F0] mt-1">{v}</div></div>
             ))}
           </div>
-          <div><label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Supervisor Notes</label><textarea value={approveNotes} onChange={e => setApproveNotes(e.target.value)} className={inputCls + " w-full min-h-[80px] resize-none"} placeholder="Add approval notes…"></textarea></div>
+          <InputField type="textarea" label="Supervisor Notes" name="approveNotes" value={approveNotes} onChange={e => setApproveNotes(e.target.value)} placeholder="Add approval notes…" />
         </div>
       </Modal>
 

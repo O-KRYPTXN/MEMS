@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
+import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -171,7 +174,7 @@ export default function SupervisorDevices() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2A40]">
-              {paginated.length === 0 ? <tr><td colSpan={8} className="p-8 text-center text-[#5A6A85]">No devices found.</td></tr> : paginated.map(d => (
+              {paginated.length === 0 ? <tr><td colSpan={8} className="p-0"><EmptyState message="No devices found." /></td></tr> : paginated.map(d => (
                 <tr key={d.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{d.id}</td>
                   <td className="p-4 text-[13px] text-[#94A3B8] whitespace-nowrap font-semibold">{d.name}</td>
@@ -223,35 +226,10 @@ export default function SupervisorDevices() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 mt-0.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <span className="text-[0.8rem] font-medium leading-relaxed">A Work Order will be automatically created and status set to Faulty.</span>
           </div>
-          <div>
-            <label className={labelCls}>Select Device</label>
-            <select value={faultDeviceId} onChange={e => setFaultDeviceId(e.target.value)} className={inputCls}>
-              <option value="" disabled>Select an operational device...</option>
-              {devices.filter(d => d.status === 'Operational').map(d => <option key={d.id} value={d.id}>{d.name} ({d.id})</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Fault Type</label>
-            <select className={inputCls} defaultValue="Electrical Fault">
-              <option value="Electrical Fault">Electrical Fault</option>
-              <option value="Mechanical Damage">Mechanical Damage</option>
-              <option value="Software Issue">Software Issue</option>
-              <option value="Calibration Error">Calibration Error</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Description</label>
-            <textarea className={inputCls + " min-h-[80px] resize-none"} placeholder="Describe the fault symptoms…" required></textarea>
-          </div>
-          <div>
-            <label className={labelCls}>Priority</label>
-            <select className={inputCls} defaultValue="High">
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
+          <SelectField label="Select Device" value={faultDeviceId} onChange={e => setFaultDeviceId(e.target.value)} placeholder="Select an operational device..." options={devices.filter(d => d.status === 'Operational').map(d => ({value: d.id, label: `${d.name} (${d.id})`}))} />
+          <SelectField label="Fault Type" defaultValue="Electrical Fault" options={['Electrical Fault', 'Mechanical Damage', 'Software Issue', 'Calibration Error', 'Other']} />
+          <InputField type="textarea" label="Description" placeholder="Describe the fault symptoms…" required />
+          <SelectField label="Priority" defaultValue="High" options={['High', 'Medium', 'Low']} />
         </form>
       </Modal>
 

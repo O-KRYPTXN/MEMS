@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import clsx from 'clsx'
+import { useNavigate } from 'react-router-dom'
+import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -70,7 +72,7 @@ export default function StoreDashboard() {
           <div className="p-4 border-b border-[#1F2A40]"><h2 className="text-sm font-bold text-[#E2E8F0]">Pending Department Requests</h2></div>
           <div className="p-4 flex flex-col gap-3">
             {requests.length === 0 ? (
-              <div className="text-center py-6 text-[#5A6A85] text-sm">No pending requests</div>
+              <EmptyState message="No pending requests" />
             ) : (
               requests.map(r => (
                 <div key={r.id} className="bg-[#131720] border border-[#1F2A40] p-4 rounded-lg flex justify-between items-center gap-4">

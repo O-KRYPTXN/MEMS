@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -218,26 +220,9 @@ export default function SupervisorTeam() {
         }
       >
         <form id="assign-task-form" onSubmit={handleAssignTask} className="flex flex-col gap-4 mt-1">
-          <div>
-            <label className={labelCls}>Select Work Order</label>
-            <select name="wo" className={inputCls} defaultValue="">
-              <option value="" disabled>Select work order...</option>
-              <option value="WO-2050">WO-2050 — Ventilator Calibration</option>
-              <option value="WO-2051">WO-2051 — Monitor Repair (Urgent)</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Priority</label>
-            <select name="priority" className={inputCls} defaultValue="Medium">
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Notes (Optional)</label>
-            <textarea name="notes" className={inputCls + " min-h-[80px] resize-none"} placeholder="Special instructions…"></textarea>
-          </div>
+          <SelectField label="Select Work Order" name="wo" defaultValue="" placeholder="Select work order..." options={[{value: 'WO-2050', label: 'WO-2050 — Ventilator Calibration'}, {value: 'WO-2051', label: 'WO-2051 — Monitor Repair (Urgent)'}]} />
+          <SelectField label="Priority" name="priority" defaultValue="Medium" placeholder="Select Priority" options={['High', 'Medium', 'Low']} />
+          <InputField type="textarea" label="Notes (Optional)" name="notes" placeholder="Special instructions…" />
         </form>
       </Modal>
 
@@ -256,25 +241,9 @@ export default function SupervisorTeam() {
         }
       >
         <form id="add-tech-form" onSubmit={handleAddTech} className="flex flex-col gap-4 mt-1">
-          <div>
-            <label className={labelCls}>Select Technician</label>
-            <select name="techEmail" className={inputCls} defaultValue="">
-              <option value="" disabled>Select from system users...</option>
-              {mockSystemTechs.map(t => <option key={t.email} value={t.email}>{t.name} ({t.email})</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Phone Number</label>
-            <input name="phone" type="text" className={inputCls} defaultValue="+20 109 999 9999" />
-          </div>
-          <div>
-            <label className={labelCls}>Assigned Shift</label>
-            <select name="shift" className={inputCls} defaultValue="Morning (07:00-15:00)">
-              <option value="Morning (07:00-15:00)">Morning (07:00-15:00)</option>
-              <option value="Afternoon (15:00-23:00)">Afternoon (15:00-23:00)</option>
-              <option value="Night (23:00-07:00)">Night (23:00-07:00)</option>
-            </select>
-          </div>
+          <SelectField label="Select Technician" name="techEmail" defaultValue="" placeholder="Select from system users..." options={mockSystemTechs.map(t => ({value: t.email, label: `${t.name} (${t.email})`}))} />
+          <InputField label="Phone Number" name="phone" defaultValue="+20 109 999 9999" />
+          <SelectField label="Assigned Shift" name="shift" defaultValue="Morning (07:00-15:00)" placeholder="Select Shift" options={['Morning (07:00-15:00)', 'Afternoon (15:00-23:00)', 'Night (23:00-07:00)']} />
         </form>
       </Modal>
     </div>

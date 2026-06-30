@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import InputField from '../../components/forms/InputField'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
-const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors"
-const labelCls = "block text-[0.8rem] text-[#94A3B8] font-semibold mb-1.5"
 
 export default function StoreCreateOrder() {
   const [searchParams] = useSearchParams()
@@ -62,26 +61,13 @@ export default function StoreCreateOrder() {
         <form onSubmit={handleSubmit}>
           <div className="p-6 flex flex-col gap-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className={labelCls}>Supplier Name</label>
-                <input type="text" value={formData.supplier} onChange={e => setFormData(f => ({ ...f, supplier: e.target.value }))} className={inputCls} required placeholder="e.g. MedSupply Inc." />
-              </div>
-              <div>
-                <label className={labelCls}>Supplier Email</label>
-                <input type="email" value={formData.email} onChange={e => setFormData(f => ({ ...f, email: e.target.value }))} className={inputCls} required placeholder="sales@medsupply.com" />
-              </div>
+              <InputField label="Supplier Name" name="supplier" value={formData.supplier} onChange={e => setFormData(f => ({ ...f, supplier: e.target.value }))} placeholder="e.g. MedSupply Inc." required />
+              <InputField type="email" label="Supplier Email" name="email" value={formData.email} onChange={e => setFormData(f => ({ ...f, email: e.target.value }))} placeholder="sales@medsupply.com" required />
               <div className="md:col-span-2">
-                <label className={labelCls}>Item Name / Part Code</label>
-                <input type="text" value={formData.item} onChange={e => setFormData(f => ({ ...f, item: e.target.value }))} className={inputCls} required placeholder="e.g. O2 Sensor - Nellcor" />
+                <InputField label="Item Name / Part Code" name="item" value={formData.item} onChange={e => setFormData(f => ({ ...f, item: e.target.value }))} placeholder="e.g. O2 Sensor - Nellcor" required />
               </div>
-              <div>
-                <label className={labelCls}>Quantity</label>
-                <input type="number" min="1" value={formData.qty} onChange={e => setFormData(f => ({ ...f, qty: e.target.value }))} className={inputCls} required />
-              </div>
-              <div>
-                <label className={labelCls}>Expected Delivery Date</label>
-                <input type="date" value={formData.date} onChange={e => setFormData(f => ({ ...f, date: e.target.value }))} className={inputCls} required />
-              </div>
+              <InputField type="number" min="1" label="Quantity" name="qty" value={formData.qty} onChange={e => setFormData(f => ({ ...f, qty: e.target.value }))} required />
+              <InputField type="date" label="Expected Delivery Date" name="date" value={formData.date} onChange={e => setFormData(f => ({ ...f, date: e.target.value }))} required />
             </div>
 
             <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] rounded-lg p-3.5 flex items-center gap-3 text-sm text-[#D8B4FE]">

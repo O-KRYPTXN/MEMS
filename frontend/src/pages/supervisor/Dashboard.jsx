@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import StatusDonutChart from '../../components/charts/StatusDonutChart'
+import EmptyState from '../../components/ui/EmptyState'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
@@ -26,10 +29,10 @@ const teamData = [
 ]
 
 const donutData = [
-  { label: 'Completed', value: 12, color: '#4ADE80' },
-  { label: 'In Progress', value: 5, color: '#FCD34D' },
-  { label: 'Pending Approval', value: 3, color: '#14B8A6' },
-  { label: 'Overdue', value: 4, color: '#F87171' },
+  { name: 'Completed', value: 12, color: '#4ADE80' },
+  { name: 'In Progress', value: 5, color: '#FCD34D' },
+  { name: 'Pending Approval', value: 3, color: '#14B8A6' },
+  { name: 'Overdue', value: 4, color: '#F87171' },
 ]
 
 const departmentAlerts = [
@@ -79,20 +82,7 @@ export default function SupervisorDashboard() {
     showToast('⚠ Work Order returned to technician for revision', TOAST_COLORS.warning)
   }
 
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-[#181D2A] border border-[#1F2A40] p-2 rounded shadow-lg text-xs">
-          {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color }} className="font-semibold">
-              {entry.payload.label}: {entry.value}
-            </p>
-          ))}
-        </div>
-      )
-    }
-    return null
-  }
+
 
   return (
     <>
@@ -181,7 +171,7 @@ export default function SupervisorDashboard() {
                 <tbody className="divide-y divide-[#1F2A40]">
                   {approvals.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-[#5A6A85] text-sm">✓ All work orders approved</td>
+                      <td colSpan={6} className="p-0"><EmptyState message="✓ All work orders approved" /></td>
                     </tr>
                   ) : approvals.map(wo => (
                     <tr key={wo.id} className="hover:bg-[rgba(255,255,255,0.02)] transition-colors">
@@ -272,7 +262,7 @@ export default function SupervisorDashboard() {
               </thead>
               <tbody>
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-[#5A6A85] text-sm">No pending device requests</td>
+                  <td colSpan={7} className="p-0"><EmptyState message="No pending device requests" /></td>
                 </tr>
               </tbody>
             </table>
@@ -318,34 +308,12 @@ export default function SupervisorDashboard() {
               <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Order Status</h3>
               <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">This month — dept overview</p>
             </div>
-            <div className="flex-1 flex flex-col justify-center min-h-[260px] pt-4">
-              <div className="relative h-[200px] w-full">
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[1.5rem] font-extrabold text-[#E2E8F0]">{donutData.reduce((a, b) => a + b.value, 0)}</span>
-                  <span className="text-[0.7rem] text-[#5A6A85] font-semibold uppercase tracking-wider">Total WOs</span>
-                </div>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={donutData} innerRadius={60} outerRadius={80} paddingAngle={4} dataKey="value" nameKey="label" stroke="none">
-                      {donutData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-col gap-2.5 px-6 pb-5 mt-4">
-                {donutData.map(d => (
-                  <div key={d.label} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }}></div>
-                      <span className="text-[12.5px] text-[#94A3B8]">{d.label}</span>
-                    </div>
-                    <span className="text-[13px] font-bold text-[#E2E8F0]">{d.value}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="flex-1 flex flex-col justify-center min-h-[260px] pt-4 pb-1">
+              <StatusDonutChart
+                data={donutData}
+                centerLabel={24}
+                centerSubLabel="Total WOs"
+              />
             </div>
           </div>
         </div>
@@ -368,36 +336,10 @@ export default function SupervisorDashboard() {
         }
       >
         <form id="assign-wo-form" onSubmit={submitAssign(handleAssign)} className="flex flex-col gap-4 mt-1">
-          <div>
-            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Work Order</label>
-            <select {...regAssign('woId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
-              <option value="">Select work order...</option>
-              {approvals.map(wo => (
-                <option key={wo.id} value={wo.id}>{wo.id} — {wo.device} ({wo.dept})</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Assign To</label>
-            <select {...regAssign('techId')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]">
-              <option value="">Select technician...</option>
-              {teamData.map(t => (
-                <option key={t.id} value={t.id}>{t.name} — {t.tasks} active tasks</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Priority</label>
-            <select {...regAssign('priority')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6]" defaultValue="Medium">
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Special Instructions (Optional)</label>
-            <textarea {...regAssign('notes')} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add any special instructions..."></textarea>
-          </div>
+          <SelectField label="Work Order" register={regAssign('woId')} placeholder="Select work order..." options={approvals.map(wo => ({value: wo.id, label: `${wo.id} — ${wo.device} (${wo.dept})`}))} />
+          <SelectField label="Assign To" register={regAssign('techId')} placeholder="Select technician..." options={teamData.map(t => ({value: t.id, label: `${t.name} — ${t.tasks} active tasks`}))} />
+          <SelectField label="Priority" register={regAssign('priority')} defaultValue="Medium" options={['High', 'Medium', 'Low']} />
+          <InputField type="textarea" label="Special Instructions (Optional)" register={regAssign('notes')} placeholder="Add any special instructions..." />
         </form>
       </Modal>
 
@@ -423,10 +365,7 @@ export default function SupervisorDashboard() {
             <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Technician</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.tech}</span></div>
             <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Type</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.type}</span></div>
           </div>
-          <div>
-            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Supervisor Notes</label>
-            <textarea value={approveNotes} onChange={e => setApproveNotes(e.target.value)} className="w-full bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13.5px] px-3 py-2.5 outline-none focus:border-[#14B8A6] min-h-[80px] resize-none" placeholder="Add approval notes or observations..."></textarea>
-          </div>
+          <InputField type="textarea" label="Supervisor Notes" value={approveNotes} onChange={e => setApproveNotes(e.target.value)} placeholder="Add approval notes or observations..." />
         </div>
       </Modal>
     </>

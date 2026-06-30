@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { workOrders as initialWorkOrders } from '../../data/workOrders'
@@ -308,54 +310,22 @@ export default function WorkOrders() {
         }
       >
         <form id="wo-form" onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
-          <div>
-            <label className={labelCls}>Device Name</label>
-            <input {...register('device', { required: true })} className={inputCls} placeholder="e.g. Philips IntelliVue MX800" />
-          </div>
+          <InputField label="Device Name" name="device" {...register('device', { required: true })} placeholder="e.g. Philips IntelliVue MX800" required />
           
           <div className="grid grid-cols-2 gap-[14px]">
-            <div>
-              <label className={labelCls}>Department</label>
-              <select {...register('dept', { required: true })} className={inputCls}>
-                <option value="">Select Dept</option>
-                {DEPT_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Priority/Type</label>
-              <select {...register('type', { required: true })} className={inputCls}>
-                <option value="">Select Type</option>
-                {TYPE_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
+            <SelectField label="Department" name="dept" {...register('dept', { required: true })} placeholder="Select Dept" options={DEPT_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required />
+            <SelectField label="Priority/Type" name="type" {...register('type', { required: true })} placeholder="Select Type" options={TYPE_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required />
           </div>
 
           {editingWO && (
-            <div>
-              <label className={labelCls}>Status</label>
-              <select {...register('status')} className={inputCls}>
-                {STATUS_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
+            <SelectField label="Status" name="status" {...register('status')} placeholder="Select Status" options={STATUS_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} />
           )}
 
-          <div>
-            <label className={labelCls}>Issue Description</label>
-            <textarea {...register('issue', { required: true })} className={clsx(inputCls, "min-h-[80px] resize-y")} placeholder="Describe the issue in detail…" />
-          </div>
+          <InputField type="textarea" label="Issue Description" name="issue" {...register('issue', { required: true })} placeholder="Describe the issue in detail…" required />
 
           <div className="grid grid-cols-2 gap-[14px]">
-            <div>
-              <label className={labelCls}>Assign To</label>
-              <select {...register('assigned', { required: true })} className={inputCls}>
-                <option value="">Select Assignee</option>
-                {ASSIGN_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Due Date</label>
-              <input type="date" {...register('dueDate')} className={inputCls} />
-            </div>
+            <SelectField label="Assign To" name="assigned" {...register('assigned', { required: true })} placeholder="Select Assignee" options={ASSIGN_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required />
+            <InputField type="date" label="Due Date" name="dueDate" {...register('dueDate')} />
           </div>
         </form>
       </Modal>

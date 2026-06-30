@@ -3,6 +3,8 @@ import { useAuthStore } from '../../store/authStore'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { ROLES } from '../../constants/roles'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 
 const roleMap = {
   [ROLES.ADMIN]: 'Administrator',
@@ -134,21 +136,13 @@ export default function Profile() {
               </div>
 
               <form onSubmit={handleProfileSave} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className={labelCls}>First Name</label>
-                  <input type="text" value={profileForm.firstName} onChange={e => setProfileForm(f => ({...f, firstName: e.target.value}))} className={inputCls} required />
-                </div>
-                <div>
-                  <label className={labelCls}>Last Name</label>
-                  <input type="text" value={profileForm.lastName} onChange={e => setProfileForm(f => ({...f, lastName: e.target.value}))} className={inputCls} required />
+                <InputField label="First Name" value={profileForm.firstName} onChange={e => setProfileForm(f => ({...f, firstName: e.target.value}))} required />
+                <InputField label="Last Name" value={profileForm.lastName} onChange={e => setProfileForm(f => ({...f, lastName: e.target.value}))} required />
+                <div className="sm:col-span-2">
+                  <InputField type="email" label="Email Address" value={profileForm.email} onChange={e => setProfileForm(f => ({...f, email: e.target.value}))} required />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className={labelCls}>Email Address</label>
-                  <input type="email" value={profileForm.email} onChange={e => setProfileForm(f => ({...f, email: e.target.value}))} className={inputCls} required />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className={labelCls}>Role</label>
-                  <input type="text" value={readableRole} disabled className={inputCls} />
+                  <InputField label="Role" value={readableRole} disabled />
                 </div>
                 <div className="sm:col-span-2 mt-2">
                   <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-[#3B72F6] hover:bg-[#2563EB] text-white rounded-lg text-[13px] font-bold transition-colors min-w-[200px]">
@@ -204,17 +198,10 @@ export default function Profile() {
               
               <form onSubmit={handlePasswordUpdate} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="sm:col-span-2">
-                  <label className={labelCls}>Current Password</label>
-                  <input type="password" value={passwords.current} onChange={e => setPasswords(p => ({...p, current: e.target.value}))} className={inputCls} required />
+                  <InputField type="password" label="Current Password" value={passwords.current} onChange={e => setPasswords(p => ({...p, current: e.target.value}))} required />
                 </div>
-                <div>
-                  <label className={labelCls}>New Password</label>
-                  <input type="password" value={passwords.new} onChange={e => setPasswords(p => ({...p, new: e.target.value}))} className={inputCls} required />
-                </div>
-                <div>
-                  <label className={labelCls}>Confirm New Password</label>
-                  <input type="password" value={passwords.confirm} onChange={e => setPasswords(p => ({...p, confirm: e.target.value}))} className={inputCls} required />
-                </div>
+                <InputField type="password" label="New Password" value={passwords.new} onChange={e => setPasswords(p => ({...p, new: e.target.value}))} required />
+                <InputField type="password" label="Confirm New Password" value={passwords.confirm} onChange={e => setPasswords(p => ({...p, confirm: e.target.value}))} required />
                 <div className="sm:col-span-2 mt-2">
                   <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-[#3B72F6] hover:bg-[#2563EB] text-white rounded-lg text-[13px] font-bold transition-colors min-w-[200px]">
                     Update Password
@@ -240,23 +227,8 @@ export default function Profile() {
               <p className="text-xs text-[#5A6A85] mt-1 mb-6 pb-4 border-b border-[#1F2A40]">Customize your application experience.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
-                <div>
-                  <label className={labelCls}>Language</label>
-                  <select className={inputCls}>
-                    <option>English (US)</option>
-                    <option>English (UK)</option>
-                    <option>Spanish</option>
-                    <option>French</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Date Format</label>
-                  <select className={inputCls}>
-                    <option>MM/DD/YYYY</option>
-                    <option>DD/MM/YYYY</option>
-                    <option>YYYY-MM-DD</option>
-                  </select>
-                </div>
+                <SelectField label="Language" options={['English (US)', 'English (UK)', 'Spanish', 'French']} />
+                <SelectField label="Date Format" options={['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD']} />
               </div>
 
               <div className="flex flex-col">

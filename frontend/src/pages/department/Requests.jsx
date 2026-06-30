@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -162,23 +164,8 @@ export default function DeptRequests() {
         }
       >
         <form id="report-problem-form" onSubmit={handleSubmit} className="flex flex-col gap-[14px] mt-1">
-          <div>
-            <label className={labelCls}>Affected Device</label>
-            <select value={formData.device} onChange={e => setFormData({ ...formData, device: e.target.value })} className={inputCls} required>
-              <option value="" disabled>Select a device...</option>
-              {mockDevices.map((d, i) => <option key={i} value={d}>{d}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Problem Description</label>
-            <textarea 
-              value={formData.desc} 
-              onChange={e => setFormData({ ...formData, desc: e.target.value })} 
-              className={inputCls + " min-h-[100px] resize-y"} 
-              placeholder="Please describe the issue in detail..." 
-              required
-            ></textarea>
-          </div>
+          <SelectField label="Affected Device" name="device" value={formData.device} onChange={e => setFormData({ ...formData, device: e.target.value })} placeholder="Select a device..." options={mockDevices} required />
+          <InputField type="textarea" label="Problem Description" name="desc" value={formData.desc} onChange={e => setFormData({ ...formData, desc: e.target.value })} placeholder="Please describe the issue in detail..." required />
         </form>
       </Modal>
     </div>

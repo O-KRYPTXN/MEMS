@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -188,21 +190,9 @@ export default function SupervisorInventory() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 mt-0.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <span className="text-[0.8rem] font-medium leading-relaxed">Submit a request to the Central Store. Subject to approval.</span>
           </div>
-          <div>
-            <label className={labelCls}>Select Part</label>
-            <select name="partId" value={selectedPartId} onChange={e => setSelectedPartId(e.target.value)} className={inputCls}>
-              <option value="" disabled>Select a part from inventory...</option>
-              {parts.map(p => <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock})</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Quantity Required</label>
-            <input name="qty" type="number" min="1" defaultValue="1" className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Reason / Notes</label>
-            <textarea name="notes" className={inputCls + " min-h-[80px] resize-none"} placeholder="Reason for request or urgency..."></textarea>
-          </div>
+          <SelectField label="Select Part" name="partId" value={selectedPartId} onChange={e => setSelectedPartId(e.target.value)} placeholder="Select a part from inventory..." options={parts.map(p => ({value: p.id, label: `${p.name} (Stock: ${p.stock})`}))} />
+          <InputField type="number" label="Quantity Required" name="qty" min="1" defaultValue="1" />
+          <InputField type="textarea" label="Reason / Notes" name="notes" placeholder="Reason for request or urgency..." />
         </form>
       </Modal>
     </div>

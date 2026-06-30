@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -182,22 +184,10 @@ export default function StoreOrders() {
 
         <form id="log-response-form" onSubmit={handleLogResponse} className="flex flex-col gap-[14px]">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Sender Name</label>
-              <input type="text" className={inputCls} placeholder="e.g. John Doe" required />
-            </div>
-            <div>
-              <label className={labelCls}>Sender Email</label>
-              <input type="email" className={inputCls} placeholder="e.g. rep@supplier.com" required />
-            </div>
-            <div>
-              <label className={labelCls}>Date/Time</label>
-              <input type="datetime-local" className={inputCls} required />
-            </div>
-            <div>
-              <label className={labelCls}>Subject Line</label>
-              <input type="text" className={inputCls} placeholder="Re: PO-9101..." required />
-            </div>
+            <InputField label="Sender Name" placeholder="e.g. John Doe" required />
+            <InputField type="email" label="Sender Email" placeholder="e.g. rep@supplier.com" required />
+            <InputField type="datetime-local" label="Date/Time" required />
+            <InputField label="Subject Line" placeholder="Re: PO-9101..." required />
           </div>
 
           <div>
@@ -220,10 +210,7 @@ export default function StoreOrders() {
             </div>
           </div>
 
-          <div>
-            <label className={labelCls}>Email Content / Notes</label>
-            <textarea className={inputCls + " min-h-[88px] resize-y"} placeholder="Paste email body or notes here..." required></textarea>
-          </div>
+          <InputField type="textarea" label="Email Content / Notes" placeholder="Paste email body or notes here..." required />
         </form>
       </Modal>
     </div>

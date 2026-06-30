@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { pmTasks as initialPMTasks } from '../../data/pmTasks'
@@ -431,57 +433,21 @@ export default function PreventiveMaintenance() {
           }
         >
           <form id="pm-form" onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
-            <div>
-              <label className={labelCls}>Device Name</label>
-              <input {...register('device', { required: true })} className={inputCls} placeholder="e.g. Philips IntelliVue MX800" />
+            <InputField label="Device Name" name="device" {...register('device', { required: true })} placeholder="e.g. Philips IntelliVue MX800" required />
+
+            <div className="grid grid-cols-2 gap-[14px]">
+              <SelectField label="Department" name="dept" {...register('dept', { required: true })} placeholder="Select Dept" options={DEPT_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
+              <SelectField label="PM Type" name="type" {...register('type', { required: true })} placeholder="Select Type" options={TYPE_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
             </div>
 
             <div className="grid grid-cols-2 gap-[14px]">
-              <div>
-                <label className={labelCls}>Department</label>
-                <select {...register('dept', { required: true })} className={inputCls}>
-                  <option value="">Select Dept</option>
-                  {DEPT_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>PM Type</label>
-                <select {...register('type', { required: true })} className={inputCls}>
-                  <option value="">Select Type</option>
-                  {TYPE_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </div>
+              <InputField type="date" label="Scheduled Date" name="scheduled" {...register('scheduled', { required: true })} required />
+              <SelectField label="Assign Technician" name="tech" {...register('tech', { required: true })} placeholder="Select Assignee" options={TECH_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
             </div>
 
-            <div className="grid grid-cols-2 gap-[14px]">
-              <div>
-                <label className={labelCls}>Scheduled Date</label>
-                <input type="date" {...register('scheduled', { required: true })} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Assign Technician</label>
-                <select {...register('tech', { required: true })} className={inputCls}>
-                  <option value="">Select Assignee</option>
-                  {TECH_OPTS.slice(1).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </div>
-            </div>
+            <SelectField label="Recurrence" name="recurrence" {...register('recurrence')} placeholder="Select Recurrence" options={[{value: '', label: 'One-time'}, 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual']} />
 
-            <div>
-              <label className={labelCls}>Recurrence</label>
-              <select {...register('recurrence')} className={inputCls}>
-                <option value="">One-time</option>
-                <option value="Monthly">Monthly</option>
-                <option value="Quarterly">Quarterly</option>
-                <option value="Semi-Annual">Semi-Annual</option>
-                <option value="Annual">Annual</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelCls}>Notes</label>
-              <textarea {...register('notes')} className={clsx(inputCls, "min-h-[80px] resize-y")} placeholder="Any special instructions…" />
-            </div>
+            <InputField type="textarea" label="Notes" name="notes" {...register('notes')} placeholder="Any special instructions…" />
           </form>
         </Modal>
       </div>

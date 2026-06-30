@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { users as rawUsers } from '../../data/users'
@@ -341,36 +343,12 @@ export default function Users() {
         }
       >
         <form id="user-form" onSubmit={handleSubmit(showAddModal ? onAddSubmit : onEditSubmit)} className="flex flex-col gap-4">
-          <div>
-            <label className={labelCls}>Full Name</label>
-            <input {...register('name', { required: true })} className={inputCls} placeholder="e.g. John Doe" />
-          </div>
-          
-          <div>
-            <label className={labelCls}>Email Address</label>
-            <input type="email" {...register('email', { required: true })} className={inputCls} placeholder="e.g. jdoe@hospital.com" />
-          </div>
+          <InputField label="Full Name" name="name" {...register('name', { required: true })} placeholder="e.g. John Doe" required />
+          <InputField type="email" label="Email Address" name="email" {...register('email', { required: true })} placeholder="e.g. jdoe@hospital.com" required />
 
           <div className="grid grid-cols-2 gap-[14px]">
-            <div>
-              <label className={labelCls}>Role</label>
-              <select {...register('role', { required: true })} className={inputCls}>
-                <option value="">Select Role</option>
-                {ROLE_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Department Scope</label>
-              <select {...register('department', { required: true })} className={inputCls}>
-                <option value="">Select Department</option>
-                <option value="System-wide">System-wide</option>
-                <option value="ICU">ICU</option>
-                <option value="ER">ER</option>
-                <option value="Radiology">Radiology</option>
-                <option value="Surgery">Surgery</option>
-                <option value="Central Stores">Central Stores</option>
-              </select>
-            </div>
+            <SelectField label="Role" name="role" {...register('role', { required: true })} placeholder="Select Role" options={ROLE_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required />
+            <SelectField label="Department Scope" name="department" {...register('department', { required: true })} placeholder="Select Department" options={['System-wide', 'ICU', 'ER', 'Radiology', 'Surgery', 'Central Stores']} required />
           </div>
         </form>
       </Modal>

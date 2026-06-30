@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
+import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -134,7 +137,7 @@ export default function StoreRequests() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2A40]">
-              {paginatedReqs.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[#5A6A85]">No requests found.</td></tr> : paginatedReqs.map(r => (
+              {paginatedReqs.length === 0 ? <tr><td colSpan={6} className="p-0"><EmptyState message="No requests found." /></td></tr> : paginatedReqs.map(r => (
                 <tr key={r.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{r.id}</td>
                   <td className="p-4 text-[13px]">
@@ -231,15 +234,13 @@ export default function StoreRequests() {
                   </button>
                 </div>
               </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Notes (Optional)</label>
-                <textarea 
-                  value={actionNotes}
-                  onChange={e => setActionNotes(e.target.value)}
-                  className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
-                  placeholder="Reason for rejection or approval notes..."
-                />
-              </div>
+              <InputField 
+                type="textarea"
+                label="Notes (Optional)"
+                value={actionNotes}
+                onChange={e => setActionNotes(e.target.value)}
+                placeholder="Reason for rejection or approval notes..."
+              />
             </>
           )}
 
@@ -249,15 +250,13 @@ export default function StoreRequests() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
                 <span>Marking this as fulfilled will notify the requester that the item is ready for pickup and deduct the quantity from inventory.</span>
               </div>
-              <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Collection Notes (Optional)</label>
-                <textarea 
-                  value={actionNotes}
-                  onChange={e => setActionNotes(e.target.value)}
-                  className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
-                  placeholder="e.g. Please sign the collection log upon arrival..."
-                />
-              </div>
+              <InputField 
+                type="textarea"
+                label="Collection Notes (Optional)"
+                value={actionNotes}
+                onChange={e => setActionNotes(e.target.value)}
+                placeholder="e.g. Please sign the collection log upon arrival..."
+              />
             </>
           )}
         </form>

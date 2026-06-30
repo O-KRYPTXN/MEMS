@@ -1,5 +1,7 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
+import EmptyState from '../../components/ui/EmptyState'
 import { useAuthStore } from '../../store/authStore'
 import { ROUTES } from '../../constants/routes'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
@@ -83,7 +85,7 @@ export default function TechnicianDashboard() {
         </div>
         <div className="flex flex-col">
           {activeTasks.length === 0 ? (
-            <div className="flex items-center justify-center py-6 text-[#5A6A85] text-sm">No active tasks — great work! 🎉</div>
+            <EmptyState message="No active tasks — great work! 🎉" />
           ) : (
             activeTasks.map(t => (
               <div key={t.id} className="flex flex-row items-center gap-4 p-4 px-5 border-b border-[#1F2A40] last:border-b-0 hover:bg-[#1A2235] transition-colors">
@@ -118,22 +120,9 @@ export default function TechnicianDashboard() {
         }
       >
         <form id="update-wo-form" onSubmit={handleUpdate} className="flex flex-col gap-[14px] mt-1">
-          <div>
-            <label className={labelCls}>Status</label>
-            <select value={updateStatus} onChange={e => setUpdateStatus(e.target.value)} className={inputCls}>
-              <option value="In Progress">In Progress</option>
-              <option value="Waiting on Parts">Waiting on Parts</option>
-              <option value="Completed / Solved (Sent for Approval)">Completed / Solved (Sent for Approval)</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Hours Logged</label>
-            <input type="number" min="0.5" step="0.5" value={hours} onChange={e => setHours(e.target.value)} className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Work Notes</label>
-            <textarea placeholder="Describe work performed..." value={notes} onChange={e => setNotes(e.target.value)} className={inputCls + " min-h-[80px] resize-y"}></textarea>
-          </div>
+          <SelectField label="Status" name="updateStatus" value={updateStatus} onChange={e => setUpdateStatus(e.target.value)} placeholder="Select Status" options={['In Progress', 'Waiting on Parts', 'Completed / Solved (Sent for Approval)']} />
+          <InputField type="number" min="0.5" step="0.5" label="Hours Logged" name="hours" value={hours} onChange={e => setHours(e.target.value)} />
+          <InputField type="textarea" label="Work Notes" name="notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Describe work performed..." />
         </form>
       </Modal>
     </div>

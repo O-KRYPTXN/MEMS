@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -238,14 +240,8 @@ export default function StoreInventory() {
             <label className={labelCls}>Selected Part</label>
             <input type="text" readOnly value={`${selectedPart?.name} (${selectedPart?.id})`} className={inputCls + " opacity-70 cursor-not-allowed"} />
           </div>
-          <div>
-            <label className={labelCls}>Quantity to Add</label>
-            <input type="number" min="1" value={restockQty} onChange={e => setRestockQty(e.target.value)} className={inputCls} required />
-          </div>
-          <div>
-            <label className={labelCls}>Delivery Notes (Optional)</label>
-            <textarea className={inputCls + " min-h-[80px] resize-y"} placeholder="Order #, Supplier, etc..."></textarea>
-          </div>
+          <InputField type="number" label="Quantity to Add" min="1" value={restockQty} onChange={e => setRestockQty(e.target.value)} required />
+          <InputField type="textarea" label="Delivery Notes (Optional)" placeholder="Order #, Supplier, etc..." />
         </form>
       </Modal>
 
@@ -264,32 +260,13 @@ export default function StoreInventory() {
         }
       >
         <form id="add-part-form" onSubmit={handleAddPart} className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Part Code</label>
-            <input type="text" value={addFormData.id} onChange={e => setAddFormData(f => ({...f, id: e.target.value}))} className={inputCls} placeholder="e.g. PRT-2050" required />
-          </div>
-          <div>
-            <label className={labelCls}>Category</label>
-            <select value={addFormData.category} onChange={e => setAddFormData(f => ({...f, category: e.target.value}))} className={inputCls} required>
-              <option value="Sensors">Sensors</option>
-              <option value="Cables">Cables</option>
-              <option value="Consumables">Consumables</option>
-              <option value="Accessories">Accessories</option>
-              <option value="Power">Power</option>
-            </select>
-          </div>
+          <InputField label="Part Code" value={addFormData.id} onChange={e => setAddFormData(f => ({...f, id: e.target.value}))} placeholder="e.g. PRT-2050" required />
+          <SelectField label="Category" value={addFormData.category} onChange={e => setAddFormData(f => ({...f, category: e.target.value}))} options={['Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']} required />
           <div className="col-span-2">
-            <label className={labelCls}>Part Name</label>
-            <input type="text" value={addFormData.name} onChange={e => setAddFormData(f => ({...f, name: e.target.value}))} className={inputCls} placeholder="Full descriptive name" required />
+            <InputField label="Part Name" value={addFormData.name} onChange={e => setAddFormData(f => ({...f, name: e.target.value}))} placeholder="Full descriptive name" required />
           </div>
-          <div>
-            <label className={labelCls}>Initial Stock</label>
-            <input type="number" min="0" value={addFormData.qty} onChange={e => setAddFormData(f => ({...f, qty: e.target.value}))} className={inputCls} required />
-          </div>
-          <div>
-            <label className={labelCls}>Minimum Level</label>
-            <input type="number" min="1" value={addFormData.min} onChange={e => setAddFormData(f => ({...f, min: e.target.value}))} className={inputCls} required />
-          </div>
+          <InputField type="number" label="Initial Stock" min="0" value={addFormData.qty} onChange={e => setAddFormData(f => ({...f, qty: e.target.value}))} required />
+          <InputField type="number" label="Minimum Level" min="1" value={addFormData.min} onChange={e => setAddFormData(f => ({...f, min: e.target.value}))} required />
         </form>
       </Modal>
     </div>

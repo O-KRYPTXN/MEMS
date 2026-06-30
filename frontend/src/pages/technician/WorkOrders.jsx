@@ -1,5 +1,10 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
+import EmptyState from '../../components/ui/EmptyState'
+import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
@@ -139,7 +144,7 @@ export default function TechnicianWorkOrders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2A40]">
-              {paginated.length === 0 ? <tr><td colSpan={8} className="p-8 text-center text-[#5A6A85]">No work orders found.</td></tr> : paginated.map(w => (
+              {paginated.length === 0 ? <tr><td colSpan={8} className="p-0"><EmptyState message="No work orders found." /></td></tr> : paginated.map(w => (
                 <tr key={w.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{w.id}</td>
                   <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{w.device}</td>
@@ -184,29 +189,16 @@ export default function TechnicianWorkOrders() {
         }
       >
         <form id="update-form" onSubmit={handleUpdateSubmit} className="flex flex-col gap-[14px] mt-1">
-          <div>
-            <label className={labelCls}>Status</label>
-            <select value={updateForm.status} onChange={e => setUpdateForm({ ...updateForm, status: e.target.value })} className={inputCls}>
-              <option value="Unassigned">To Do (Unassigned)</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Waiting Parts">Waiting Parts</option>
-              <option value="Solved Tasks">Solved Tasks</option>
-            </select>
-          </div>
+          <SelectField label="Status" value={updateForm.status} onChange={e => setUpdateForm({ ...updateForm, status: e.target.value })} options={[{value: 'Unassigned', label: 'To Do (Unassigned)'}, {value: 'In Progress', label: 'In Progress'}, {value: 'Waiting Parts', label: 'Waiting Parts'}, {value: 'Solved Tasks', label: 'Solved Tasks'}]} />
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className={labelCls}>Hours Logged</label>
-              <input type="number" step="0.5" min="0" value={updateForm.timeLog} onChange={e => setUpdateForm({ ...updateForm, timeLog: e.target.value })} className={inputCls} />
+              <InputField type="number" label="Hours Logged" step="0.5" min="0" value={updateForm.timeLog} onChange={e => setUpdateForm({ ...updateForm, timeLog: e.target.value })} />
             </div>
             <div className="flex-1">
-              <label className={labelCls}>Parts Used</label>
-              <input type="text" value={updateForm.parts} onChange={e => setUpdateForm({ ...updateForm, parts: e.target.value })} placeholder="e.g. O2 Sensor" className={inputCls} />
+              <InputField label="Parts Used" value={updateForm.parts} onChange={e => setUpdateForm({ ...updateForm, parts: e.target.value })} placeholder="e.g. O2 Sensor" />
             </div>
           </div>
-          <div>
-            <label className={labelCls}>Work Notes</label>
-            <textarea value={updateForm.notes} onChange={e => setUpdateForm({ ...updateForm, notes: e.target.value })} className={inputCls + " min-h-[80px] resize-y"} placeholder="Describe work performed..."></textarea>
-          </div>
+          <InputField type="textarea" label="Work Notes" value={updateForm.notes} onChange={e => setUpdateForm({ ...updateForm, notes: e.target.value })} placeholder="Describe work performed..." />
         </form>
       </Modal>
 

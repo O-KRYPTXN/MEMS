@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  PieChart, Pie, Cell, Tooltip as PieTooltip,
-} from 'recharts'
+import FaultTrendLineChart from '../../components/charts/FaultTrendLineChart'
+import StatusDonutChart from '../../components/charts/StatusDonutChart'
+import DevicesByDeptBarChart from '../../components/charts/DevicesByDeptBarChart'
 import clsx from 'clsx'
 import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
@@ -145,43 +144,17 @@ const Dashboard = () => {
         <Panel title="Fault Trend & MTBF" subtitle="Trend of reported faults across all departments"
           action={<button type="button" className={linkBtn}>View Report</button>}>
           <div className="p-5">
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={faultData}>
-                <CartesianGrid stroke="#1F2A40" strokeDasharray="0" />
-                <XAxis dataKey="day" tick={{ fill: '#5A6A85', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#5A6A85', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: '#1F2A40', border: '1px solid #2A3450' }} itemStyle={{ color: '#94A3B8' }} />
-                <Line type="monotone" dataKey="faults" stroke="#3B72F6" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <FaultTrendLineChart data={faultData} />
           </div>
         </Panel>
 
         <Panel title="Work Orders by Department" subtitle="Distribution this month">
-          <div className="p-5">
-            <div className="relative">
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={deptData} dataKey="value" innerRadius={60} outerRadius={80} paddingAngle={2}>
-                    {deptData.map((d) => <Cell key={d.name} fill={d.color} stroke="none" />)}
-                  </Pie>
-                  <PieTooltip contentStyle={{ background: '#1F2A40', border: '1px solid #2A3450' }} itemStyle={{ color: '#94A3B8' }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-extrabold text-[#E2E8F0]">{totalWOs}</span>
-                <span className="text-[0.7rem] text-[#5A6A85]">Total WOs</span>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-col gap-2">
-              {deptData.map((d) => (
-                <div key={d.name} className="flex items-center gap-2 text-[0.8125rem]">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                  <span className="flex-1 text-[#94A3B8]">{d.name}</span>
-                  <span className="font-bold text-[#E2E8F0]">{totalWOs ? Math.round((d.value / totalWOs) * 100) : 0}%</span>
-                </div>
-              ))}
-            </div>
+          <div className="py-5">
+            <StatusDonutChart
+              data={deptData.map(d => ({ ...d, displayValue: totalWOs ? Math.round((d.value / totalWOs) * 100) + '%' : '0%' }))}
+              centerLabel={totalWOs}
+              centerSubLabel="Total WOs"
+            />
           </div>
         </Panel>
       </div>
@@ -224,15 +197,7 @@ const Dashboard = () => {
 
         <Panel title="Devices by Department" subtitle="Active device count">
           <div>
-            {DEPT_DEVICES.map((dept, i) => (
-              <div key={dept.name} className={clsx('flex items-center gap-2.5 py-2.5 px-5', i < DEPT_DEVICES.length - 1 && 'border-b border-[#1A2235]')}>
-                <span className="flex-1 text-[0.8125rem] text-[#94A3B8]">{dept.name}</span>
-                <div className="w-20 h-1 bg-[#1F2A40] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${dept.pct}%`, backgroundColor: dept.color }} />
-                </div>
-                <span className="text-[0.8rem] font-bold text-[#E2E8F0] w-8 text-right">{dept.count}</span>
-              </div>
-            ))}
+            <DevicesByDeptBarChart data={DEPT_DEVICES} />
           </div>
         </Panel>
       </div>

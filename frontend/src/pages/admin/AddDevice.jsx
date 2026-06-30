@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import { ROUTES } from '../../constants/routes'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import clsx from 'clsx'
@@ -56,90 +58,27 @@ export default function AddDevice() {
             {/* Section 1 */}
             <h2 className={secHeaderCls}>1. Device Identification</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Device Name *</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. ICU Ventilator V-12"
-                  className={getInputCls(errors.deviceName)} 
-                  {...register('deviceName', { required: 'Device name is required' })} 
-                />
-                {errors.deviceName && <p className="text-[0.7rem] font-bold text-[#F87171] mt-1.5">{errors.deviceName.message}</p>}
-              </div>
-              <div>
-                <label className={labelCls}>Serial Number *</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. SN-8472910"
-                  className={getInputCls(errors.serialNumber)} 
-                  {...register('serialNumber', { required: 'Serial number is required' })} 
-                />
-                {errors.serialNumber && <p className="text-[0.7rem] font-bold text-[#F87171] mt-1.5">{errors.serialNumber.message}</p>}
-              </div>
+              <InputField label="Device Name *" name="deviceName" {...register('deviceName', { required: 'Device name is required' })} placeholder="e.g. ICU Ventilator V-12" required error={errors.deviceName?.message} />
+              <InputField label="Serial Number *" name="serialNumber" {...register('serialNumber', { required: 'Serial number is required' })} placeholder="e.g. SN-8472910" required error={errors.serialNumber?.message} />
             </div>
 
             {/* Section 2 */}
             <h2 className={secHeaderCls}>2. Classification & Location</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Category *</label>
-                <select 
-                  className={getInputCls(errors.category)} 
-                  {...register('category', { required: 'Select a category' })}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                {errors.category && <p className="text-[0.7rem] font-bold text-[#F87171] mt-1.5">{errors.category.message}</p>}
-              </div>
-              <div>
-                <label className={labelCls}>Department *</label>
-                <select 
-                  className={getInputCls(errors.department)} 
-                  {...register('department', { required: 'Select a department' })}
-                >
-                  <option value="">Select Department</option>
-                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-                {errors.department && <p className="text-[0.7rem] font-bold text-[#F87171] mt-1.5">{errors.department.message}</p>}
-              </div>
+              <SelectField label="Category *" name="category" {...register('category', { required: 'Select a category' })} placeholder="Select Category" options={categories.map(c => ({value: c, label: c}))} required error={errors.category?.message} />
+              <SelectField label="Department *" name="department" {...register('department', { required: 'Select a department' })} placeholder="Select Department" options={departments.map(d => ({value: d, label: d}))} required error={errors.department?.message} />
             </div>
 
             {/* Section 3 */}
             <h2 className={secHeaderCls}>3. Lifecycle & Status</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Purchase Date *</label>
-                <input 
-                  type="date" 
-                  className={getInputCls(errors.purchaseDate)} 
-                  {...register('purchaseDate', { required: 'Purchase date is required' })} 
-                />
-                {errors.purchaseDate && <p className="text-[0.7rem] font-bold text-[#F87171] mt-1.5">{errors.purchaseDate.message}</p>}
-              </div>
-              <div>
-                <label className={labelCls}>Current Status *</label>
-                <select 
-                  className={getInputCls(errors.status)} 
-                  {...register('status', { required: 'Select initial status' })}
-                >
-                  <option value="">Select Status</option>
-                  {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                {errors.status && <p className="text-[0.7rem] font-bold text-[#F87171] mt-1.5">{errors.status.message}</p>}
-              </div>
+              <InputField type="date" label="Purchase Date *" name="purchaseDate" {...register('purchaseDate', { required: 'Purchase date is required' })} required error={errors.purchaseDate?.message} />
+              <SelectField label="Current Status *" name="status" {...register('status', { required: 'Select initial status' })} placeholder="Select Status" options={statuses.map(s => ({value: s, label: s}))} required error={errors.status?.message} />
             </div>
 
             {/* Section 4 */}
             <h2 className={secHeaderCls}>4. Additional Information</h2>
-            <div>
-              <label className={labelCls}>Notes (Optional)</label>
-              <textarea 
-                placeholder="Add any maintenance notes, warranty info or specific configurations..."
-                className={clsx(getInputCls(false), "min-h-[80px] resize-y")} 
-                {...register('notes')} 
-              />
-            </div>
+            <InputField type="textarea" label="Notes (Optional)" name="notes" {...register('notes')} placeholder="Add any maintenance notes, warranty info or specific configurations..." />
 
           </div>
 
