@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
+import { useTranslation } from 'react-i18next'
 
 const initialInventory = [
   { id: 'PART-1001', name: 'O2 Sensor – Nellcor', qty: 12, min: 10 },
@@ -25,6 +26,7 @@ export default function StoreDashboard() {
   const [showFulfillModal, setShowFulfillModal] = useState(false)
   const [selectedReq, setSelectedReq] = useState(null)
   
+  const { t } = useTranslation()
   const { showToast } = useToastStore()
 
   const totalParts = inventory.length
@@ -36,21 +38,21 @@ export default function StoreDashboard() {
     e.preventDefault()
     setRequests(prev => prev.filter(r => r.id !== selectedReq.id))
     setShowFulfillModal(false)
-    showToast('✓ Request fulfilled and inventory deducted.', TOAST_COLORS.store)
+    showToast(t('storeDashboard.toastFulfilled', '✓ Request fulfilled and inventory deducted.'), TOAST_COLORS.store)
   }
 
   const kpis = [
-    { label: 'Total Parts in Stock', value: totalParts, bg: 'bg-[rgba(139,92,246,0.15)] text-[#A78BFA]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/> },
-    { label: 'Low Stock Alerts', value: stockAlerts.length, bg: 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.625h.01M12 4.5l-9 15h18l-9-15z"/> },
-    { label: 'Pending Requests', value: pendingCount, bg: 'bg-[rgba(59,130,246,0.15)] text-[#60A5FA]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/> },
-    { label: 'Fulfillment Rate', value: fulfillmentRate, bg: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/> }
+    { label: t('storeDashboard.totalParts', 'Total Parts in Stock'), value: totalParts, bg: 'bg-[rgba(139,92,246,0.15)] text-[#A78BFA]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/> },
+    { label: t('storeDashboard.lowStockAlerts', 'Low Stock Alerts'), value: stockAlerts.length, bg: 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.625h.01M12 4.5l-9 15h18l-9-15z"/> },
+    { label: t('storeDashboard.pendingRequests', 'Pending Requests'), value: pendingCount, bg: 'bg-[rgba(59,130,246,0.15)] text-[#60A5FA]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/> },
+    { label: t('storeDashboard.fulfillmentRate', 'Fulfillment Rate'), value: fulfillmentRate, bg: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/> }
   ]
 
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Store Dashboard</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Overview of inventory alerts, pending orders, and recent fulfillments.</p>
+        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeDashboard.pageTitle', 'Store Dashboard')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeDashboard.pageSubtitle', 'Overview of inventory alerts, pending orders, and recent fulfillments.')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -69,20 +71,20 @@ export default function StoreDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
         <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col">
-          <div className="p-4 border-b border-[#1F2A40]"><h2 className="text-sm font-bold text-[#E2E8F0]">Pending Department Requests</h2></div>
+          <div className="p-4 border-b border-[#1F2A40]"><h2 className="text-sm font-bold text-[#E2E8F0]">{t('storeDashboard.pendingRequestsTitle', 'Pending Department Requests')}</h2></div>
           <div className="p-4 flex flex-col gap-3">
             {requests.length === 0 ? (
-              <EmptyState message="No pending requests" />
+              <EmptyState message={t('storeDashboard.noPendingRequests', 'No pending requests')} />
             ) : (
               requests.map(r => (
                 <div key={r.id} className="bg-[#131720] border border-[#1F2A40] p-4 rounded-lg flex justify-between items-center gap-4">
                   <div className="min-w-0">
-                    <span className="text-[0.7rem] font-bold uppercase tracking-wide bg-[#1A2235] px-2 py-0.5 rounded text-[#94A3B8] inline-block mb-1">{r.dept}</span>
+                    <span className="text-[0.7rem] font-bold uppercase tracking-wide bg-[#1A2235] px-2 py-0.5 rounded text-[#94A3B8] inline-block mb-1">{t('common.dept')} {r.dept}</span>
                     <div className="text-xs text-[#5A6A85]">{r.id} — {r.date}</div>
                     <div className="text-sm font-bold text-[#E2E8F0] mt-1 truncate">{r.qty}x {r.itemName}</div>
                   </div>
                   <button onClick={() => { setSelectedReq(r); setShowFulfillModal(true) }} className="bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] text-[#D8B4FE] hover:bg-[rgba(139,92,246,0.2)] px-4 py-1.5 rounded-md text-[0.8rem] font-bold transition-colors shrink-0">
-                    Fulfill
+                    {t('storeDashboard.fulfillBtn', 'Fulfill')}
                   </button>
                 </div>
               ))
@@ -91,19 +93,19 @@ export default function StoreDashboard() {
         </div>
 
         <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col">
-          <div className="p-4 border-b border-[#1F2A40]"><h2 className="text-sm font-bold text-[#E2E8F0]">Critical Stock Alerts</h2></div>
+          <div className="p-4 border-b border-[#1F2A40]"><h2 className="text-sm font-bold text-[#E2E8F0]">{t('storeDashboard.criticalAlertsTitle', 'Critical Stock Alerts')}</h2></div>
           <div className="p-4 flex flex-col gap-3">
             {stockAlerts.length === 0 ? (
-              <div className="text-center py-6 text-[#5A6A85] text-sm">No stock alerts</div>
+              <div className="text-center py-6 text-[#5A6A85] text-sm">{t('storeDashboard.noStockAlerts', 'No stock alerts')}</div>
             ) : (
               stockAlerts.map(i => (
                 <div key={i.id} className="bg-[#131720] border border-[#1F2A40] p-3.5 rounded-lg flex justify-between items-center gap-4">
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-[#E2E8F0] truncate">{i.name}</div>
-                    <div className="text-xs text-[#5A6A85] mt-0.5">{i.id} • Min: {i.min}</div>
+                    <div className="text-xs text-[#5A6A85] mt-0.5">{i.id} • {t('dashboard.min')}: {i.min}</div>
                   </div>
                   <div className={clsx("px-2.5 py-1 rounded-md text-xs font-bold shrink-0 whitespace-nowrap", i.qty === 0 ? "bg-[rgba(239,68,68,0.12)] text-[#F87171]" : "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]")}>
-                    Qty: {i.qty}
+                    {t('storeInventory.qty', 'Qty')}: {i.qty}
                   </div>
                 </div>
               ))
@@ -115,25 +117,25 @@ export default function StoreDashboard() {
       <Modal
         isOpen={showFulfillModal && !!selectedReq}
         onClose={() => setShowFulfillModal(false)}
-        title={`Fulfill Request: ${selectedReq?.id}`}
+        title={selectedReq ? t('storeDashboard.fulfillReqTitle', { id: selectedReq.id }) : ''}
         maxWidth="460px"
         footer={
           <>
-            <ModalCancelBtn onClick={() => setShowFulfillModal(false)} />
+            <ModalCancelBtn onClick={() => setShowFulfillModal(false)}>{t('common.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn onClick={handleFulfill} color="#8B5CF6">
-              Confirm Fulfillment
+              {t('storeDashboard.confirmFulfillment', 'Confirm Fulfillment')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] text-[#D8B4FE] p-4 rounded-lg text-sm leading-relaxed">
-          You are about to fulfill <strong>{selectedReq?.qty}x {selectedReq?.itemName}</strong> for the <strong>{selectedReq?.dept}</strong> department. This will deduct from current inventory.
+          {selectedReq ? t('storeDashboard.fulfillDisclaimer', 'You are about to fulfill {{qty}}x {{name}} for the {{dept}} department. This will deduct from current inventory.', { qty: selectedReq.qty, name: selectedReq.itemName, dept: selectedReq.dept }) : ''}
         </div>
         <div>
-          <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Fulfillment Notes</label>
+          <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">{t('storeDashboard.fulfillmentNotes', 'Fulfillment Notes')}</label>
           <textarea 
             className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
-            placeholder="Optional fulfillment notes..."
+            placeholder={t('storeDashboard.fulfillmentNotesPlaceholder', 'Optional fulfillment notes...')}
           ></textarea>
         </div>
       </Modal>

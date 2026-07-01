@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
+import { useTranslation } from 'react-i18next'
 
 const initialLogs = [
   { 
@@ -38,6 +39,7 @@ export default function StoreEmailLog() {
   const [showModal, setShowModal] = useState(false)
   const [selectedLog, setSelectedLog] = useState(null)
   
+  const { t } = useTranslation()
   const { showToast } = useToastStore()
 
   const uniquePOs = useMemo(() => Array.from(new Set(logs.map(l => l.po))), [logs])
@@ -55,14 +57,14 @@ export default function StoreEmailLog() {
   const handleDelete = (e, id) => {
     e.stopPropagation()
     setLogs(prev => prev.filter(l => l.id !== id))
-    showToast('✓ Entry deleted.', TOAST_COLORS.warning)
+    showToast(t('storeEmailLog.toastDeleted', '✓ Entry deleted.'), TOAST_COLORS.warning)
   }
 
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Email Log</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Review email communications and supplier responses regarding purchase orders.</p>
+        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeEmailLog.pageTitle', 'Email Log')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeEmailLog.pageSubtitle', 'Review email communications and supplier responses regarding purchase orders.')}</p>
       </div>
 
       <div className="flex flex-wrap gap-3 mb-2">
@@ -72,7 +74,7 @@ export default function StoreEmailLog() {
             type="text" 
             value={search} 
             onChange={e => setSearch(e.target.value)} 
-            placeholder="Search supplier, subject, or PO..." 
+            placeholder={t('storeEmailLog.searchPlaceholder', 'Search supplier, subject, or PO...')}
             className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] pl-9 pr-3 py-2 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors"
           />
         </div>
@@ -81,14 +83,14 @@ export default function StoreEmailLog() {
           onChange={e => setPoFilter(e.target.value)} 
           className="bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] px-3 py-2 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors"
         >
-          <option value="">PO: All</option>
+          <option value="">{t('storeEmailLog.poAll', 'PO: All')}</option>
           {uniquePOs.map(po => <option key={po} value={po}>{po}</option>)}
         </select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredLogs.length === 0 ? (
-          <div className="col-span-full text-center py-10 text-[#5A6A85]">No communications found.</div>
+          <div className="col-span-full text-center py-10 text-[#5A6A85]">{t('storeEmailLog.noCommunications', 'No communications found.')}</div>
         ) : (
           filteredLogs.map(log => (
             <div key={log.id} className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden flex flex-col shadow-sm">
@@ -112,7 +114,7 @@ export default function StoreEmailLog() {
                   className="text-xs font-semibold flex items-center gap-1.5 transition-colors text-[#D8B4FE] hover:text-white"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2.036c4.952-.078 9 3.926 9 8.878 0 4.952-4.048 8.956-9 8.956-2.073 0-4.03-.703-5.602-1.936L3.75 20.25l1.936-3.352A8.956 8.956 0 013 11c0-4.952 4.048-8.956 9-8.964z" /></svg>
-                  View Full Thread
+                  {t('storeEmailLog.viewThread', 'View Full Thread')}
                 </button>
                 <button 
                   onClick={(e) => handleDelete(e, log.id)} 
@@ -130,13 +132,13 @@ export default function StoreEmailLog() {
       <Modal
         isOpen={showModal && !!selectedLog}
         onClose={() => setShowModal(false)}
-        title={`Email Thread: ${selectedLog?.po}`}
+        title={t('storeEmailLog.emailThreadTitle', 'Email Thread: {{po}}', { po: selectedLog?.po })}
         maxWidth="600px"
-        footer={<ModalCancelBtn onClick={() => setShowModal(false)}>Close</ModalCancelBtn>}
+        footer={<ModalCancelBtn onClick={() => setShowModal(false)}>{t('common.close', 'Close')}</ModalCancelBtn>}
       >
         <div className="mb-2">
           <h4 className="font-bold text-lg text-white mb-1 leading-snug">{selectedLog?.subject}</h4>
-          <p className="text-sm text-[#D8B4FE]">With: {selectedLog?.supplier}</p>
+          <p className="text-sm text-[#D8B4FE]">{t('storeEmailLog.with', 'With:')} {selectedLog?.supplier}</p>
         </div>
         {selectedLog?.thread.map((msg, i) => (
           <div key={i} className="bg-[#131720] border border-[#1F2A40] rounded-lg p-4 relative">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
+import { useTranslation } from 'react-i18next'
 
 const initialNotifications = [
   { id: 'REQ-1092', itemName: 'O2 Sensor – Nellcor', qty: 2, wo: 'WO-2034', date: '2026-06-27', acknowledged: false },
@@ -9,6 +10,7 @@ const initialNotifications = [
 ]
 
 export default function TechnicianNotifications() {
+  const { t } = useTranslation()
   const [notifications, setNotifications] = useState(initialNotifications)
   const { showToast } = useToastStore()
 
@@ -16,20 +18,20 @@ export default function TechnicianNotifications() {
 
   const handleAcknowledge = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, acknowledged: true } : n))
-    showToast('✓ Marked as read', TOAST_COLORS.success)
+    showToast(t('techNotifications.toastMarkedRead'), TOAST_COLORS.success)
   }
 
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Arrivals & Updates</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Important messages about your requested devices and spare parts.</p>
+        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('techNotifications.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('techNotifications.pageSubtitle')}</p>
       </div>
 
       <div className="flex flex-col gap-4">
         {unreadNotifications.length === 0 ? (
           <div className="text-center py-12 text-[#5A6A85] bg-[#181D2A] rounded-xl border border-[#1F2A40]">
-            You have no new arrivals or notifications.
+            {t('techNotifications.noNotifications')}
           </div>
         ) : (
           unreadNotifications.map(n => (
@@ -39,19 +41,19 @@ export default function TechnicianNotifications() {
               </div>
               
               <div className="flex-1 min-w-0">
-                <h3 className="text-[1.05rem] font-bold text-[#E2E8F0] mb-1">Item Arrived: {n.itemName}</h3>
+                <h3 className="text-[1.05rem] font-bold text-[#E2E8F0] mb-1">{t('techNotifications.itemArrived', { name: n.itemName })}</h3>
                 <p className="text-[0.85rem] text-[#94A3B8] leading-relaxed">
-                  Your request ({n.id}) for <strong className="text-[#E2E8F0]">{n.qty}x {n.itemName}</strong> has been fulfilled by the storekeeper and is now available for pickup.
+                  {t('techNotifications.requestFulfilled', { id: n.id })} <strong className="text-[#E2E8F0]">{n.qty}x {n.itemName}</strong> {t('techNotifications.requestFulfilledSuffix')}
                 </p>
-                <span className="text-xs text-[#A78BFA] block mt-1.5 mb-3 font-semibold">Related Work Order: {n.wo}</span>
-                <div className="text-xs text-[#5A6A85] font-medium tracking-wide uppercase">Date Requested: {n.date}</div>
+                <span className="text-xs text-[#A78BFA] block mt-1.5 mb-3 font-semibold">{t('techNotifications.relatedWO', { wo: n.wo })}</span>
+                <div className="text-xs text-[#5A6A85] font-medium tracking-wide uppercase">{t('techNotifications.dateRequested', { date: n.date })}</div>
               </div>
 
               <button 
                 onClick={() => handleAcknowledge(n.id)} 
                 className="bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] text-[#4ADE80] px-4 py-2 rounded-lg text-[0.8rem] font-bold hover:bg-[rgba(34,197,94,0.2)] transition-colors shrink-0 w-full sm:w-auto"
               >
-                Acknowledge
+                {t('techNotifications.acknowledge')}
               </button>
             </div>
           ))

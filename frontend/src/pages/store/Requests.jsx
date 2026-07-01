@@ -5,6 +5,7 @@ import SelectField from '../../components/forms/SelectField'
 import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
+import { useTranslation } from 'react-i18next'
 
 const initialRequests = [
   { id: 'REQ-1092', requester: 'Ahmed (Tech)', dept: 'Maintenance', itemName: 'O2 Sensor – Nellcor', qty: 2, date: '2026-06-28', status: 'Pending' },
@@ -15,13 +16,20 @@ const initialRequests = [
 ]
 
 function StatusBadge({ status }) {
-  const map = {
+  const { t } = useTranslation()
+  const labelMap = {
+    'Pending': t('storeRequests.statusPending', 'Pending'),
+    'Approved': t('storeRequests.statusApproved', 'Approved'),
+    'Fulfilled': t('storeRequests.statusFulfilled', 'Fulfilled'),
+    'Rejected': t('storeRequests.statusRejected', 'Rejected')
+  }
+  const colorMap = {
     'Pending': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
     'Approved': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
     'Fulfilled': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
     'Rejected': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]'
   }
-  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${map[status] || ''}`}>{status}</span>
+  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${colorMap[status] || ''}`}>{labelMap[status] || status}</span>
 }
 
 export default function StoreRequests() {
@@ -37,6 +45,7 @@ export default function StoreRequests() {
   const [actionNotes, setActionNotes] = useState('')
   const [reviewDecision, setReviewDecision] = useState('Approve') // for review modal
   
+  const { t } = useTranslation()
   const { showToast } = useToastStore()
 
   const ROWS_PER_PAGE = 8
@@ -65,10 +74,10 @@ export default function StoreRequests() {
 
     if (actionType === 'review') {
       newStatus = reviewDecision === 'Approve' ? 'Approved' : 'Rejected'
-      toastMsg = `✓ Request ${selectedReq.id} ${newStatus}`
+      toastMsg = t('storeRequests.toastReviewed', '✓ Request {{id}} {{status}}', { id: selectedReq.id, status: newStatus })
     } else if (actionType === 'fulfill') {
       newStatus = 'Fulfilled'
-      toastMsg = `✓ Request ${selectedReq.id} Fulfilled`
+      toastMsg = t('storeRequests.toastFulfilled', '✓ Request {{id}} Fulfilled', { id: selectedReq.id })
     }
 
     setRequests(prev => prev.map(r => r.id === selectedReq.id ? { ...r, status: newStatus, notes: actionNotes } : r))
@@ -83,8 +92,8 @@ export default function StoreRequests() {
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Part Requests</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Review, approve, and fulfill spare part requests from technicians and departments.</p>
+        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeRequests.pageTitle', 'Part Requests')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeRequests.pageSubtitle', 'Review, approve, and fulfill spare part requests from technicians and departments.')}</p>
       </div>
 
       <div className="bg-[#131720] border border-[#1F2A40] rounded-xl p-1 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto self-start">
@@ -97,7 +106,7 @@ export default function StoreRequests() {
               activeTab === tab ? "bg-[#181D2A] text-[#8B5CF6]" : "bg-transparent text-[#5A6A85] hover:text-[#94A3B8]"
             )}
           >
-            {tab}
+            {tab === 'All' ? t('storeRequests.tabAll', 'All') : t(`storeRequests.status${tab}`, tab)}
           </button>
         ))}
       </div>
@@ -110,7 +119,7 @@ export default function StoreRequests() {
               type="text" 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
-              placeholder="Search ID, part name, requester..." 
+              placeholder={t('storeRequests.searchPlaceholder', 'Search ID, part name, requester...')}
               className="w-full bg-[#0F1117] border border-[#1F2A40] text-[#E2E8F0] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
             />
           </div>
@@ -119,7 +128,7 @@ export default function StoreRequests() {
             onChange={e => setDeptFilter(e.target.value)} 
             className="bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
           >
-            <option value="">All Departments</option>
+            <option value="">{t('storeRequests.allDepts', 'All Departments')}</option>
             <option value="ICU">ICU</option>
             <option value="ER">ER</option>
             <option value="Surgery">Surgery</option>
@@ -131,13 +140,13 @@ export default function StoreRequests() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
-                {['Req ID', 'Requester / Dept', 'Item Requested', 'Date', 'Status', 'Actions'].map(h => (
+                {[t('storeRequests.reqId', 'Req ID'), t('storeRequests.requesterDept', 'Requester / Dept'), t('storeRequests.itemRequested', 'Item Requested'), t('storeRequests.date', 'Date'), t('common.status', 'Status'), t('common.actions', 'Actions')].map(h => (
                   <th key={h} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2A40]">
-              {paginatedReqs.length === 0 ? <tr><td colSpan={6} className="p-0"><EmptyState message="No requests found." /></td></tr> : paginatedReqs.map(r => (
+              {paginatedReqs.length === 0 ? <tr><td colSpan={6} className="p-0"><EmptyState message={t('storeRequests.noRequestsFound', 'No requests found.')} /></td></tr> : paginatedReqs.map(r => (
                 <tr key={r.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{r.id}</td>
                   <td className="p-4 text-[13px]">
@@ -153,7 +162,7 @@ export default function StoreRequests() {
                         onClick={() => { setSelectedReq(r); setActionType('review'); setActionNotes(''); setShowModal(true) }} 
                         className="px-3 py-1.5 bg-transparent border border-[#1F2A40] rounded-lg text-[#D8B4FE] text-[12px] font-bold hover:bg-[#1A2235] hover:text-white transition-colors"
                       >
-                        Review
+                        {t('storeRequests.reviewBtn', 'Review')}
                       </button>
                     )}
                     {r.status === 'Approved' && (
@@ -161,11 +170,11 @@ export default function StoreRequests() {
                         onClick={() => { setSelectedReq(r); setActionType('fulfill'); setActionNotes(''); setShowModal(true) }} 
                         className="px-3 py-1.5 bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] rounded-lg text-[#4ADE80] text-[12px] font-bold hover:bg-[rgba(34,197,94,0.2)] transition-colors"
                       >
-                        Fulfill
+                        {t('storeRequests.fulfillBtn', 'Fulfill')}
                       </button>
                     )}
                     {(r.status === 'Fulfilled' || r.status === 'Rejected') && (
-                      r.notes ? <span className="text-xs text-[#94A3B8] italic" title={r.notes}>View Notes</span> : <span className="text-[#5A6A85] pl-4">—</span>
+                      r.notes ? <span className="text-xs text-[#94A3B8] italic" title={r.notes}>{t('storeRequests.viewNotes', 'View Notes')}</span> : <span className="text-[#5A6A85] pl-4">—</span>
                     )}
                   </td>
                 </tr>
@@ -176,10 +185,10 @@ export default function StoreRequests() {
 
         {totalPages > 1 && (
           <div className="p-4 border-t border-[#1F2A40] flex items-center justify-between bg-[#131720]">
-            <span className="text-xs text-[#5A6A85] font-medium">Page {currentPage} of {totalPages}</span>
+            <span className="text-xs text-[#5A6A85] font-medium">{t('storeRequests.pageCount', 'Page {{current}} of {{total}}', { current: currentPage, total: totalPages })}</span>
             <div className="flex gap-2">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">Prev</button>
-              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">Next</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">{t('common.prev', 'Prev')}</button>
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">{t('common.next', 'Next')}</button>
             </div>
           </div>
         )}
@@ -188,17 +197,17 @@ export default function StoreRequests() {
       <Modal
         isOpen={showModal && !!selectedReq}
         onClose={() => setShowModal(false)}
-        title={actionType === 'review' ? 'Review Request' : 'Fulfill Request'}
+        title={actionType === 'review' ? t('storeRequests.reviewReqTitle', 'Review Request') : t('storeRequests.fulfillReqTitle', 'Fulfill Request')}
         maxWidth="480px"
         footer={
           <>
-            <ModalCancelBtn onClick={() => setShowModal(false)} />
+            <ModalCancelBtn onClick={() => setShowModal(false)}>{t('common.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn 
               type="submit" 
               form="action-form" 
               color={actionType === 'review' && reviewDecision === 'Reject' ? '#EF4444' : '#10B981'}
             >
-              {actionType === 'review' ? 'Submit Decision' : 'Confirm Fulfillment'}
+              {actionType === 'review' ? t('storeRequests.submitDecision', 'Submit Decision') : t('storeRequests.confirmFulfillment', 'Confirm Fulfillment')}
             </ModalPrimaryBtn>
           </>
         }
@@ -210,36 +219,36 @@ export default function StoreRequests() {
               <span className="text-[#94A3B8] text-sm">{selectedReq?.date}</span>
             </div>
             <div className="text-[#D8B4FE] text-sm font-semibold">{selectedReq?.qty}x {selectedReq?.itemName}</div>
-            <div className="text-[#5A6A85] text-xs">Requested by: <span className="text-[#E2E8F0]">{selectedReq?.requester}</span> ({selectedReq?.dept})</div>
+            <div className="text-[#5A6A85] text-xs">{t('storeRequests.requestedBy', 'Requested by')}: <span className="text-[#E2E8F0]">{selectedReq?.requester}</span> ({selectedReq?.dept})</div>
           </div>
 
           {actionType === 'review' && (
             <>
               <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-2">Decision</label>
+                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-2">{t('storeRequests.decision', 'Decision')}</label>
                 <div className="flex gap-3">
                   <button 
                     type="button"
                     onClick={() => setReviewDecision('Approve')}
                     className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-[rgba(34,197,94,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#4ADE80]")}
                   >
-                    Approve
+                    {t('common.approve')}
                   </button>
                   <button 
                     type="button"
                     onClick={() => setReviewDecision('Reject')}
                     className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#F87171]")}
                   >
-                    Reject
+                    {t('common.reject')}
                   </button>
                 </div>
               </div>
               <InputField 
                 type="textarea"
-                label="Notes (Optional)"
+                label={t('storeRequests.notesOptional', 'Notes (Optional)')}
                 value={actionNotes}
                 onChange={e => setActionNotes(e.target.value)}
-                placeholder="Reason for rejection or approval notes..."
+                placeholder={t('storeRequests.notesPlaceholder', 'Reason for rejection or approval notes...')}
               />
             </>
           )}
@@ -248,14 +257,14 @@ export default function StoreRequests() {
             <>
               <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] rounded-lg p-3.5 flex items-center gap-3 text-sm text-[#D8B4FE]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-                <span>Marking this as fulfilled will notify the requester that the item is ready for pickup and deduct the quantity from inventory.</span>
+                <span>{t('storeRequests.fulfillDisclaimer', 'Marking this as fulfilled will notify the requester that the item is ready for pickup and deduct the quantity from inventory.')}</span>
               </div>
               <InputField 
                 type="textarea"
-                label="Collection Notes (Optional)"
+                label={t('storeRequests.collectionNotes', 'Collection Notes (Optional)')}
                 value={actionNotes}
                 onChange={e => setActionNotes(e.target.value)}
-                placeholder="e.g. Please sign the collection log upon arrival..."
+                placeholder={t('storeRequests.collectionNotesPlaceholder', 'e.g. Please sign the collection log upon arrival...')}
               />
             </>
           )}

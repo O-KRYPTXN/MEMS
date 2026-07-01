@@ -56,12 +56,14 @@ import StoreEmailLog from '../pages/store/EmailLog'
 import Profile from '../pages/shared/Profile'
 import NotFound from '../pages/shared/NotFound'
 import Unauthorized from '../pages/shared/Unauthorized'
+import ErrorBoundry from '../components/ui/ErrorBoundry'
 
 const router = createBrowserRouter([
   // Root redirect
   {
     path: '/',
     element: <Navigate to={ROUTES.LOGIN} replace />,
+    errorElement: <ErrorBoundry />,
   },
 
   // Public routes
@@ -77,6 +79,7 @@ const router = createBrowserRouter([
         <AdminLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundry />,
     children: [
       { index: true, element: <Navigate to={ROUTES.ADMIN_DASHBOARD} replace /> },
       { path: 'dashboard', element: <AdminDashboard /> },
@@ -99,6 +102,7 @@ const router = createBrowserRouter([
         <SupervisorLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundry />,
     children: [
       { index: true, element: <Navigate to={ROUTES.SUPERVISOR_DASHBOARD} replace /> },
       { path: 'dashboard', element: <SupervisorDashboard /> },
@@ -118,6 +122,7 @@ const router = createBrowserRouter([
         <TechnicianLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundry />,
     children: [
       { index: true, element: <Navigate to={ROUTES.TECH_DASHBOARD} replace /> },
       { path: 'dashboard', element: <TechDashboard /> },
@@ -137,6 +142,7 @@ const router = createBrowserRouter([
         <DepartmentLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundry />,
     children: [
       { index: true, element: <Navigate to={ROUTES.DEPT_DASHBOARD} replace /> },
       { path: 'dashboard', element: <DeptDashboard /> },
@@ -153,6 +159,7 @@ const router = createBrowserRouter([
         <StoreLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundry />,
     children: [
       { index: true, element: <Navigate to={ROUTES.STORE_DASHBOARD} replace /> },
       { path: 'dashboard', element: <StoreDashboard /> },
