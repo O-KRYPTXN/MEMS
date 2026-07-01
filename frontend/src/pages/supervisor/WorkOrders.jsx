@@ -5,6 +5,7 @@ import SelectField from '../../components/forms/SelectField'
 import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
+import { useTranslation } from 'react-i18next'
 
 const initialWOs = [
   { id:'WO-2041', device:'ICU Ventilator', type:'Repair', dept:'ICU', priority:'High', tech:'Unassigned', status:'Unassigned', created:'2026-06-28', desc:'' },
@@ -28,32 +29,48 @@ const teamData = [
 ]
 
 const TypeBadge = ({ type }) => {
+  const { t } = useTranslation()
   const map = {
     'Repair': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
     'Preventive Maintenance': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
     'Decommission': 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
   }
-  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[type] ?? ''}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{type}</span>
+  const labelMap = {
+    'Repair': t('supervisor.repair', 'Repair'),
+    'Preventive Maintenance': t('supervisor.pm', 'PM'),
+    'Decommission': 'Decommission',
+  }
+  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[type] ?? ''}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{labelMap[type] || type}</span>
 }
 
 const WOStatusBadge = ({ status }) => {
+  const { t } = useTranslation()
   const map = {
     'Unassigned': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
     'In Progress': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
     'Pending Approval': 'bg-[rgba(20,184,166,0.12)] text-[#14B8A6]',
     'Closed': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
   }
-  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[status] ?? ''}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{status}</span>
+  const labelMap = {
+    'Unassigned': t('supWorkOrders.unassigned'),
+    'In Progress': t('supWorkOrders.inProgress'),
+    'Pending Approval': t('supWorkOrders.pendingApproval'),
+    'Closed': t('supWorkOrders.closed')
+  }
+  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[status] ?? ''}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{labelMap[status]}</span>
 }
 
 const PriorityBadge = ({ priority }) => {
+  const { t } = useTranslation()
   const map = { High: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]', Medium: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]', Low: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]' }
-  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[priority] ?? ''}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{priority}</span>
+  const labelMap = { High: t('priority.high'), Medium: t('priority.medium'), Low: t('priority.low') }
+  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[priority] ?? ''}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{labelMap[priority]}</span>
 }
 
 const inputCls = "bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] focus:border-[#14B8A6] outline-none"
 
 export default function WorkOrders() {
+  const { t } = useTranslation()
   const [wos, setWos] = useState(initialWOs)
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
@@ -103,22 +120,22 @@ export default function WorkOrders() {
   }, [showAssignModal, assignTargetId])
 
   const handleAssign = () => {
-    if (!assignForm.woId) return showToast('Select a work order', TOAST_COLORS.error)
-    if (!assignForm.tech) return showToast('Select a technician', TOAST_COLORS.error)
+    if (!assignForm.woId) return showToast(t('supWorkOrders.toastSelectWO'), TOAST_COLORS.error)
+    if (!assignForm.tech) return showToast(t('supWorkOrders.toastSelectTech'), TOAST_COLORS.error)
     setWos(prev => prev.map(w => w.id === assignForm.woId ? { ...w, tech: assignForm.tech, priority: assignForm.priority, status: 'In Progress' } : w))
-    showToast('✓ Work order assigned successfully', TOAST_COLORS.supervisor)
+    showToast(t('supWorkOrders.toastAssignedSuccess'), TOAST_COLORS.supervisor)
     setShowAssignModal(false)
   }
 
   const handleApprove = () => {
     setWos(prev => prev.map(w => w.id === activeApproval.id ? { ...w, status: 'Closed' } : w))
-    showToast('✓ Work order approved — device returned to service!', TOAST_COLORS.supervisor)
+    showToast(t('supWorkOrders.toastApprovedSuccess'), TOAST_COLORS.supervisor)
     setShowApproveModal(false)
   }
 
   const handleReject = () => {
     setWos(prev => prev.map(w => w.id === activeApproval.id ? { ...w, status: 'In Progress' } : w))
-    showToast('⚠️ Returned to technician for revision', TOAST_COLORS.warning)
+    showToast(t('supWorkOrders.toastReturnedForRevision'), TOAST_COLORS.warning)
     setShowApproveModal(false)
   }
 
@@ -126,17 +143,17 @@ export default function WorkOrders() {
     <div className="flex flex-col gap-6 relative pb-10">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Work Orders</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">Assign, track and approve work orders for ICU & Emergency department</p>
+          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('supWorkOrders.pageTitle')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('supWorkOrders.pageSubtitle')}</p>
         </div>
         <button onClick={() => { setAssignTargetId(null); setShowAssignModal(true) }} className="flex items-center gap-1.5 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-          Assign Work Order
+          {t('supWorkOrders.assignWOModalTitle')}
         </button>
       </div>
 
       <div className="flex gap-[2px] bg-[#131720] border border-[#1F2A40] rounded-[10px] p-1 w-fit">
-        {[{id:'all', label:'All'}, {id:'Unassigned', label:'Unassigned'}, {id:'In Progress', label:'In Progress'}, {id:'Pending Approval', label:'Pending Approval'}, {id:'Closed', label:'Closed'}].map(tab => (
+        {[{id:'all', label:t('common.all')}, {id:'Unassigned', label:t('supWorkOrders.unassigned')}, {id:'In Progress', label:t('supWorkOrders.inProgress')}, {id:'Pending Approval', label:t('supWorkOrders.pendingApproval')}, {id:'Closed', label:t('supWorkOrders.closed')}].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center", activeTab === tab.id ? "bg-[#181D2A] text-[#14B8A6]" : "text-[#5A6A85] hover:text-[#94A3B8]")}>
             {tab.label}
             <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(20,184,166,0.15)] text-[#14B8A6]" : "bg-[rgba(239,68,68,0.15)] text-[#F87171]")}>
@@ -150,16 +167,16 @@ export default function WorkOrders() {
         <div className="bg-[#131720] border border-[#1F2A40] rounded-t-[10px] p-3 px-4 flex gap-2.5 items-center">
           <div className="flex items-center gap-2 flex-1 max-w-[280px] h-[34px] bg-[#0F1117] border border-[#1F2A40] rounded-lg px-3 focus-within:border-[#14B8A6] transition-colors">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px] text-[#5A6A85]"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search work orders…" className="flex-1 min-w-0 bg-transparent border-none outline-none text-[#E2E8F0] text-[0.8125rem]" />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('supWorkOrders.searchPlaceholder')} className="flex-1 min-w-0 bg-transparent border-none outline-none text-[#E2E8F0] text-[0.8125rem]" />
           </div>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="h-[34px] bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
-            <option value="">Type: All</option>
+            <option value="">{t('supWorkOrders.typeAll')}</option>
             <option value="Repair">Repair</option>
             <option value="Preventive Maintenance">Preventive Maintenance</option>
             <option value="Decommission">Decommission</option>
           </select>
           <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className="h-[34px] bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
-            <option value="">Priority: All</option>
+            <option value="">{t('supWorkOrders.priorityAll')}</option>
             <option value="High">High</option>
             <option value="Medium">Medium</option>
             <option value="Low">Low</option>
@@ -170,13 +187,13 @@ export default function WorkOrders() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
-                {['WO #', 'Device', 'Type', 'Dept', 'Priority', 'Assigned To', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                {[t('supWorkOrders.woNumber'), t('supWorkOrders.device'), t('supWorkOrders.type'), t('supWorkOrders.dept'), t('common.priority'), t('supWorkOrders.assignedTo'), t('common.status'), t('common.actions')].map((h, i) => (
+                  <th key={i} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2A40]">
-              {paginated.length === 0 ? <tr><td colSpan={8} className="p-0"><EmptyState message="No work orders found." /></td></tr> : paginated.map(w => (
+              {paginated.length === 0 ? <tr><td colSpan={8} className="p-0"><EmptyState message={t('supWorkOrders.noWorkOrdersFound')} /></td></tr> : paginated.map(w => (
                 <tr key={w.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="p-4 text-[13px] font-medium text-[#E2E8F0]">{w.id}</td>
                   <td className="p-4 text-[13px] text-[#94A3B8]">{w.device}</td>
@@ -186,8 +203,8 @@ export default function WorkOrders() {
                   <td className={clsx("p-4 text-[13px]", w.tech === 'Unassigned' ? 'text-[#F87171]' : 'text-[#94A3B8]')}>{w.tech}</td>
                   <td className="p-4"><WOStatusBadge status={w.status} /></td>
                   <td className="p-4 flex gap-1.5">
-                    {w.status === 'Unassigned' && <button onClick={() => { setAssignTargetId(w.id); setShowAssignModal(true) }} className="bg-[rgba(59,114,246,0.12)] border border-[rgba(59,114,246,0.25)] text-[#5E8FFF] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(59,114,246,0.2)]">Assign</button>}
-                    {w.status === 'Pending Approval' && <button onClick={() => { setActiveApproval(w); setShowApproveModal(true) }} className="bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(20,184,166,0.2)]">Approve</button>}
+                    {w.status === 'Unassigned' && <button onClick={() => { setAssignTargetId(w.id); setShowAssignModal(true) }} className="bg-[rgba(59,114,246,0.12)] border border-[rgba(59,114,246,0.25)] text-[#5E8FFF] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(59,114,246,0.2)]">{t('common.assign')}</button>}
+                    {w.status === 'Pending Approval' && <button onClick={() => { setActiveApproval(w); setShowApproveModal(true) }} className="bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(20,184,166,0.2)]">{t('common.approve')}</button>}
                     {(w.status === 'In Progress' || w.status === 'Closed') && <button onClick={() => { setViewWO(w); setShowViewModal(true) }} className="w-[30px] h-[30px] rounded flex items-center justify-center border border-[#1F2A40] text-[#5A6A85] hover:bg-[#1F2A40] hover:text-[#E2E8F0] transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>}
                   </td>
                 </tr>
@@ -195,7 +212,7 @@ export default function WorkOrders() {
             </tbody>
           </table>
           <div className="flex justify-between items-center p-3 px-4 border-t border-[#1F2A40]">
-            <span className="text-[0.8rem] text-[#5A6A85]">Showing {filtered.length ? (currentPage - 1) * ROWS + 1 : 0}–{Math.min(currentPage * ROWS, filtered.length)} of {filtered.length}</span>
+            <span className="text-[0.8rem] text-[#5A6A85]">{t('supWorkOrders.showingResults', { start: filtered.length ? (currentPage - 1) * ROWS + 1 : 0, end: Math.min(currentPage * ROWS, filtered.length), total: filtered.length })}</span>
             <div className="flex gap-1">
               <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="w-7 h-7 rounded bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] disabled:opacity-30">‹</button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => <button key={n} onClick={() => setCurrentPage(n)} className={clsx("w-7 h-7 rounded text-[0.8rem]", n === currentPage ? "bg-[#14B8A6] text-white" : "bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]")}>{n}</button>)}
@@ -208,68 +225,68 @@ export default function WorkOrders() {
       <Modal
         isOpen={showAssignModal}
         onClose={() => setShowAssignModal(false)}
-        title="Assign Work Order"
+        title={t('supWorkOrders.assignWOModalTitle')}
         maxWidth="460px"
         footer={
           <>
-            <ModalCancelBtn onClick={() => setShowAssignModal(false)} />
+            <ModalCancelBtn onClick={() => setShowAssignModal(false)}>{t('common.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn onClick={handleAssign} color="#14B8A6">
-              Assign Technician
+              {t('supWorkOrders.assignTechnician')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <div className="flex flex-col gap-4 mt-1">
-          <SelectField label="Work Order" name="woId" value={assignForm.woId} onChange={e => setAssignForm({ ...assignForm, woId: e.target.value })} placeholder="Select work order..." options={wos.filter(w => w.status !== 'Closed').map(w => ({value: w.id, label: `${w.id} — ${w.device} (${w.tech})`}))} />
-          <SelectField label="Assign To Technician" name="tech" value={assignForm.tech} onChange={e => setAssignForm({ ...assignForm, tech: e.target.value })} placeholder="Select Technician..." options={teamData.map(t => ({value: t.name, label: `${t.name} (${t.status})`}))} />
-          <SelectField label="Priority" name="priority" value={assignForm.priority} onChange={e => setAssignForm({ ...assignForm, priority: e.target.value })} placeholder="Select Priority" options={['High', 'Medium', 'Low']} />
-          <InputField type="textarea" label="Notes" name="notes" value={assignForm.notes} onChange={e => setAssignForm({ ...assignForm, notes: e.target.value })} placeholder="Special instructions…" />
+          <SelectField label={t('supWorkOrders.workOrder')} name="woId" value={assignForm.woId} onChange={e => setAssignForm({ ...assignForm, woId: e.target.value })} placeholder={t('supWorkOrders.selectWorkOrder')} options={wos.filter(w => w.status !== 'Closed').map(w => ({value: w.id, label: `${w.id} — ${w.device} (${w.tech})`}))} />
+          <SelectField label={t('supWorkOrders.assignToTechnician')} name="tech" value={assignForm.tech} onChange={e => setAssignForm({ ...assignForm, tech: e.target.value })} placeholder={t('supWorkOrders.selectTechnician')} options={teamData.map(tItem => ({value: tItem.name, label: `${tItem.name} (${tItem.status})`}))} />
+          <SelectField label={t('common.priority')} name="priority" value={assignForm.priority} onChange={e => setAssignForm({ ...assignForm, priority: e.target.value })} placeholder="Select Priority" options={['High', 'Medium', 'Low']} />
+          <InputField type="textarea" label={t('supWorkOrders.notes')} name="notes" value={assignForm.notes} onChange={e => setAssignForm({ ...assignForm, notes: e.target.value })} placeholder={t('supWorkOrders.specialInstructions')} />
         </div>
       </Modal>
 
       <Modal
         isOpen={showApproveModal && !!activeApproval}
         onClose={() => setShowApproveModal(false)}
-        title={activeApproval ? `Approve ${activeApproval.id}` : 'Approve Work Order'}
+        title={activeApproval ? t('supWorkOrders.approveSpecificWO', { id: activeApproval.id }) : t('supWorkOrders.approveWOModalTitle')}
         maxWidth="460px"
         footer={
           <>
-            <button onClick={handleReject} className="px-4 py-2 border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">Reject</button>
-            <ModalCancelBtn onClick={() => setShowApproveModal(false)} />
+            <button onClick={handleReject} className="px-4 py-2 border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">{t('supWorkOrders.reject')}</button>
+            <ModalCancelBtn onClick={() => setShowApproveModal(false)}>{t('common.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn onClick={handleApprove} color="#14B8A6">
-              ✓ Approve & Close
+              {t('supWorkOrders.approveAndClose')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <div className="flex flex-col gap-5 mt-2">
           <div className="grid grid-cols-2 gap-2.5">
-            {[['Work Order', activeApproval?.id], ['Device', activeApproval?.device], ['Technician', activeApproval?.tech], ['Type', activeApproval?.type]].map(([l, v]) => (
+            {[[t('supWorkOrders.workOrder'), activeApproval?.id], [t('supWorkOrders.device'), activeApproval?.device], [t('supWorkOrders.assignedTo'), activeApproval?.tech], [t('supWorkOrders.type'), activeApproval?.type]].map(([l, v]) => (
               <div key={l} className="bg-[#1A2235] rounded-lg p-3"><div className="text-[0.72rem] text-[#5A6A85] uppercase">{l}</div><div className="text-[0.875rem] font-semibold text-[#E2E8F0] mt-1">{v}</div></div>
             ))}
           </div>
-          <InputField type="textarea" label="Supervisor Notes" name="approveNotes" value={approveNotes} onChange={e => setApproveNotes(e.target.value)} placeholder="Add approval notes…" />
+          <InputField type="textarea" label={t('supWorkOrders.supervisorNotes')} name="approveNotes" value={approveNotes} onChange={e => setApproveNotes(e.target.value)} placeholder={t('supWorkOrders.addApprovalNotes')} />
         </div>
       </Modal>
 
       <Modal
         isOpen={showViewModal && !!viewWO}
         onClose={() => setShowViewModal(false)}
-        title={viewWO ? `Work Order ${viewWO.id}` : 'Work Order'}
+        title={viewWO ? t('supWorkOrders.viewSpecificWO', { id: viewWO.id }) : t('supWorkOrders.viewWOModalTitle')}
         maxWidth="460px"
         footer={
-          <ModalCancelBtn onClick={() => setShowViewModal(false)}>Close</ModalCancelBtn>
+          <ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>
         }
       >
         <div className="flex flex-col gap-5 mt-2">
           <div className="grid grid-cols-2 gap-2.5">
-            {[['Work Order', viewWO?.id], ['Device', viewWO?.device], ['Technician', viewWO?.tech], ['Type', viewWO?.type], ['Department', viewWO?.dept], ['Status', viewWO?.status]].map(([l, v]) => (
+            {[[t('supWorkOrders.workOrder'), viewWO?.id], [t('supWorkOrders.device'), viewWO?.device], [t('supWorkOrders.assignedTo'), viewWO?.tech], [t('supWorkOrders.type'), viewWO?.type], [t('supWorkOrders.department'), viewWO?.dept], [t('common.status'), viewWO?.status]].map(([l, v]) => (
               <div key={l} className="bg-[#1A2235] rounded-lg p-3"><div className="text-[0.72rem] text-[#5A6A85] uppercase">{l}</div><div className="text-[0.875rem] font-semibold text-[#E2E8F0] mt-1">{v}</div></div>
             ))}
           </div>
           <div>
-            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">Description / Notes</label>
-            <div className="bg-[#1A2235] p-2.5 rounded-md text-[0.85rem] text-[#94A3B8] whitespace-pre-wrap">{viewWO?.desc || 'No additional notes provided.'}</div>
+            <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">{t('supWorkOrders.descriptionNotes')}</label>
+            <div className="bg-[#1A2235] p-2.5 rounded-md text-[0.85rem] text-[#94A3B8] whitespace-pre-wrap">{viewWO?.desc || t('supWorkOrders.noAdditionalNotes')}</div>
           </div>
         </div>
       </Modal>

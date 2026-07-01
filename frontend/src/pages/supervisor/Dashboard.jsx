@@ -12,6 +12,8 @@ import StatusBadge from '../../components/ui/StatusBadge'
 import AlertItem from '../../components/ui/AlertItem'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { ROUTES } from '../../constants/routes'
+import { useTranslation } from 'react-i18next'
+import { useAuthStore } from '../../store/authStore'
 
 // --- MOCK DATA ---
 const pendingApprovals = [
@@ -49,6 +51,8 @@ const icons = {
 }
 
 export default function SupervisorDashboard() {
+  const { t } = useTranslation()
+  const { user } = useAuthStore()
   const navigate = useNavigate()
   const [approvals, setApprovals] = useState(pendingApprovals)
   const [alertsDismissed, setAlertsDismissed] = useState(false)
@@ -62,11 +66,11 @@ export default function SupervisorDashboard() {
 
   const handleAssign = (data) => {
     if (!data.woId || !data.techId) {
-      showToast('Please select a work order and technician', TOAST_COLORS.error)
+      showToast(t('supervisor.toastSelectBoth'), TOAST_COLORS.error)
       return
     }
     const tech = teamData.find(t => t.id === data.techId)
-    showToast(`✓ Work order assigned to ${tech?.name || 'Technician'}`, TOAST_COLORS.supervisor)
+    showToast(t('supervisor.toastAssigned', { name: tech?.name || 'Technician' }), TOAST_COLORS.supervisor)
     setShowAssignModal(false)
     resetAssign()
   }
@@ -74,12 +78,12 @@ export default function SupervisorDashboard() {
   const handleApprove = () => {
     setApprovals(prev => prev.filter(w => w.id !== activeApproval.id))
     setShowApproveModal(false)
-    showToast('✓ Work Order approved — device returned to service!', TOAST_COLORS.supervisor)
+    showToast(t('supervisor.toastApproved'), TOAST_COLORS.supervisor)
   }
 
   const handleReject = () => {
     setShowApproveModal(false)
-    showToast('⚠ Work Order returned to technician for revision', TOAST_COLORS.warning)
+    showToast(t('supervisor.toastRejected'), TOAST_COLORS.warning)
   }
 
 
@@ -90,9 +94,9 @@ export default function SupervisorDashboard() {
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">Good morning, Supervisor 👋</h1>
+            <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('supervisor.greeting', { name: user?.name?.split(' ')[0] || 'Supervisor' })} 👋</h1>
             <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">
-              Here's your department status for today — {approvals.length} work orders need your attention
+              {t('supervisor.greetingSubtitle', { count: approvals.length })}
             </p>
           </div>
           <button 
@@ -100,7 +104,7 @@ export default function SupervisorDashboard() {
             className="flex items-center gap-1.5 px-4 py-2 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors shadow-lg shadow-teal-500/20"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-            Assign Work Order
+            {t('supervisor.assignWorkOrder')}
           </button>
         </div>
 
@@ -110,12 +114,12 @@ export default function SupervisorDashboard() {
             <div className="flex items-center gap-5 min-w-0">
               <div className="text-[2.5rem] font-extrabold text-[#14B8A6] leading-none shrink-0">{approvals.length}</div>
               <div>
-                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Orders Pending Your Approval</h3>
-                <p className="text-[0.8rem] text-[#5A6A85] mt-1">Technicians have completed these — review and approve to return devices to service</p>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">{t('supervisor.pendingApprovalTitle')}</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-1">{t('supervisor.pendingApprovalSubtitle')}</p>
               </div>
             </div>
             <button onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="shrink-0 flex items-center gap-1.5 px-5 py-2.5 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors shadow-lg shadow-teal-500/20">
-              Review Now 
+              {t('supervisor.reviewNow')} 
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
             </button>
           </div>
@@ -124,7 +128,7 @@ export default function SupervisorDashboard() {
         {/* KPI Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="cursor-pointer">
-            <KPICard title="Open Work Orders" value={5 + approvals.length} trend="warn" trendLabel="+2" iconPath="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375" iconVariant="orange" />
+            <KPICard title={t('supervisor.openWorkOrders')} value={5 + approvals.length} trend="warn" trendLabel="+2" iconPath="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375" iconVariant="orange" />
           </div>
           <div onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="cursor-pointer">
             <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl p-5 flex flex-col relative overflow-hidden transition-all duration-300 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-teal-500/10">
@@ -135,14 +139,14 @@ export default function SupervisorDashboard() {
                 <div className="flex items-center gap-1 text-[#4ADE80] font-semibold text-[0.75rem] bg-[rgba(74,222,128,0.1)] px-2 py-0.5 rounded-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" /></svg>+1</div>
               </div>
               <div className="text-[1.75rem] font-bold text-[#E2E8F0] leading-tight">{approvals.length}</div>
-              <div className="text-[0.8125rem] text-[#5A6A85] font-semibold mt-1">Pending Your Approval</div>
+              <div className="text-[0.8125rem] text-[#5A6A85] font-semibold mt-1">{t('supervisor.pendingYourApproval')}</div>
             </div>
           </div>
           <div onClick={() => navigate(ROUTES.SUPERVISOR_DEVICES)} className="cursor-pointer">
-            <KPICard title="Faulty Devices" value="4" trend="down" trendLabel="Critical" danger iconPath="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" iconVariant="red" />
+            <KPICard title={t('supervisor.faultyDevices')} value="4" trend="down" trendLabel={t('supervisor.critical')} danger iconPath="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" iconVariant="red" />
           </div>
           <div onClick={() => navigate(ROUTES.SUPERVISOR_TEAM)} className="cursor-pointer">
-            <KPICard title="Active Technicians" value={teamData.filter(t => t.status !== 'offline').length} trendLabel="Active" iconPath="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" iconVariant="green" />
+            <KPICard title={t('supervisor.activeTechnicians')} value={teamData.filter(t => t.status !== 'offline').length} trendLabel={t('supervisor.active')} iconPath="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" iconVariant="green" />
           </div>
         </div>
 
@@ -151,21 +155,21 @@ export default function SupervisorDashboard() {
           <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
             <div className="p-5 border-b border-[#1F2A40] flex justify-between items-center">
               <div>
-                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Orders — Pending Approval</h3>
-                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Completed by technicians — awaiting supervisor sign-off</p>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">{t('supervisor.pendingApprovalTableTitle')}</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">{t('supervisor.pendingApprovalTableSubtitle')}</p>
               </div>
-              <button onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="text-[13px] font-semibold text-[#14B8A6] hover:text-[#0D9488]">View All</button>
+              <button onClick={() => navigate(ROUTES.SUPERVISOR_WORK_ORDERS)} className="text-[13px] font-semibold text-[#14B8A6] hover:text-[#0D9488]">{t('supervisor.viewAll')}</button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
-                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">WO #</th>
-                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Device</th>
-                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Technician</th>
-                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Type</th>
-                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Status</th>
-                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider text-right">Action</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.workOrder')}</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.device')}</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.technician')}</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.type')}</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('common.status')}</th>
+                    <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider text-right">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#1F2A40]">
@@ -179,12 +183,12 @@ export default function SupervisorDashboard() {
                       <td className="p-4 text-[13px] text-[#E2E8F0] font-medium">{wo.device}</td>
                       <td className="p-4 text-[13px] text-[#94A3B8]">{wo.tech}</td>
                       <td className="p-4">
-                        <StatusBadge variant={wo.type === 'Repair' ? 'high' : 'medium'} label={wo.type === 'Repair' ? 'Repair' : 'PM'} />
+                        <StatusBadge variant={wo.type === 'Repair' ? 'high' : 'medium'} label={wo.type === 'Repair' ? t('supervisor.repair', 'Repair') : t('supervisor.pm', 'PM')} />
                       </td>
                       <td className="p-4">
                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[rgba(20,184,166,0.12)] text-[#14B8A6]">
                           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                          Pending Approval
+                          {t('supervisor.pendingYourApproval')}
                         </span>
                       </td>
                       <td className="p-4 text-right">
@@ -192,7 +196,7 @@ export default function SupervisorDashboard() {
                           onClick={() => { setActiveApproval(wo); setShowApproveModal(true) }}
                           className="px-3 py-1.5 bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] rounded-md text-[11.5px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors"
                         >
-                          Approve
+                          {t('common.approve')}
                         </button>
                       </td>
                     </tr>
@@ -205,16 +209,16 @@ export default function SupervisorDashboard() {
           <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
             <div className="p-5 border-b border-[#1F2A40] flex justify-between items-center">
               <div>
-                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Department Alerts</h3>
-                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Active alerts for ICU & ER</p>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">{t('supervisor.departmentAlertsTitle')}</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">{t('supervisor.departmentAlertsSubtitle')}</p>
               </div>
               {!alertsDismissed && (
-                <button onClick={() => setAlertsDismissed(true)} className="text-[11px] font-semibold text-[#5A6A85] hover:text-[#94A3B8] uppercase tracking-wider">Mark all read</button>
+                <button onClick={() => { setAlertsDismissed(true); showToast(t('supervisor.toastAllRead'), TOAST_COLORS.supervisor); }} className="text-[11px] font-semibold text-[#5A6A85] hover:text-[#94A3B8] uppercase tracking-wider">{t('supervisor.markAllRead')}</button>
               )}
             </div>
             <div className="flex-1 p-5 flex flex-col gap-3">
               {alertsDismissed ? (
-                <div className="py-10 text-center text-[#5A6A85] text-sm">✓ All caught up! No new alerts.</div>
+                <div className="py-10 text-center text-[#5A6A85] text-sm">{t('supervisor.allCaughtUp')}</div>
               ) : (
                 departmentAlerts.map((alert, i) => (
                   <AlertItem 
@@ -244,25 +248,25 @@ export default function SupervisorDashboard() {
         {/* Device Requests Panel */}
         <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
           <div className="p-5 border-b border-[#1F2A40]">
-            <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Device Requests — Pending Approval</h3>
-            <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Submitted by technicians — awaiting your approval before ordering</p>
+            <h3 className="text-[1rem] font-bold text-[#E2E8F0]">{t('supervisor.deviceRequestsTitle')}</h3>
+            <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">{t('supervisor.deviceRequestsSubtitle')}</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
-                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Request ID</th>
-                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Device</th>
-                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Quantity</th>
-                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Technician</th>
-                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Work Order</th>
-                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">Date</th>
-                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider text-right">Action</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.requestId')}</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.device')}</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.quantity')}</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.technician')}</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.workOrder')}</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{t('supervisor.date')}</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td colSpan={7} className="p-0"><EmptyState message="No pending device requests" /></td>
+                  <td colSpan={7} className="p-0"><EmptyState message={t('supervisor.noPendingRequests')} /></td>
                 </tr>
               </tbody>
             </table>
@@ -274,10 +278,10 @@ export default function SupervisorDashboard() {
           <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
             <div className="p-5 border-b border-[#1F2A40] flex justify-between items-center">
               <div>
-                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Team Workload</h3>
-                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">Active assignments per technician</p>
+                <h3 className="text-[1rem] font-bold text-[#E2E8F0]">{t('supervisor.teamWorkloadTitle')}</h3>
+                <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">{t('supervisor.teamWorkloadSubtitle')}</p>
               </div>
-              <button onClick={() => navigate(ROUTES.SUPERVISOR_TEAM)} className="text-[13px] font-semibold text-[#14B8A6] hover:text-[#0D9488]">Manage Team</button>
+              <button onClick={() => navigate(ROUTES.SUPERVISOR_TEAM)} className="text-[13px] font-semibold text-[#14B8A6] hover:text-[#0D9488]">{t('supervisor.manageTeam')}</button>
             </div>
             <div className="flex-1 flex flex-col">
               {teamData.map(tech => (
@@ -290,7 +294,7 @@ export default function SupervisorDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-medium text-[#E2E8F0] truncate">{tech.name}</div>
-                    <div className="text-[11.5px] text-[#5A6A85] truncate">{tech.tasks} active task{tech.tasks !== 1 && 's'}</div>
+                    <div className="text-[11.5px] text-[#5A6A85] truncate">{tech.tasks} {tech.tasks === 1 ? t('supervisor.activeTask') : t('supervisor.activeTasks')}</div>
                   </div>
                   <div className="flex items-center gap-3 w-[120px]">
                     <div className="flex-1 h-[6px] bg-[#1F2A40] rounded-full overflow-hidden">
@@ -305,14 +309,19 @@ export default function SupervisorDashboard() {
 
           <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col overflow-hidden">
             <div className="p-5 border-b border-[#1F2A40]">
-              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">Work Order Status</h3>
-              <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">This month — dept overview</p>
+              <h3 className="text-[1rem] font-bold text-[#E2E8F0]">{t('supervisor.woStatusTitle')}</h3>
+              <p className="text-[0.8rem] text-[#5A6A85] mt-0.5">{t('supervisor.woStatusSubtitle')}</p>
             </div>
             <div className="flex-1 flex flex-col justify-center min-h-[260px] pt-4 pb-1">
               <StatusDonutChart
-                data={donutData}
+                data={[
+                  { name: t('status.done'), value: 12, color: '#4ADE80' },
+                  { name: t('status.inProgress'), value: 5, color: '#FCD34D' },
+                  { name: t('supervisor.pendingYourApproval'), value: 3, color: '#14B8A6' },
+                  { name: t('status.overdue', 'Overdue'), value: 4, color: '#F87171' },
+                ]}
                 centerLabel={24}
-                centerSubLabel="Total WOs"
+                centerSubLabel={t('supervisor.totalWOs')}
               />
             </div>
           </div>
@@ -324,48 +333,48 @@ export default function SupervisorDashboard() {
       <Modal
         isOpen={showAssignModal}
         onClose={() => setShowAssignModal(false)}
-        title="Assign Work Order"
+        title={t('supervisor.assignModalTitle')}
         maxWidth="460px"
         footer={
           <>
-            <ModalCancelBtn onClick={() => setShowAssignModal(false)} />
+            <ModalCancelBtn onClick={() => setShowAssignModal(false)}>{t('supervisor.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn type="submit" form="assign-wo-form" color="#14B8A6">
-              Assign Technician
+              {t('supervisor.assignTechnician')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <form id="assign-wo-form" onSubmit={submitAssign(handleAssign)} className="flex flex-col gap-4 mt-1">
-          <SelectField label="Work Order" register={regAssign('woId')} placeholder="Select work order..." options={approvals.map(wo => ({value: wo.id, label: `${wo.id} — ${wo.device} (${wo.dept})`}))} />
-          <SelectField label="Assign To" register={regAssign('techId')} placeholder="Select technician..." options={teamData.map(t => ({value: t.id, label: `${t.name} — ${t.tasks} active tasks`}))} />
-          <SelectField label="Priority" register={regAssign('priority')} defaultValue="Medium" options={['High', 'Medium', 'Low']} />
-          <InputField type="textarea" label="Special Instructions (Optional)" register={regAssign('notes')} placeholder="Add any special instructions..." />
+          <SelectField label={t('supervisor.workOrder')} register={regAssign('woId')} placeholder={t('supervisor.selectWorkOrder')} options={approvals.map(wo => ({value: wo.id, label: `${wo.id} — ${wo.device} (${wo.dept})`}))} />
+          <SelectField label={t('supervisor.assignTo')} register={regAssign('techId')} placeholder={t('supervisor.selectTechnician')} options={teamData.map(tech => ({value: tech.id, label: `${tech.name} — ${tech.tasks} ${tech.tasks === 1 ? t('supervisor.activeTask') : t('supervisor.activeTasks')}`}))} />
+          <SelectField label={t('supervisor.priority')} register={regAssign('priority')} defaultValue="Medium" options={[t('priority.high'), t('priority.medium'), t('priority.low')]} />
+          <InputField type="textarea" label={t('supervisor.notesOptional')} register={regAssign('notes')} placeholder={t('supervisor.notesPlaceholder')} />
         </form>
       </Modal>
 
       <Modal
         isOpen={showApproveModal && !!activeApproval}
         onClose={() => setShowApproveModal(false)}
-        title={activeApproval ? `Approve ${activeApproval.id}` : 'Approve Work Order'}
+        title={activeApproval ? `${t('supervisor.approveModalTitle')} ${activeApproval.id}` : t('supervisor.approveModalTitle')}
         maxWidth="460px"
         footer={
           <>
-            <button onClick={handleReject} className="px-4 py-2 bg-transparent border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">Reject & Return</button>
-            <ModalCancelBtn onClick={() => setShowApproveModal(false)} />
+            <button onClick={handleReject} className="px-4 py-2 bg-transparent border border-[rgba(239,68,68,0.3)] rounded-lg text-[#F87171] text-[13px] font-bold hover:bg-[rgba(239,68,68,0.05)] transition-colors">{t('supervisor.rejectAndReturn')}</button>
+            <ModalCancelBtn onClick={() => setShowApproveModal(false)}>{t('supervisor.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn onClick={handleApprove} color="#14B8A6">
-              ✓ Approve & Close WO
+              {t('supervisor.approveAndClose')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <div className="flex flex-col gap-5 mt-2">
           <div className="bg-[#1A2235] rounded-xl p-4 flex flex-col gap-2.5 border border-[#1F2A40]">
-            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Work Order</span><span className="font-semibold text-[#14B8A6] font-mono">{activeApproval?.id}</span></div>
-            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Device</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.device}</span></div>
-            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Technician</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.tech}</span></div>
-            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">Type</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.type}</span></div>
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">{t('supervisor.workOrder')}</span><span className="font-semibold text-[#14B8A6] font-mono">{activeApproval?.id}</span></div>
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">{t('supervisor.device')}</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.device}</span></div>
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">{t('supervisor.technician')}</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.tech}</span></div>
+            <div className="flex justify-between items-center text-[13px]"><span className="text-[#5A6A85]">{t('supervisor.type')}</span><span className="font-semibold text-[#E2E8F0]">{activeApproval?.type === 'Repair' ? t('supervisor.repair', 'Repair') : t('supervisor.pm', 'PM')}</span></div>
           </div>
-          <InputField type="textarea" label="Supervisor Notes" value={approveNotes} onChange={e => setApproveNotes(e.target.value)} placeholder="Add approval notes or observations..." />
+          <InputField type="textarea" label={t('supervisor.supervisorNotes')} value={approveNotes} onChange={e => setApproveNotes(e.target.value)} placeholder={t('supervisor.approveNotesPlaceholder')} />
         </div>
       </Modal>
     </>
