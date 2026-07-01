@@ -40,8 +40,8 @@ const navLinkClass = ({ isActive }) =>
   clsx(
     'flex items-center gap-3 px-5 py-2.5 border-s-[3px] text-sm transition-colors',
     isActive
-      ? 'border-s-[#3B72F6] bg-[rgba(59,114,246,0.12)] text-[#5E8FFF] font-semibold'
-      : 'border-s-transparent text-[#94A3B8] hover:bg-[#1A2235] hover:text-[#E2E8F0]'
+      ? 'border-s-[#3B72F6] bg-[rgba(59,114,246,0.08)] text-[#5E8FFF] font-semibold'
+      : 'border-s-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
   )
 
 const Sidebar = () => {
@@ -55,21 +55,21 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[#131720] border-r border-[#1F2A40]">
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-[#1F2A40]">
+    <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-r border-[var(--border)]">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-[var(--border)]">
         <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#3B72F6] shrink-0">
           <Icon d="M12 3v18M3 12h18" className="w-5 h-5 text-white" />
         </div>
         <div className="min-w-0">
-          <p className="text-[#E2E8F0] font-bold text-base leading-tight">MEMS</p>
-          <p className="text-[#5A6A85] text-xs leading-tight mt-0.5">Medical Equip. Mgmt.</p>
+          <p className="text-[var(--text-primary)] font-bold text-base leading-tight">MEMS</p>
+          <p className="text-[var(--text-secondary)] text-xs leading-tight mt-0.5">Medical Equip. Mgmt.</p>
         </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4">
         {NAV_SECTIONS.map((section) => (
           <div key={section.label} className="mb-4 last:mb-0">
-            <p className="px-5 mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#5A6A85]">
+            <p className="px-5 mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
               {section.label}
             </p>
             {section.items.map((item) => (
@@ -82,18 +82,18 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="flex items-center gap-3 px-4 py-3 border-t border-[#1F2A40]">
+      <div className="flex items-center gap-3 px-4 py-3 border-t border-[var(--border)]">
         <div className="flex items-center justify-center w-[34px] h-[34px] rounded-full bg-[#3B72F6] text-white text-xs font-semibold shrink-0">
           {user?.initials}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[#E2E8F0] text-sm font-bold truncate">{user?.name}</p>
-          <p className="text-[#5A6A85] text-xs capitalize truncate">{user?.role}</p>
+          <p className="text-[var(--text-primary)] text-sm font-bold truncate">{user?.name}</p>
+          <p className="text-[var(--text-secondary)] text-xs capitalize truncate">{user?.role}</p>
         </div>
         <button
           type="button"
           onClick={handleLogout}
-          className="flex items-center justify-center w-8 h-8 rounded-md text-[#94A3B8] hover:bg-[#1A2235] hover:text-[#E2E8F0] transition-colors shrink-0"
+          className="flex items-center justify-center w-8 h-8 rounded-md text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors shrink-0"
           aria-label="Logout"
         >
           <Icon d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />

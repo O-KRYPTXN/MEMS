@@ -4,7 +4,7 @@ export const ModalCancelBtn = ({ onClick, children = 'Cancel', ...props }) => (
   <button
     type="button"
     onClick={onClick}
-    className="px-5 py-2 bg-transparent border border-[#1F2A40] text-[#94A3B8] rounded-lg text-[0.8125rem] font-semibold cursor-pointer hover:bg-[#1E293B] hover:text-[#E2E8F0] transition-colors font-sans"
+    className="px-5 py-2 bg-transparent border border-[var(--border)] text-[var(--text-muted)] rounded-lg text-[0.8125rem] font-semibold cursor-pointer hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors font-sans"
     {...props}
   >
     {children}
@@ -72,18 +72,18 @@ export default function Modal({
       onClick={handleOverlayClick}
     >
       <div 
-        className="bg-[#181D2A] border border-[#1F2A40] rounded-[14px] w-full relative overflow-hidden animate-modal-in max-h-[90vh] flex flex-col"
+        className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-[14px] w-full relative overflow-hidden animate-modal-in max-h-[90vh] flex flex-col"
         style={{ maxWidth }}
       >
-        <div className="flex items-center justify-between px-[22px] py-[18px] border-b border-[#1F2A40] shrink-0">
+        <div className="flex items-center justify-between px-[22px] py-[18px] border-b border-[var(--border)] shrink-0">
           <div className="flex items-center gap-[10px]">
             {titleIcon && <span className="text-[#3B72F6]">{titleIcon}</span>}
-            <h3 className="text-[1rem] font-bold text-[#E2E8F0] m-0">{title}</h3>
+            <h3 className="text-[1rem] font-bold text-[var(--text-primary)] m-0">{title}</h3>
           </div>
           <button 
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-transparent border border-[#1F2A40] text-[#64748B] hover:bg-[#1E293B] hover:text-[#E2E8F0] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            className="w-8 h-8 rounded-lg bg-transparent border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] flex items-center justify-center transition-colors cursor-pointer shrink-0"
           >
             <CloseIcon />
           </button>
@@ -94,7 +94,7 @@ export default function Modal({
         </div>
 
         {footer && (
-          <div className="flex justify-end gap-[10px] px-[22px] py-4 border-t border-[#1F2A40] shrink-0">
+          <div className="flex justify-end gap-[10px] px-[22px] py-4 border-t border-[var(--border)] shrink-0">
             {footer}
           </div>
         )}

@@ -55,8 +55,10 @@ const StockBadge = ({ status }) => {
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[0.65rem] font-bold ${map[status] || ''}`}>{labelMap[status] || status}</span>
 }
 
-const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#F59E0B] transition-colors"
-const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
+import Panel, { PanelHeader } from '../../components/ui/Panel'
+
+const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#F59E0B] transition-colors"
+const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5"
 
 export default function TechnicianInventory() {
   const { t } = useTranslation()
@@ -110,54 +112,52 @@ export default function TechnicianInventory() {
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('techInventory.pageTitle')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('techInventory.pageSubtitle')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('techInventory.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('techInventory.pageSubtitle')}</p>
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl mb-2 overflow-hidden">
-        <div className="p-4 border-b border-[#1F2A40]">
-          <h2 className="text-sm font-bold text-[#E2E8F0]">{t('techInventory.pendingRequests')}</h2>
-        </div>
+      <Panel noPadding className="mb-2">
+        <PanelHeader title={t('techInventory.pendingRequests')} />
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+              <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {['Request ID', t('techInventory.partName'), 'Qty', 'Date', t('common.status')].map(h => (
-                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
+            <tbody className="divide-y divide-[var(--border)]">
               {requests.map(r => (
                 <tr key={r.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{r.id}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{r.part}</td>
-                  <td className="p-4 text-[13.5px] font-bold text-[#E2E8F0]">{r.qty}</td>
-                  <td className="p-4 text-[12px] text-[#94A3B8] whitespace-nowrap">{r.date}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{r.id}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{r.part}</td>
+                  <td className="p-4 text-[13.5px] font-bold text-[var(--text-primary)]">{r.qty}</td>
+                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{r.date}</td>
                   <td className="p-4"><RequestStatusBadge status={r.status} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
 
-      <div className="flex gap-[2px] bg-[#131720] border border-[#1F2A40] rounded-[10px] p-1 w-fit overflow-x-auto">
+      <div className="flex gap-[2px] bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-1 w-fit overflow-x-auto">
         {[{id:'all', label:t('techInventory.allStatus')}, {id:'In Stock', label:t('common.statusInStock', 'In Stock')}, {id:'Low Stock', label:t('common.statusLowStock', 'Low Stock')}, {id:'Out of Stock', label:t('common.statusOutStock', 'Out of Stock')}].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]" : "text-[#5A6A85] hover:text-[#94A3B8]")}>
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
-            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[#181D2A] text-[#5A6A85]")}>{counts[tab.id]}</span>
+            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
           </button>
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-b-xl rounded-tr-xl overflow-hidden mt-[-10px]">
-        <div className="bg-[#131720] border-b border-[#1F2A40] p-3 px-4 flex flex-wrap gap-2.5 items-center">
-          <div className="flex items-center gap-2 flex-1 min-w-[200px] h-[34px] bg-[#0F1117] border border-[#1F2A40] rounded-lg px-3 focus-within:border-[#F59E0B] transition-colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px] text-[#5A6A85]"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('techInventory.searchPlaceholder')} className="flex-1 min-w-0 bg-transparent border-none outline-none text-[#E2E8F0] text-[0.8125rem]" />
+      <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-b-xl rounded-tr-xl overflow-hidden mt-[-10px]">
+        <div className="bg-[var(--bg-card)] border-b border-[var(--border)] p-3 px-4 flex flex-wrap gap-2.5 items-center">
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] h-[34px] bg-[var(--bg-input)] border border-[var(--border)] rounded-lg px-3 focus-within:border-[#F59E0B] transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px] text-[var(--text-muted)]"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('techInventory.searchPlaceholder')} className="flex-1 min-w-0 bg-transparent border-none outline-none text-[var(--text-primary)] text-[0.8125rem]" />
           </div>
-          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-[34px] bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#F59E0B]">
+          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-[34px] bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#F59E0B]">
             <option value="">{t('techInventory.allCategories')}</option>
             <option value="Sensors">Sensors</option>
             <option value="Cables">Cables</option>
@@ -170,22 +170,22 @@ export default function TechnicianInventory() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+              <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {['Part ID', t('techInventory.partName'), t('techInventory.category'), t('techInventory.stockLevel'), t('common.status'), t('techInventory.actions')].map(h => (
-                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
-              {filteredParts.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[#5A6A85]">{t('techInventory.noPartsFound')}</td></tr> : filteredParts.map(p => (
+            <tbody className="divide-y divide-[var(--border)]">
+              {filteredParts.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('techInventory.noPartsFound')}</td></tr> : filteredParts.map(p => (
                 <tr key={p.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{p.id}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{p.name}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8]">{p.category}</td>
-                  <td className={clsx("p-4 text-[13.5px] font-bold", p.stock === 0 ? "text-[#F87171]" : p.stock <= p.min ? "text-[#FCD34D]" : "text-[#E2E8F0]")}>{p.stock}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.id}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{p.name}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.category}</td>
+                  <td className={clsx("p-4 text-[13.5px] font-bold", p.stock === 0 ? "text-[#F87171]" : p.stock <= p.min ? "text-[#FCD34D]" : "text-[var(--text-primary)]")}>{p.stock}</td>
                   <td className="p-4"><StockBadge status={p.status} /></td>
                   <td className="p-4">
-                    <button onClick={() => { setSelectedPart(p); setShowReqModal(true) }} className="px-2.5 py-1 text-[11px] font-bold bg-transparent border border-[#1F2A40] text-[#94A3B8] rounded-md hover:bg-[#1A2235] hover:text-[#E2E8F0] transition-colors">{t('techInventory.requestPartBtn')}</button>
+                    <button onClick={() => { setSelectedPart(p); setShowReqModal(true) }} className="px-2.5 py-1 text-[11px] font-bold bg-transparent border border-[var(--border)] text-[var(--text-secondary)] rounded-md hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors">{t('techInventory.requestPartBtn')}</button>
                   </td>
                 </tr>
               ))}
@@ -211,7 +211,7 @@ export default function TechnicianInventory() {
         <form id="request-form" onSubmit={handleRequestSubmit} className="flex flex-col gap-[14px] mt-1">
           <div>
             <label className={labelCls}>{t('techInventory.part')}</label>
-            <div className="w-full bg-[#131823] border border-[#1F2A40] text-[#94A3B8] px-3 py-2.5 rounded-lg text-[0.875rem] font-semibold">{selectedPart?.name}</div>
+            <div className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-2.5 rounded-lg text-[0.875rem] font-semibold">{selectedPart?.name}</div>
           </div>
           <SelectField label={t('techInventory.relatedWO')} name="wo" required defaultValue="" placeholder={t('techInventory.selectWO')} options={mockWOs} />
           <InputField type="number" label={t('techInventory.quantityNeeded')} name="qty" min="1" defaultValue="1" required />

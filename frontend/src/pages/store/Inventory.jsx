@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
+import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
@@ -34,8 +35,8 @@ function StockBadge({ status }) {
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${colorMap[status] || ''}`}>{labelMap[status] || status}</span>
 }
 
-const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors"
-const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
+const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors"
+const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5"
 
 export default function StoreInventory() {
   const [parts, setParts] = useState(initialParts)
@@ -114,8 +115,8 @@ export default function StoreInventory() {
     <div className="flex flex-col gap-6 relative pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeInventory.pageTitle', 'Inventory Catalog')}</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeInventory.pageSubtitle', 'Manage central store inventory levels, track stock, and process new arrivals.')}</p>
+          <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeInventory.pageTitle', 'Inventory Catalog')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeInventory.pageSubtitle', 'Manage central store inventory levels, track stock, and process new arrivals.')}</p>
         </div>
         <button 
           onClick={() => setShowAddModal(true)} 
@@ -128,19 +129,19 @@ export default function StoreInventory() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, idx) => (
-          <div key={idx} className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
+          <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
             <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0 ${kpi.bg}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">{kpi.icon}</svg>
             </div>
             <div>
-              <div className="text-[1.5rem] font-[800] text-[#E2E8F0] leading-none">{kpi.value}</div>
-              <div className="text-[0.75rem] text-[#94A3B8] font-semibold mt-1">{kpi.label}</div>
+              <div className="text-[1.5rem] font-[800] text-[var(--text-primary)] leading-none">{kpi.value}</div>
+              <div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-[#131720] border border-[#1F2A40] rounded-xl p-1 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-1 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto">
         {tabs.map(tab => {
           const id = tab.toLowerCase()
           return (
@@ -149,7 +150,7 @@ export default function StoreInventory() {
               onClick={() => setActiveTab(id)} 
               className={clsx(
                 "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
-                activeTab === id ? "bg-[#181D2A] text-[#D8B4FE]" : "bg-transparent text-[#5A6A85] hover:text-[#94A3B8]"
+                activeTab === id ? "bg-[var(--bg-hover)] text-[#D8B4FE]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               )}
             >
               {tab === 'All' ? t('storeInventory.tabAll', 'All Items') : t(`storeInventory.tab${tab}`, tab)}
@@ -158,22 +159,22 @@ export default function StoreInventory() {
         })}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden -mt-4">
-        <div className="bg-[#131720] border-b border-[#1F2A40] p-3 px-4 flex flex-wrap gap-3 items-center">
+      <Panel noPadding className="-mt-4">
+        <div className="bg-[var(--bg-card)] border-b border-[var(--border)] p-3 px-4 flex flex-wrap gap-3 items-center">
           <div className="flex-1 max-w-sm relative">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px] text-[#5A6A85] absolute left-3 top-1/2 -translate-y-1/2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px] text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
             <input 
               type="text" 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
               placeholder={t('storeInventory.searchPlaceholder', 'Search part code or name...')}
-              className="w-full bg-[#0F1117] border border-[#1F2A40] text-[#E2E8F0] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
+              className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
             />
           </div>
           <select 
             value={statusFilter} 
             onChange={e => setStatusFilter(e.target.value)} 
-            className="bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
+            className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
           >
             <option value="">{t('common.allStatuses', 'All Statuses')}</option>
             <option value="In Stock">{t('storeInventory.statusInStock', 'In Stock')}</option>
@@ -185,28 +186,28 @@ export default function StoreInventory() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+              <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {[t('storeInventory.partCode', 'Part Code'), t('storeInventory.partName', 'Part Name'), t('storeInventory.category', 'Category'), t('storeInventory.stockQty', 'Stock Qty'), t('storeInventory.minLevel', 'Min Level'), t('common.status', 'Status'), t('common.actions', 'Actions')].map(h => (
-                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
-              {paginatedParts.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[#5A6A85]">{t('storeInventory.noPartsFound', 'No parts found.')}</td></tr> : paginatedParts.map(p => {
+            <tbody className="divide-y divide-[var(--border)]">
+              {paginatedParts.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('storeInventory.noPartsFound', 'No parts found.')}</td></tr> : paginatedParts.map(p => {
                 const status = getStatus(p.qty, p.min)
-                const qtyColor = p.qty === 0 ? "text-[#F87171]" : p.qty <= p.min ? "text-[#FCD34D]" : "text-[#E2E8F0]"
+                const qtyColor = p.qty === 0 ? "text-[#F87171]" : p.qty <= p.min ? "text-[#FCD34D]" : "text-[var(--text-primary)]"
                 return (
                   <tr key={p.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                    <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{p.id}</td>
-                    <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{p.name}</td>
-                    <td className="p-4 text-[13px] text-[#94A3B8]">{p.category}</td>
+                    <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.id}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{p.name}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.category}</td>
                     <td className={`p-4 text-[13.5px] font-bold ${qtyColor}`}>{p.qty}</td>
-                    <td className="p-4 text-[13px] text-[#94A3B8]">{p.min}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.min}</td>
                     <td className="p-4"><StockBadge status={status} /></td>
                     <td className="p-4">
                       <button 
                         onClick={() => { setSelectedPart(p); setShowRestockModal(true) }} 
-                        className="px-3 py-1 bg-transparent border border-[#1F2A40] rounded text-[#94A3B8] text-[12px] font-bold hover:bg-[#1A2235] hover:text-[#E2E8F0] transition-colors"
+                        className="px-3 py-1 bg-transparent border border-[var(--border)] rounded text-[var(--text-secondary)] text-[12px] font-bold hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors"
                       >
                         {t('storeInventory.restockBtn', 'Restock')}
                       </button>
@@ -219,15 +220,15 @@ export default function StoreInventory() {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-[#1F2A40] flex items-center justify-between bg-[#131720]">
-            <span className="text-xs text-[#5A6A85] font-medium">{t('storeInventory.pageCount', 'Page {{current}} of {{total}}', { current: currentPage, total: totalPages })}</span>
+          <div className="p-4 border-t border-[var(--border)] flex items-center justify-between bg-[var(--bg-card)]">
+            <span className="text-xs text-[var(--text-muted)] font-medium">{t('storeInventory.pageCount', 'Page {{current}} of {{total}}', { current: currentPage, total: totalPages })}</span>
             <div className="flex gap-2">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">{t('common.prev', 'Prev')}</button>
-              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">{t('common.next', 'Next')}</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-3 py-1.5 rounded-md bg-[var(--bg-input)] text-[var(--text-secondary)] text-xs font-bold disabled:opacity-50 hover:bg-[var(--bg-hover)] transition-colors">{t('common.prev', 'Prev')}</button>
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-3 py-1.5 rounded-md bg-[var(--bg-input)] text-[var(--text-secondary)] text-xs font-bold disabled:opacity-50 hover:bg-[var(--bg-hover)] transition-colors">{t('common.next', 'Next')}</button>
             </div>
           </div>
         )}
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showRestockModal && !!selectedPart}

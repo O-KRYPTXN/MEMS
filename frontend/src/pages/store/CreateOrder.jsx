@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import InputField from '../../components/forms/InputField'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
+import Panel, { PanelHeader } from '../../components/ui/Panel'
 
 
 export default function StoreCreateOrder() {
@@ -51,13 +52,13 @@ export default function StoreCreateOrder() {
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeCreateOrder.pageTitle', 'Create Purchase Order')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeCreateOrder.pageSubtitle', 'Draft a new order for spare parts and automatically email the supplier.')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeCreateOrder.pageTitle', 'Create Purchase Order')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeCreateOrder.pageSubtitle', 'Draft a new order for spare parts and automatically email the supplier.')}</p>
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl max-w-3xl overflow-hidden shadow-lg">
-        <div className="p-5 border-b border-[#1F2A40]">
-          <h2 className="text-base font-bold text-[#E2E8F0]">{t('storeCreateOrder.orderDetails', 'Order Details')}</h2>
+      <Panel noPadding className="max-w-3xl shadow-lg">
+        <div className="p-5 border-b border-[var(--border)]">
+          <h2 className="text-base font-bold text-[var(--text-primary)]">{t('storeCreateOrder.orderDetails', 'Order Details')}</h2>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -78,8 +79,8 @@ export default function StoreCreateOrder() {
             </div>
           </div>
 
-          <div className="p-5 border-t border-[#1F2A40] flex justify-end gap-3 bg-[#131720]">
-            <button type="button" onClick={() => setFormData({ supplier: '', email: '', item: '', qty: 1, date: '' })} className="px-4 py-2 bg-transparent border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[13px] font-bold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors">
+          <div className="p-5 border-t border-[var(--border)] flex justify-end gap-3 bg-[var(--bg-card)]">
+            <button type="button" onClick={() => setFormData({ supplier: '', email: '', item: '', qty: 1, date: '' })} className="px-4 py-2 bg-transparent border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-[13px] font-bold hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               {t('common.cancel')}
             </button>
             <button type="submit" className="px-5 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg text-[13px] font-bold transition-colors">
@@ -87,7 +88,7 @@ export default function StoreCreateOrder() {
             </button>
           </div>
         </form>
-      </div>
+      </Panel>
     </div>
   )
 }

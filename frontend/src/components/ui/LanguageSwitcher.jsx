@@ -15,9 +15,9 @@ const LanguageSwitcher = () => {
     <button
       onClick={toggleLanguage}
       title={isArabic ? 'Switch to English' : 'التبديل إلى العربية'}
-      className="w-9 h-9 rounded-lg bg-[#1A2235] border
-        border-[#1F2A40] flex items-center justify-center
-        text-[#94A3B8] hover:bg-[#1F2A40] hover:text-[#E2E8F0]
+      className="w-9 h-9 rounded-lg bg-[var(--bg-input)] border
+        border-[var(--border)] flex items-center justify-center
+        text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]
         text-xs font-bold transition-colors"
     >
       {isArabic ? 'EN' : 'AR'}

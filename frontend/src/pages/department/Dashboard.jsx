@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import { useTranslation } from 'react-i18next'
+import Panel, { PanelHeader } from '../../components/ui/Panel'
 
 const initialRequests = [
   { id: 'REQ-001', device: 'ICU Ventilator V500', desc: 'Screen flickering', status: 'In Progress', date: '2026-06-25' },
@@ -31,29 +32,29 @@ export default function DeptDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('deptDashboard.pageTitle')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('deptDashboard.pageSubtitle')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('deptDashboard.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('deptDashboard.pageSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, idx) => (
-          <div key={idx} className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
+          <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
             <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0 ${kpi.bg} ${kpi.color}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
                 {kpi.icon}
               </svg>
             </div>
             <div>
-              <div className="text-[1.5rem] font-[800] text-[#E2E8F0] leading-none">{kpi.value}</div>
-              <div className="text-[0.75rem] text-[#94A3B8] font-semibold mt-1">{kpi.label}</div>
+              <div className="text-[1.5rem] font-[800] text-[var(--text-primary)] leading-none">{kpi.value}</div>
+              <div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#1F2A40]">
-          <h2 className="text-[1rem] font-bold text-[#E2E8F0]">{t('deptDashboard.quickActions')}</h2>
+      <Panel noPadding>
+        <div className="px-5 py-4 border-b border-[var(--border)]">
+          <h2 className="text-[1rem] font-bold text-[var(--text-primary)]">{t('deptDashboard.quickActions')}</h2>
         </div>
         <div className="p-5 flex flex-row gap-4 flex-wrap">
           <button 
@@ -64,12 +65,12 @@ export default function DeptDashboard() {
           </button>
           <button 
             onClick={() => navigate(ROUTES.DEPT_REQUESTS)} 
-            className="bg-transparent border border-[#1F2A40] rounded-lg px-4 py-2 text-[#94A3B8] text-[0.8125rem] font-semibold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors"
+            className="bg-transparent border border-[var(--border)] rounded-lg px-4 py-2 text-[var(--text-secondary)] text-[0.8125rem] font-semibold hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             {t('deptDashboard.viewAllReportsBtn')}
           </button>
         </div>
-      </div>
+      </Panel>
     </div>
   )
 }

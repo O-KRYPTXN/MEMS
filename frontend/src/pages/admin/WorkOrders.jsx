@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
+import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { workOrders as initialWorkOrders } from '../../data/workOrders'
 import KPICard from '../../components/ui/KPICard'
@@ -51,9 +52,9 @@ const ASSIGN_OPTS = [
   ['M. Youssef', 'M. Youssef'], ['S. Khalid', 'S. Khalid']
 ]
 
-const selectCls = 'h-[36px] px-2.5 bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[0.8125rem] outline-none'
-const inputCls = "w-full bg-[#0d1117] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[#4A5568]"
-const labelCls = "block text-[12px] text-[#94A3B8] uppercase font-semibold tracking-[0.4px] mb-1.5"
+const selectCls = 'h-[36px] px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem] outline-none'
+const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[var(--text-muted)]"
+const labelCls = "block text-[12px] text-[var(--text-secondary)] uppercase font-semibold tracking-[0.4px] mb-1.5"
 
 const getPageNums = (cur, total) => {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
@@ -137,9 +138,9 @@ export default function WorkOrders() {
 
   const columns = useMemo(() => [
     { key: 'id', label: t('workOrders.woNumber'), render: val => <span className="font-mono text-[#3B82F6] font-semibold text-[12px]">{val}</span> },
-    { key: 'device', label: t('devices.deviceName'), render: val => <span className="text-[#E2E8F0] font-medium">{val}</span> },
-    { key: 'dept', label: t('users.department'), render: val => <span className="inline-block bg-[rgba(30,41,59,0.8)] border border-[#1F2A40] rounded-[6px] px-[9px] py-[2px] text-[11px] text-[#94A3B8]">{val}</span> },
-    { key: 'issue', label: t('workOrders.issueDescription'), render: val => <span className="inline-block max-w-[200px] truncate text-[#94A3B8] align-middle text-[12px]" title={val}>{val}</span> },
+    { key: 'device', label: t('devices.deviceName'), render: val => <span className="text-[var(--text-primary)] font-medium">{val}</span> },
+    { key: 'dept', label: t('users.department'), render: val => <span className="inline-block bg-[var(--bg-hover)] border border-[var(--border)] rounded-[6px] px-[9px] py-[2px] text-[11px] text-[var(--text-muted)]">{val}</span> },
+    { key: 'issue', label: t('workOrders.issueDescription'), render: val => <span className="inline-block max-w-[200px] truncate text-[var(--text-muted)] align-middle text-[12px]" title={val}>{val}</span> },
     { key: 'type', label: t('reports.type'), render: val => <TypeBadge type={val} /> },
     { key: 'assigned', label: t('workOrders.assignedTo') },
     { key: 'status', label: t('common.status'), render: val => <StatusBadge variant={val} /> },
@@ -148,7 +149,7 @@ export default function WorkOrders() {
       <div className="flex gap-1.5">
         <button
           onClick={e => { e.stopPropagation(); setSelectedWO(row); setShowViewModal(true) }}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]"
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
           title={t('reports.view')}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
@@ -161,19 +162,19 @@ export default function WorkOrders() {
   ], [t])
 
   const renderPagination = () => (
-    <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
-      <span className="text-[0.8rem] text-[#5A6A85]">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
+      <span className="text-[0.8rem] text-[var(--text-muted)]">
         {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
         {pageNums.map(n => (
           <button key={n} type="button" onClick={() => setCurrentPage(n)}
-            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]')}>{n}</button>
+            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]')}>{n}</button>
         ))}
         <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
       </div>
     </div>
   )
@@ -216,8 +217,8 @@ export default function WorkOrders() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('workOrders.pageTitle')}</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('workOrders.pageSubtitle')}</p>
+          <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('workOrders.pageTitle')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('workOrders.pageSubtitle')}</p>
         </div>
         <button type="button" onClick={openCreateModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px]">
@@ -237,12 +238,12 @@ export default function WorkOrders() {
       </div>
 
       <div className="flex flex-wrap items-center gap-[12px]">
-        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[#1A2235] border border-[#1F2A40] rounded-lg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[#5A6A85] shrink-0">
+        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[var(--text-muted)] shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search WO#, device, department…"
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
         </div>
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
           {TYPE_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('reports.type')}: ${l}` : `${t('reports.type')}: All`}</option>)}
@@ -258,21 +259,21 @@ export default function WorkOrders() {
         </select>
       </div>
 
-      <div className="flex border-b border-[#1F2A40]">
+      <div className="flex border-b border-[var(--border)]">
         {TABS.map(tab => (
           <button key={tab.label} type="button" onClick={() => handleTabClick(tab.value)}
             className={clsx('px-4 py-2.5 text-[0.8125rem] font-medium border-b-2 transition-colors',
-              activeTab === tab.value ? 'text-[#E2E8F0] border-[#3B72F6]' : 'text-[#94A3B8] border-transparent hover:text-[#E2E8F0]')}>
+              activeTab === tab.value ? 'text-[var(--text-primary)] border-[#3B72F6]' : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-primary)]')}>
             {tab.label}
-            <span className="ml-1.5 px-[7px] py-px rounded-full bg-[#1F2A40] text-[#94A3B8] text-[0.7rem]">{tabCounts[tab.value]}</span>
+            <span className="ml-1.5 px-[7px] py-px rounded-full bg-[var(--bg-hover)] text-[var(--text-muted)] text-[0.7rem]">{tabCounts[tab.value]}</span>
           </button>
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
+      <Panel noPadding>
         <DataTable columns={columns} data={paginated} emptyMessage={t('common.noResults')} />
         {renderPagination()}
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showViewModal && !!selectedWO}
@@ -287,18 +288,18 @@ export default function WorkOrders() {
         }
       >
         <div className="grid grid-cols-2 gap-[16px]">
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('workOrders.woNumber')}</div><div className="text-[13px] font-mono text-[#3B82F6]">{selectedWO?.id}</div></div>
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('workOrders.createdDate')}</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO && formatDate(selectedWO.created)}</div></div>
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('devices.deviceName')}</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO?.device}</div></div>
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('users.department')}</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO?.dept}</div></div>
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('workOrders.priorityType')}</div><div className="mt-1">{selectedWO && <TypeBadge type={selectedWO.type} />}</div></div>
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('common.status')}</div><div className="mt-1">{selectedWO && <StatusBadge variant={selectedWO.status} />}</div></div>
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('workOrders.assignedTo')}</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO?.assigned}</div></div>
-          <div><div className="text-[11px] text-[#5A6A85] uppercase mb-1">{t('workOrders.dueDate')}</div><div className="text-[13px] text-[#E2E8F0]">{selectedWO && formatDate(selectedWO.dueDate)}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.woNumber')}</div><div className="text-[13px] font-mono text-[#3B82F6]">{selectedWO?.id}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.createdDate')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO && formatDate(selectedWO.created)}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('devices.deviceName')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.device}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('users.department')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.dept}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.priorityType')}</div><div className="mt-1">{selectedWO && <TypeBadge type={selectedWO.type} />}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('common.status')}</div><div className="mt-1">{selectedWO && <StatusBadge variant={selectedWO.status} />}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.assignedTo')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.assigned}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.dueDate')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO && formatDate(selectedWO.dueDate)}</div></div>
           
           <div className="col-span-2 mt-2">
-            <div className="text-[11px] text-[#5A6A85] uppercase mb-[6px]">{t('workOrders.issueDescription')}</div>
-            <div className="bg-[#0d1117] border border-[#1F2A40] rounded-lg p-3 max-h-[140px] overflow-y-auto text-[13px] text-[#CBD5E1] whitespace-pre-wrap">
+            <div className="text-[11px] text-[var(--text-muted)] uppercase mb-[6px]">{t('workOrders.issueDescription')}</div>
+            <div className="bg-[var(--bg-input)] border border-[var(--border)] rounded-lg p-3 max-h-[140px] overflow-y-auto text-[13px] text-[var(--text-primary)] whitespace-pre-wrap">
               {selectedWO?.issue}
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
+import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { inventory as initialInventory } from '../../data/inventory'
 import KPICard from '../../components/ui/KPICard'
@@ -75,9 +76,9 @@ const LOC_OPTS = [
   ['', 'All'], ['Storeroom', 'Storeroom'], ['ICU Pharmacy', 'ICU Pharmacy'], ['ER Supplies', 'ER Supplies']
 ]
 
-const selectCls = 'h-[36px] px-2.5 bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[0.8125rem] outline-none'
-const inputCls = "w-full bg-[#0d1117] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[#4A5568]"
-const labelCls = "block text-[12px] text-[#94A3B8] uppercase font-semibold tracking-[0.4px] mb-1.5"
+const selectCls = 'h-[36px] px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem] outline-none'
+const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[var(--text-muted)]"
+const labelCls = "block text-[12px] text-[var(--text-secondary)] uppercase font-semibold tracking-[0.4px] mb-1.5"
 
 const getPageNums = (cur, total) => {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
@@ -170,7 +171,7 @@ export default function Inventory() {
   }
 
   const columns = useMemo(() => [
-    { key:'code', label: t('inventory.partCode'), render: val => <span className="font-mono text-[0.775rem] text-[#94A3B8]">{val}</span> },
+    { key:'code', label: t('inventory.partCode'), render: val => <span className="font-mono text-[0.775rem] text-[var(--text-muted)]">{val}</span> },
     { key:'name', label: t('inventory.partName'), primary: true },
     { key:'category', label: t('reports.category') },
     { key:'unit', label: t('inventory.unit') },
@@ -184,7 +185,7 @@ export default function Inventory() {
         <div className="flex gap-1.5">
           <button
             onClick={e => { e.stopPropagation(); setSelectedItem(row); setShowViewModal(true) }}
-            className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]"
+            className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             title={t('reports.view')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]">
@@ -198,19 +199,19 @@ export default function Inventory() {
   ], [t])
 
   const renderPagination = () => (
-    <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
-      <span className="text-[0.8rem] text-[#5A6A85]">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
+      <span className="text-[0.8rem] text-[var(--text-muted)]">
         {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
         {pageNums.map(n => (
           <button key={n} type="button" onClick={() => setCurrentPage(n)}
-            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]')}>{n}</button>
+            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]')}>{n}</button>
         ))}
-        <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
+        <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p - 1)}
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
       </div>
     </div>
   )
@@ -238,8 +239,8 @@ export default function Inventory() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('inventory.pageTitle')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('inventory.pageSubtitle')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('inventory.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('inventory.pageSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-[16px]">
@@ -260,7 +261,7 @@ export default function Inventory() {
           </div>
           <div className="flex-1">
             <div className="text-[0.875rem] font-bold text-[#F87171]">{t('inventory.criticalAlert')}</div>
-            <div className="text-[0.775rem] text-[#94A3B8] mt-[2px]">
+            <div className="text-[0.775rem] text-[var(--text-muted)] mt-[2px]">
               {t('inventory.alertMessage', { outOfStock, lowStock })}
             </div>
           </div>
@@ -271,12 +272,12 @@ export default function Inventory() {
       )}
 
       <div className="flex flex-wrap items-center gap-[12px]">
-        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[#1A2235] border border-[#1F2A40] rounded-lg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[#5A6A85] shrink-0">
+        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[var(--text-muted)] shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('inventory.searchPlaceholder')}
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
         </div>
         <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={selectCls}>
           {CAT_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('reports.category')}: ${l}` : `${t('reports.category')}: ${t('common.allStatuses')}`}</option>)}
@@ -287,7 +288,7 @@ export default function Inventory() {
         <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className={selectCls}>
           {LOC_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('inventory.location')}: ${l}` : `${t('inventory.location')}: ${t('common.allStatuses')}`}</option>)}
         </select>
-        <div className="w-[1px] h-[20px] bg-[#1F2A40]"></div>
+        <div className="w-[1px] h-[20px] bg-[var(--border)]"></div>
         {/* Add Item Button hidden per phase 6 requirement */}
         {false && (
           <button type="button" onClick={openAddModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
@@ -299,21 +300,21 @@ export default function Inventory() {
         )}
       </div>
 
-      <div className="flex border-b border-[#1F2A40]">
+      <div className="flex border-b border-[var(--border)]">
         {TABS.map(tab => (
           <button key={tab.label} type="button" onClick={() => handleTabClick(tab.value)}
             className={clsx('px-4 py-2.5 text-[0.8125rem] font-medium border-b-2 transition-colors',
-              activeTab === tab.value ? 'text-[#E2E8F0] border-[#3B72F6]' : 'text-[#94A3B8] border-transparent hover:text-[#E2E8F0]')}>
+              activeTab === tab.value ? 'text-[var(--text-primary)] border-[#3B72F6]' : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-primary)]')}>
             {tab.label}
-            <span className="ml-1.5 px-[7px] py-px rounded-full bg-[#1F2A40] text-[#94A3B8] text-[0.7rem]">{tabCounts[tab.value]}</span>
+            <span className="ml-1.5 px-[7px] py-px rounded-full bg-[var(--bg-hover)] text-[var(--text-muted)] text-[0.7rem]">{tabCounts[tab.value]}</span>
           </button>
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
+      <Panel noPadding>
         <DataTable columns={columns} data={paginated} emptyMessage={t('common.noResults')} />
         {renderPagination()}
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showViewModal && !!selectedItem}
@@ -323,16 +324,16 @@ export default function Inventory() {
         footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>}
       >
         <div className="grid grid-cols-2 gap-[16px]">
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.partCode')}</div><div className="text-[13px] font-mono font-semibold text-[#E2E8F0] mt-1">{selectedItem?.code}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.partName')}</div><div className="text-[13px] font-medium text-[#E2E8F0] mt-1">{selectedItem?.name}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('reports.category')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.category}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.unit')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.unit}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.minLevel')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.min}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.stockQty')}</div><div className={`text-[13px] mt-1 font-bold ${selectedItem ? getQtyColor(selectedItem) : ''}`}>{selectedItem?.qty}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.location')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem?.location}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.unitPrice')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.price)}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('inventory.totalValue')}</div><div className="text-[13px] font-semibold text-[#E2E8F0] mt-1">{selectedItem && fmt(selectedItem.qty * selectedItem.price)}</div></div>
-          <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedItem && <StockStatusBadge item={selectedItem} />}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.partCode')}</div><div className="text-[13px] font-mono font-semibold text-[var(--text-primary)] mt-1">{selectedItem?.code}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.partName')}</div><div className="text-[13px] font-medium text-[var(--text-primary)] mt-1">{selectedItem?.name}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('reports.category')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.category}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.unit')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.unit}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.minLevel')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.min}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.stockQty')}</div><div className={`text-[13px] mt-1 font-bold ${selectedItem ? getQtyColor(selectedItem) : ''}`}>{selectedItem?.qty}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.location')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.location}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.unitPrice')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem && fmt(selectedItem.price)}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.totalValue')}</div><div className="text-[13px] font-semibold text-[var(--text-primary)] mt-1">{selectedItem && fmt(selectedItem.qty * selectedItem.price)}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedItem && <StockStatusBadge item={selectedItem} />}</div></div>
         </div>
       </Modal>
 

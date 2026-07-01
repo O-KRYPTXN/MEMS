@@ -9,16 +9,16 @@ const DefaultIcon = () => (
 export default function EmptyState({ message, icon, actionLabel, onAction }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-12 px-6 text-center">
-      <div className="w-10 h-10 text-[#5A6A85]">
+      <div className="w-10 h-10 text-[var(--text-muted)]">
         {icon || <DefaultIcon />}
       </div>
-      <p className="text-[0.875rem] text-[#5A6A85]">
+      <p className="text-[0.875rem] text-[var(--text-muted)]">
         {message}
       </p>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="mt-1 px-4 py-1.5 bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[0.8125rem] font-semibold hover:bg-[#1F2A40] hover:text-[#E2E8F0] transition-colors"
+          className="mt-1 px-4 py-1.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-muted)] text-[0.8125rem] font-semibold hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors"
         >
           {actionLabel}
         </button>

@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import Panel from '../../components/ui/Panel'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
 
@@ -96,8 +97,8 @@ export default function SupervisorInventory() {
     <div className="flex flex-col gap-6 relative pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('supInventory.pageTitle')}</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('supInventory.pageSubtitle')}</p>
+          <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('supInventory.pageTitle')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('supInventory.pageSubtitle')}</p>
         </div>
         <button onClick={() => { setSelectedPartId(''); setShowRequestModal(true) }} className="flex items-center gap-1.5 px-4 py-2.5 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors shadow-lg shadow-teal-500/20 shrink-0">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> {t('supInventory.requestPart')}
@@ -111,29 +112,29 @@ export default function SupervisorInventory() {
           { label: t('supInventory.outOfStock'), value: kpis.outOfStock, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />, colorClass: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]' },
           { label: t('supInventory.pendingRequests'), value: pendingRequestsCount, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />, colorClass: 'bg-[rgba(14,165,233,0.12)] text-[#0EA5E9]' },
         ].map((kpi, idx) => (
-          <div key={idx} className="bg-[#181D2A] border border-[#1F2A40] rounded-xl p-5 flex items-center gap-4">
+          <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5 flex items-center gap-4">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${kpi.colorClass}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">{kpi.icon}</svg></div>
-            <div><div className="text-[1.25rem] font-bold text-[#E2E8F0] leading-none">{kpi.value}</div><div className="text-[0.75rem] text-[#94A3B8] font-semibold mt-1">{kpi.label}</div></div>
+            <div><div className="text-[1.25rem] font-bold text-[var(--text-primary)] leading-none">{kpi.value}</div><div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div></div>
           </div>
         ))}
       </div>
 
-      <div className="flex gap-[2px] bg-[#131720] border border-[#1F2A40] rounded-[10px] p-1 w-fit overflow-x-auto">
+      <div className="flex gap-[2px] bg-[var(--bg-sidebar)] border border-[var(--border)] rounded-[10px] p-1 w-fit overflow-x-auto">
         {[{id:'all', label:t('supInventory.allParts')}, {id:'In Stock', label:t('supInventory.inStock')}, {id:'Low Stock', label:t('supInventory.lowStock')}, {id:'Out of Stock', label:t('supInventory.outOfStock')}].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[#181D2A] text-[#14B8A6]" : "text-[#5A6A85] hover:text-[#94A3B8]")}>
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[var(--bg-panel)] text-[#14B8A6]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
-            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(20,184,166,0.15)] text-[#14B8A6]" : "bg-[#181D2A] text-[#5A6A85]")}>{counts[tab.id]}</span>
+            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(20,184,166,0.15)] text-[#14B8A6]" : "bg-[var(--bg-panel)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
           </button>
         ))}
       </div>
 
       <div className="flex flex-col">
-        <div className="bg-[#131720] border border-[#1F2A40] rounded-t-[10px] p-3 px-4 flex flex-wrap gap-2.5 items-center">
-          <div className="flex items-center gap-2 flex-1 min-w-[200px] h-[34px] bg-[#0F1117] border border-[#1F2A40] rounded-lg px-3 focus-within:border-[#14B8A6] transition-colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px] text-[#5A6A85]"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('supInventory.searchPlaceholder')} className="flex-1 min-w-0 bg-transparent border-none outline-none text-[#E2E8F0] text-[0.8125rem]" />
+        <div className="bg-[var(--bg-sidebar)] border border-[var(--border)] rounded-t-[10px] p-3 px-4 flex flex-wrap gap-2.5 items-center">
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] h-[34px] bg-[var(--bg-input)] border border-[var(--border)] rounded-lg px-3 focus-within:border-[#14B8A6] transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px] text-[var(--text-muted)]"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('supInventory.searchPlaceholder')} className="flex-1 min-w-0 bg-transparent border-none outline-none text-[var(--text-primary)] text-[0.8125rem]" />
           </div>
-          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-[34px] bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
+          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-[34px] bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
             <option value="">{t('supInventory.categoryAll')}</option>
             <option value="Sensors">Sensors</option>
             <option value="Cables">Cables</option>
@@ -143,23 +144,24 @@ export default function SupervisorInventory() {
           </select>
         </div>
 
-        <div className="bg-[#181D2A] border border-[#1F2A40] border-t-0 rounded-b-[12px] overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
-            <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+        <Panel noPadding className="border-t-0 rounded-t-none rounded-b-[12px]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {[t('supInventory.partId'), t('supInventory.partName'), t('supInventory.category'), t('supInventory.stockLevel'), t('supInventory.minLevel'), t('common.status'), t('common.actions')].map((h, i) => (
-                  <th key={i} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={i} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
-              {paginated.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[#5A6A85]">{t('supInventory.noPartsFound')}</td></tr> : paginated.map(p => (
-                <tr key={p.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{p.id}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{p.name}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8]">{p.category}</td>
-                  <td className="p-4 text-[13.5px] font-bold text-[#E2E8F0]">{p.stock}</td>
-                  <td className="p-4 text-[13px] text-[#5A6A85]">{p.min}</td>
+            <tbody className="divide-y divide-[var(--border)]">
+              {paginated.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('supInventory.noPartsFound')}</td></tr> : paginated.map(p => (
+                <tr key={p.id} className="hover:bg-[var(--bg-hover)]">
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.id}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{p.name}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.category}</td>
+                  <td className="p-4 text-[13.5px] font-bold text-[var(--text-primary)]">{p.stock}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-muted)]">{p.min}</td>
                   <td className="p-4"><StockBadge status={p.status} /></td>
                   <td className="p-4">
                     <button onClick={() => { setSelectedPartId(p.id); setShowRequestModal(true) }} className="bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors">{t('supInventory.requestRestock')}</button>
@@ -168,15 +170,16 @@ export default function SupervisorInventory() {
               ))}
             </tbody>
           </table>
-          <div className="flex justify-between items-center p-3 px-4 border-t border-[#1F2A40]">
-            <span className="text-[0.8rem] text-[#5A6A85]">{t('supInventory.showingResults', { start: filtered.length ? (currentPage - 1) * ROWS + 1 : 0, end: Math.min(currentPage * ROWS, filtered.length), total: filtered.length })}</span>
+          </div>
+          <div className="flex justify-between items-center p-3 px-4 border-t border-[var(--border)]">
+            <span className="text-[0.8rem] text-[var(--text-muted)]">{t('supInventory.showingResults', { start: filtered.length ? (currentPage - 1) * ROWS + 1 : 0, end: Math.min(currentPage * ROWS, filtered.length), total: filtered.length })}</span>
             <div className="flex gap-1">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="w-7 h-7 rounded bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] disabled:opacity-30">‹</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => <button key={n} onClick={() => setCurrentPage(n)} className={clsx("w-7 h-7 rounded text-[0.8rem]", n === currentPage ? "bg-[#14B8A6] text-white" : "bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]")}>{n}</button>)}
-              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="w-7 h-7 rounded bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] disabled:opacity-30">›</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="w-7 h-7 rounded bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30">‹</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => <button key={n} onClick={() => setCurrentPage(n)} className={clsx("w-7 h-7 rounded text-[0.8rem]", n === currentPage ? "bg-[#14B8A6] text-white" : "bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]")}>{n}</button>)}
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="w-7 h-7 rounded bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30">›</button>
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
       <Modal

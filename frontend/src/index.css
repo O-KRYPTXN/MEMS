@@ -1,5 +1,45 @@
 @import "tailwindcss";
 
+/* ── LIGHT MODE (default) ── */
+:root,
+.light {
+  --bg-body:        #F1F5F9;
+  --bg-sidebar:     #FFFFFF;
+  --bg-panel:       #FFFFFF;
+  --bg-card:        #FFFFFF;
+  --bg-input:       #F8FAFC;
+  --bg-hover:       #F8FAFC;
+  --bg-table-header:#F8FAFC;
+  --border:         #E2E8F0;
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #64748B;
+  --text-table-header: #64748B;
+}
+
+/* ── DARK MODE ── */
+.dark {
+  --bg-body:        #0F1117;
+  --bg-sidebar:     #131720;
+  --bg-panel:       #181D2A;
+  --bg-card:        #181D2A;
+  --bg-input:       #0d1117;
+  --bg-hover:       #1A2235;
+  --bg-table-header:#131720;
+  --border:         #1F2A40;
+  --text-primary:   #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-muted:     #5A6A85;
+  --text-table-header: #5A6A85;
+}
+
+/* Apply CSS variables to base elements */
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
 @keyframes modalIn {
   from {
     opacity: 0;

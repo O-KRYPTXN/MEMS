@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { ROLES } from '../constants/roles'
 import { ROUTES } from '../constants/routes'
+import { useThemeStore } from './themeStore'
 
 export const useAuthStore = create((set) => ({
   user: {
@@ -10,13 +11,16 @@ export const useAuthStore = create((set) => ({
     //role: ROLES.ADMIN,
     //role: ROLES.SUPERVISOR,
     //role: ROLES.TECHNICIAN,
-    //role: ROLES.DEPARTMENT,
-    role: ROLES.STORE,
+    role: ROLES.DEPARTMENT,
+    //role: ROLES.STORE,
     department: 'ICU',
     initials: 'AH',
   },
 
-  login: (userData) => set({ user: userData }),
+  login: (userData) => {
+    set({ user: userData })
+    useThemeStore.getState().initTheme(userData.id)
+  },
 
   logout: () => set({ user: null }),
 }))
@@ -32,3 +36,6 @@ export const getHomeRoute = (role) => {
   }
   return map[role] ?? ROUTES.LOGIN
 }
+
+// Initialize theme for the default mock user on load
+useThemeStore.getState().initTheme('1')

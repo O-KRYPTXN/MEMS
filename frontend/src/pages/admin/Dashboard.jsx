@@ -5,6 +5,7 @@ import StatusDonutChart from '../../components/charts/StatusDonutChart'
 import DevicesByDeptBarChart from '../../components/charts/DevicesByDeptBarChart'
 import clsx from 'clsx'
 import KPICard from '../../components/ui/KPICard'
+import Panel, { PanelHeader } from '../../components/ui/Panel'
 import StatusBadge from '../../components/ui/StatusBadge'
 import DataTable from '../../components/tables/DataTable'
 import AlertItem from '../../components/ui/AlertItem'
@@ -48,18 +49,7 @@ const DEPT_DEVICES = [
   { name: 'General Ward', count: 128, pct: 22, color: '#94A3B8' },
 ]
 
-const Panel = ({ title, subtitle, action, children }) => (
-  <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden">
-    <div className="flex items-center justify-between px-5 py-4 border-b border-[#1F2A40]">
-      <div>
-        <h3 className="text-[0.9rem] font-bold text-[#E2E8F0]">{title}</h3>
-        {subtitle && <p className="text-[0.75rem] text-[#5A6A85]">{subtitle}</p>}
-      </div>
-      {action}
-    </div>
-    {children}
-  </div>
-)
+
 
 const linkBtn = 'text-[0.8125rem] font-semibold text-[#5E8FFF] hover:text-[#7AA3FF] cursor-pointer bg-transparent border-0'
 
@@ -125,8 +115,8 @@ const Dashboard = () => {
       {/* Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-[#E2E8F0]">{t('dashboard.overview')}</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('dashboard.overviewSubtitle')}</p>
+          <h1 className="text-xl font-bold text-[var(--text-primary)]">{t('dashboard.overview')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('dashboard.overviewSubtitle')}</p>
         </div>
         <button
           type="button"
@@ -150,14 +140,16 @@ const Dashboard = () => {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        <Panel title={t('dashboard.faultTrendTitle')} subtitle={t('dashboard.faultTrendSubtitle')}
-          action={<button type="button" className={linkBtn}>{t('dashboard.viewReport')}</button>}>
+        <Panel noPadding>
+          <PanelHeader title={t('dashboard.faultTrendTitle')} subtitle={t('dashboard.faultTrendSubtitle')}
+            action={<button type="button" className={linkBtn}>{t('dashboard.viewReport')}</button>} />
           <div className="p-5">
             <FaultTrendLineChart data={faultData} />
           </div>
         </Panel>
 
-        <Panel title={t('dashboard.woByDeptTitle')} subtitle={t('dashboard.woByDeptSubtitle')}>
+        <Panel noPadding>
+          <PanelHeader title={t('dashboard.woByDeptTitle')} subtitle={t('dashboard.woByDeptSubtitle')} />
           <div className="py-5">
             <StatusDonutChart
               data={deptData.map(d => ({ ...d, displayValue: totalWOs ? Math.round((d.value / totalWOs) * 100) + '%' : '0%' }))}
@@ -170,15 +162,17 @@ const Dashboard = () => {
 
       {/* Work Orders + Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        <Panel title={t('dashboard.recentUrgentTitle')} subtitle={t('dashboard.recentUrgentSubtitle')}
-          action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_WORK_ORDERS)}>{t('dashboard.viewAll')}</button>}>
+        <Panel noPadding>
+          <PanelHeader title={t('dashboard.recentUrgentTitle')} subtitle={t('dashboard.recentUrgentSubtitle')}
+            action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_WORK_ORDERS)}>{t('dashboard.viewAll')}</button>} />
           <DataTable columns={woColumns} data={recentWOs} />
         </Panel>
 
-        <Panel title={t('dashboard.systemAlertsTitle')} subtitle={t('dashboard.systemAlertsSubtitle')}
-          action={<button type="button" className={linkBtn} onClick={() => setAlertsCleared(true)}>{t('dashboard.markAllRead')}</button>}>
+        <Panel noPadding>
+          <PanelHeader title={t('dashboard.systemAlertsTitle')} subtitle={t('dashboard.systemAlertsSubtitle')}
+            action={<button type="button" className={linkBtn} onClick={() => setAlertsCleared(true)}>{t('dashboard.markAllRead')}</button>} />
           {alertsCleared ? (
-            <p className="py-8 text-center text-[0.8125rem] text-[#5A6A85]">{t('dashboard.allCaughtUp')}</p>
+            <p className="py-8 text-center text-[0.8125rem] text-[var(--text-muted)]">{t('dashboard.allCaughtUp')}</p>
           ) : (
             alertsData.map((a, i) => (
               <AlertItem key={a.id} type={a.type} title={a.title} subtitle={a.subtitle} time={a.time}
@@ -190,7 +184,8 @@ const Dashboard = () => {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <Panel title={t('dashboard.technicianWorkloadTitle')} subtitle={t('dashboard.technicianWorkloadSubtitle')}>
+        <Panel noPadding>
+          <PanelHeader title={t('dashboard.technicianWorkloadTitle')} subtitle={t('dashboard.technicianWorkloadSubtitle')} />
           <div className="py-2 px-5">
             {technicians.map((tech, i) => (
               <ProgressBar key={tech} label={tech} value={`${techCounts[i]} ${techCounts[i] === 1 ? t('dashboard.task') : t('dashboard.tasks')}`}
@@ -199,12 +194,14 @@ const Dashboard = () => {
           </div>
         </Panel>
 
-        <Panel title={t('dashboard.inventoryStatusTitle')} subtitle={t('dashboard.inventoryStatusSubtitle')}
-          action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_INVENTORY)}>{t('dashboard.viewAll')}</button>}>
+        <Panel noPadding>
+          <PanelHeader title={t('dashboard.inventoryStatusTitle')} subtitle={t('dashboard.inventoryStatusSubtitle')}
+            action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_INVENTORY)}>{t('dashboard.viewAll')}</button>} />
           <DataTable columns={invColumns} data={lowInventory} />
         </Panel>
 
-        <Panel title={t('dashboard.devicesByDeptTitle')} subtitle={t('dashboard.devicesByDeptSubtitle')}>
+        <Panel noPadding>
+          <PanelHeader title={t('dashboard.devicesByDeptTitle')} subtitle={t('dashboard.devicesByDeptSubtitle')} />
           <div>
             <DevicesByDeptBarChart data={DEPT_DEVICES} />
           </div>

@@ -32,7 +32,7 @@ const KPICard = ({
   return (
     <div
       className={clsx(
-        'flex flex-col gap-3 p-5 rounded-xl border bg-[#181D2A] border-[#1F2A40]',
+        'flex flex-col gap-3 p-5 rounded-xl border bg-[var(--bg-card)] border-[var(--border)]',
         danger && 'bg-[rgba(239,68,68,0.05)] border-[rgba(239,68,68,0.3)]'
       )}
     >
@@ -87,13 +87,13 @@ const KPICard = ({
       <div>
         <div
           className={clsx(
-            'text-[1.75rem] font-extrabold leading-none text-[#E2E8F0]',
+            'text-[1.75rem] font-extrabold leading-none text-[var(--text-primary)]',
             danger && 'text-[#F87171]'
           )}
         >
           {value}
         </div>
-        <div className="mt-0.5 text-[0.8rem] font-medium text-[#5A6A85]">{title}</div>
+        <div className="mt-0.5 text-[0.8rem] font-medium text-[var(--text-muted)]">{title}</div>
       </div>
     </div>
   )

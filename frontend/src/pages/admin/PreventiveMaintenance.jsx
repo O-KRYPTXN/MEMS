@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
+import Panel, { PanelHeader } from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { pmTasks as initialPMTasks } from '../../data/pmTasks'
 import KPICard from '../../components/ui/KPICard'
@@ -49,7 +50,7 @@ const PMStatusBadge = ({ status }) => (
 )
 
 const DeptTag = ({ dept }) => (
-  <span className="inline-block bg-[rgba(30,41,59,0.8)] border border-[#1F2A40] rounded-md px-2 py-0.5 text-[11px] text-[#94A3B8]">
+  <span className="inline-block bg-[var(--bg-hover)] border border-[var(--border)] rounded-md px-2 py-0.5 text-[11px] text-[var(--text-muted)]">
     {dept}
   </span>
 )
@@ -83,9 +84,9 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const selectCls = 'h-[36px] px-2.5 bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[0.8125rem] outline-none'
-const inputCls = "w-full bg-[#0d1117] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[#4A5568]"
-const labelCls = "block text-[12px] text-[#94A3B8] uppercase font-semibold tracking-[0.4px] mb-1.5"
+const selectCls = 'h-[36px] px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem] outline-none'
+const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[var(--text-muted)]"
+const labelCls = "block text-[12px] text-[var(--text-secondary)] uppercase font-semibold tracking-[0.4px] mb-1.5"
 
 const getPageNums = (cur, total) => {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
@@ -198,7 +199,7 @@ export default function PreventiveMaintenance() {
         const duLabel = du === 0
           ? <span className="text-[#FCD34D] text-[0.72rem]">Today</span>
           : du > 0
-            ? <span className="text-[#5A6A85] text-[0.72rem]">In {du} days</span>
+            ? <span className="text-[var(--text-muted)] text-[0.72rem]">In {du} days</span>
             : <span className="text-[#F87171] text-[0.72rem]">{Math.abs(du)}d overdue</span>
         return <div><div>{formatDate(val)}</div><div>{duLabel}</div></div>
       }
@@ -210,7 +211,7 @@ export default function PreventiveMaintenance() {
       key: 'id', label: t('users.actions'), render: (val, row) => (
         <button
           onClick={e => { e.stopPropagation(); setSelectedPM(row); setShowViewModal(true) }}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]"
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -222,19 +223,19 @@ export default function PreventiveMaintenance() {
   ], [t])
 
   const renderPagination = () => (
-    <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
-      <span className="text-[0.8rem] text-[#5A6A85]">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
+      <span className="text-[0.8rem] text-[var(--text-muted)]">
         {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
         {pageNums.map(n => (
           <button key={n} type="button" onClick={() => setCurrentPage(n)}
-            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]')}>{n}</button>
+            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]')}>{n}</button>
         ))}
         <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
       </div>
     </div>
   )
@@ -266,26 +267,26 @@ export default function PreventiveMaintenance() {
     for (let i = 1; i <= daysInMonth; i++) days.push(i)
 
     return (
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] p-[20px] px-[24px]">
+      <Panel padding="p-[20px] px-[24px]">
         <div className="flex justify-between items-center mb-[18px]">
-          <div className="text-[0.9375rem] font-bold text-[#E2E8F0]">{t('pm.maintenanceCalendar')}</div>
+          <div className="text-[0.9375rem] font-bold text-[var(--text-primary)]">{t('pm.maintenanceCalendar')}</div>
           <div className="flex items-center">
-            <button onClick={handlePrevMonth} className="w-[30px] h-[30px] rounded-[7px] bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] hover:bg-[#1F2A40] hover:text-[#E2E8F0] flex items-center justify-center">‹</button>
-            <div className="text-[0.875rem] font-semibold text-[#E2E8F0] min-w-[130px] text-center">{MONTH_NAMES[calMonth]} {calYear}</div>
-            <button onClick={handleNextMonth} className="w-[30px] h-[30px] rounded-[7px] bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] hover:bg-[#1F2A40] hover:text-[#E2E8F0] flex items-center justify-center">›</button>
+            <button onClick={handlePrevMonth} className="w-[30px] h-[30px] rounded-[7px] bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] flex items-center justify-center">‹</button>
+            <div className="text-[0.875rem] font-semibold text-[var(--text-primary)] min-w-[130px] text-center">{MONTH_NAMES[calMonth]} {calYear}</div>
+            <button onClick={handleNextMonth} className="w-[30px] h-[30px] rounded-[7px] bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] flex items-center justify-center">›</button>
           </div>
         </div>
 
         <div className="flex gap-[16px] mb-[12px]">
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#5E8FFF]"></div><span className="text-[0.72rem] text-[#5A6A85]">Scheduled</span></div>
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#F87171]"></div><span className="text-[0.72rem] text-[#5A6A85]">Overdue</span></div>
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#4ADE80]"></div><span className="text-[0.72rem] text-[#5A6A85]">Completed</span></div>
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#C084FC]"></div><span className="text-[0.72rem] text-[#5A6A85]">Calibration</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#5E8FFF]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Scheduled</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#F87171]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Overdue</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#4ADE80]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Completed</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#C084FC]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Calibration</span></div>
         </div>
 
         <div className="grid grid-cols-7 gap-[4px]">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d} className="text-center text-[0.68rem] font-bold text-[#5A6A85] uppercase py-1">{d}</div>
+            <div key={d} className="text-center text-[0.68rem] font-bold text-[var(--text-muted)] uppercase py-1">{d}</div>
           ))}
           {days.map((day, i) => {
             if (!day) return <div key={`empty-${i}`} className="aspect-square"></div>
@@ -296,7 +297,7 @@ export default function PreventiveMaintenance() {
 
             return (
               <div key={day} className={clsx("aspect-square rounded-[8px] min-h-[52px] flex flex-col items-center justify-start p-[6px] px-[4px]", hasTasks && "hover:bg-[rgba(59,114,246,0.08)] cursor-pointer")}>
-                <div className={clsx("text-[0.8rem] font-semibold flex items-center justify-center", isToday ? "bg-[#3B72F6] text-white w-[24px] h-[24px] rounded-full" : hasTasks ? "text-[#E2E8F0]" : "text-[#94A3B8]")}>
+                <div className={clsx("text-[0.8rem] font-semibold flex items-center justify-center", isToday ? "bg-[#3B72F6] text-white w-[24px] h-[24px] rounded-full" : hasTasks ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]")}>
                   {day}
                 </div>
                 {hasTasks && (
@@ -315,15 +316,15 @@ export default function PreventiveMaintenance() {
             )
           })}
         </div>
-      </div>
+      </Panel>
     )
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('pm.pageTitle')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('pm.pageSubtitle')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('pm.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('pm.pageSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-[16px]">
@@ -338,11 +339,11 @@ export default function PreventiveMaintenance() {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-[20px]">
         {renderCalendar()}
 
-        <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] flex flex-col max-h-[460px]">
-          <div className="flex justify-between items-center p-[14px] px-[18px] border-b border-[#1F2A40]">
-            <div className="text-[0.875rem] font-bold text-[#E2E8F0]">{t('pm.upcomingOverdue')}</div>
-            <div className="text-[0.75rem] text-[#5A6A85]">{upcomingTasks.length} tasks</div>
-          </div>
+        <Panel noPadding className="flex flex-col max-h-[460px]">
+          <PanelHeader 
+            title={t('pm.upcomingOverdue')} 
+            action={<span className="text-[0.75rem] text-[var(--text-muted)] font-normal">{upcomingTasks.length} tasks</span>} 
+          />
           <div className="flex-1 overflow-y-auto">
             {upcomingTasks.map((t, idx) => {
               let dotColor = '#5E8FFF'
@@ -354,11 +355,11 @@ export default function PreventiveMaintenance() {
               const duColor = du === 0 ? '#FCD34D' : du > 0 ? (du <= 3 ? '#FCD34D' : '#4ADE80') : '#F87171'
 
               return (
-                <div key={idx} className="flex gap-[12px] p-[12px] px-[18px] border-b border-[#131720] last:border-0 hover:bg-[rgba(255,255,255,0.02)]">
+                <div key={idx} className="flex gap-[12px] p-[12px] px-[18px] border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-hover)]">
                   <div className="w-[8px] h-[8px] rounded-full mt-[5px] shrink-0" style={{ backgroundColor: dotColor }}></div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[0.8125rem] font-semibold text-[#E2E8F0] truncate">{t.device}</div>
-                    <div className="text-[0.75rem] text-[#5A6A85] mt-[2px]">{t.dept} · {t.type} · {t.tech}</div>
+                    <div className="text-[0.8125rem] font-semibold text-[var(--text-primary)] truncate">{t.device}</div>
+                    <div className="text-[0.75rem] text-[var(--text-muted)] mt-[2px]">{t.dept} · {t.type} · {t.tech}</div>
                   </div>
                   <div className="text-[0.75rem] font-semibold whitespace-nowrap" style={{ color: duColor }}>
                     {duLabel}
@@ -367,16 +368,16 @@ export default function PreventiveMaintenance() {
               )
             })}
           </div>
-        </div>
+        </Panel>
       </div>
 
       <div className="flex flex-wrap items-center gap-[12px]">
-        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[#1A2235] border border-[#1F2A40] rounded-lg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[#5A6A85] shrink-0">
+        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[var(--text-muted)] shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search PM#, device, department…"
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
         </div>
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
           {TYPE_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('pm.pmType')}: ${l}` : `${t('pm.pmType')}: All`}</option>)}
@@ -387,7 +388,7 @@ export default function PreventiveMaintenance() {
         <select value={techFilter} onChange={e => setTechFilter(e.target.value)} className={selectCls}>
           {TECH_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('pm.technician')}: ${l}` : `${t('pm.technician')}: All`}</option>)}
         </select>
-        <div className="w-[1px] h-[20px] bg-[#1F2A40]"></div>
+        <div className="w-[1px] h-[20px] bg-[var(--border)]"></div>
         <button type="button" onClick={openCreateModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -396,17 +397,17 @@ export default function PreventiveMaintenance() {
         </button>
       </div>
 
-      <div className="flex border-b border-[#1F2A40]">
+      <div className="flex border-b border-[var(--border)]">
         {TABS.map(tab => (
           <button key={tab.label} type="button" onClick={() => setActiveTab(tab.value)}
             className={clsx('px-4 py-2.5 text-[0.8125rem] font-medium border-b-2 transition-colors',
-              activeTab === tab.value ? 'text-[#E2E8F0] border-[#3B72F6]' : 'text-[#94A3B8] border-transparent hover:text-[#E2E8F0]')}>
+              activeTab === tab.value ? 'text-[var(--text-primary)] border-[#3B72F6]' : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-primary)]')}>
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
+      <Panel noPadding>
         <DataTable columns={columns} data={paginated} emptyMessage={t('common.noResults')} rowClassName={(row) => row.status === 'Overdue' ? 'bg-[rgba(239,68,68,0.04)] hover:bg-[rgba(239,68,68,0.08)]' : ''} />
         {renderPagination()}
         <Modal
@@ -417,14 +418,14 @@ export default function PreventiveMaintenance() {
           footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>}
         >
           <div className="grid grid-cols-2 gap-[16px]">
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.pmId')}</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM?.id}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('devices.deviceName')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.device}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('users.department')}</div><div className="mt-1">{selectedPM && <DeptTag dept={selectedPM.dept} />}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.pmType')}</div><div className="mt-1">{selectedPM && <PMTypeBadge type={selectedPM.type} />}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.scheduledDate')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.scheduled)}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.lastPm')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM && formatDate(selectedPM.lastPm)}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('pm.technician')}</div><div className="text-[13px] text-[#E2E8F0] mt-1">{selectedPM?.tech}</div></div>
-            <div><div className="text-[0.75rem] text-[#5A6A85] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedPM && <PMStatusBadge status={selectedPM.status} />}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.pmId')}</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM?.id}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('devices.deviceName')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM?.device}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('users.department')}</div><div className="mt-1">{selectedPM && <DeptTag dept={selectedPM.dept} />}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.pmType')}</div><div className="mt-1">{selectedPM && <PMTypeBadge type={selectedPM.type} />}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.scheduledDate')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM && formatDate(selectedPM.scheduled)}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.lastPm')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM && formatDate(selectedPM.lastPm)}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.technician')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM?.tech}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedPM && <PMStatusBadge status={selectedPM.status} />}</div></div>
           </div>
         </Modal>
 
@@ -460,7 +461,7 @@ export default function PreventiveMaintenance() {
             <InputField type="textarea" label={t('addDevice.notes')} name="notes" {...register('notes')} placeholder="Any special instructions…" />
           </form>
         </Modal>
-      </div>
+      </Panel>
     </div>
   )
 }

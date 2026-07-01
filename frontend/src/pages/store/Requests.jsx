@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import EmptyState from '../../components/ui/EmptyState'
+import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
@@ -92,18 +93,18 @@ export default function StoreRequests() {
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeRequests.pageTitle', 'Part Requests')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeRequests.pageSubtitle', 'Review, approve, and fulfill spare part requests from technicians and departments.')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeRequests.pageTitle', 'Part Requests')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeRequests.pageSubtitle', 'Review, approve, and fulfill spare part requests from technicians and departments.')}</p>
       </div>
 
-      <div className="bg-[#131720] border border-[#1F2A40] rounded-xl p-1 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto self-start">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-1 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto self-start">
         {tabs.map(tab => (
           <button 
             key={tab} 
             onClick={() => setActiveTab(tab)} 
             className={clsx(
               "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
-              activeTab === tab ? "bg-[#181D2A] text-[#8B5CF6]" : "bg-transparent text-[#5A6A85] hover:text-[#94A3B8]"
+              activeTab === tab ? "bg-[var(--bg-hover)] text-[#8B5CF6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
             )}
           >
             {tab === 'All' ? t('storeRequests.tabAll', 'All') : t(`storeRequests.status${tab}`, tab)}
@@ -111,22 +112,22 @@ export default function StoreRequests() {
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden -mt-2">
-        <div className="bg-[#131720] border-b border-[#1F2A40] p-3 px-4 flex flex-wrap gap-3 items-center">
+      <Panel noPadding className="-mt-2">
+        <div className="bg-[var(--bg-card)] border-b border-[var(--border)] p-3 px-4 flex flex-wrap gap-3 items-center">
           <div className="flex-1 max-w-sm relative">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px] text-[#5A6A85] absolute left-3 top-1/2 -translate-y-1/2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px] text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
             <input 
               type="text" 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
               placeholder={t('storeRequests.searchPlaceholder', 'Search ID, part name, requester...')}
-              className="w-full bg-[#0F1117] border border-[#1F2A40] text-[#E2E8F0] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
+              className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
             />
           </div>
           <select 
             value={deptFilter} 
             onChange={e => setDeptFilter(e.target.value)} 
-            className="bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
+            className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
           >
             <option value="">{t('storeRequests.allDepts', 'All Departments')}</option>
             <option value="ICU">ICU</option>
@@ -139,28 +140,28 @@ export default function StoreRequests() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+              <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {[t('storeRequests.reqId', 'Req ID'), t('storeRequests.requesterDept', 'Requester / Dept'), t('storeRequests.itemRequested', 'Item Requested'), t('storeRequests.date', 'Date'), t('common.status', 'Status'), t('common.actions', 'Actions')].map(h => (
-                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
+            <tbody className="divide-y divide-[var(--border)]">
               {paginatedReqs.length === 0 ? <tr><td colSpan={6} className="p-0"><EmptyState message={t('storeRequests.noRequestsFound', 'No requests found.')} /></td></tr> : paginatedReqs.map(r => (
                 <tr key={r.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{r.id}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{r.id}</td>
                   <td className="p-4 text-[13px]">
-                    <div className="font-semibold text-[#E2E8F0]">{r.requester}</div>
-                    <div className="text-[#94A3B8] mt-0.5 text-xs">{r.dept}</div>
+                    <div className="font-semibold text-[var(--text-primary)]">{r.requester}</div>
+                    <div className="text-[var(--text-secondary)] mt-0.5 text-xs">{r.dept}</div>
                   </td>
-                  <td className="p-4 text-[13px] text-[#E2E8F0] font-semibold">{r.qty}x {r.itemName}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] whitespace-nowrap">{r.date}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-primary)] font-semibold">{r.qty}x {r.itemName}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-muted)] whitespace-nowrap">{r.date}</td>
                   <td className="p-4"><StatusBadge status={r.status} /></td>
                   <td className="p-4">
                     {r.status === 'Pending' && (
                       <button 
                         onClick={() => { setSelectedReq(r); setActionType('review'); setActionNotes(''); setShowModal(true) }} 
-                        className="px-3 py-1.5 bg-transparent border border-[#1F2A40] rounded-lg text-[#D8B4FE] text-[12px] font-bold hover:bg-[#1A2235] hover:text-white transition-colors"
+                        className="px-3 py-1.5 bg-transparent border border-[var(--border)] rounded-lg text-[#D8B4FE] text-[12px] font-bold hover:bg-[var(--bg-hover)] hover:text-white transition-colors"
                       >
                         {t('storeRequests.reviewBtn', 'Review')}
                       </button>
@@ -174,7 +175,7 @@ export default function StoreRequests() {
                       </button>
                     )}
                     {(r.status === 'Fulfilled' || r.status === 'Rejected') && (
-                      r.notes ? <span className="text-xs text-[#94A3B8] italic" title={r.notes}>{t('storeRequests.viewNotes', 'View Notes')}</span> : <span className="text-[#5A6A85] pl-4">—</span>
+                      r.notes ? <span className="text-xs text-[var(--text-secondary)] italic" title={r.notes}>{t('storeRequests.viewNotes', 'View Notes')}</span> : <span className="text-[var(--text-muted)] pl-4">—</span>
                     )}
                   </td>
                 </tr>
@@ -184,15 +185,15 @@ export default function StoreRequests() {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-[#1F2A40] flex items-center justify-between bg-[#131720]">
-            <span className="text-xs text-[#5A6A85] font-medium">{t('storeRequests.pageCount', 'Page {{current}} of {{total}}', { current: currentPage, total: totalPages })}</span>
+          <div className="p-4 border-t border-[var(--border)] flex items-center justify-between bg-[var(--bg-card)]">
+            <span className="text-xs text-[var(--text-muted)] font-medium">{t('storeRequests.pageCount', 'Page {{current}} of {{total}}', { current: currentPage, total: totalPages })}</span>
             <div className="flex gap-2">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">{t('common.prev', 'Prev')}</button>
-              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-3 py-1.5 rounded-md bg-[#1A2235] text-[#94A3B8] text-xs font-bold disabled:opacity-50 hover:bg-[#1F2A40] transition-colors">{t('common.next', 'Next')}</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-3 py-1.5 rounded-md bg-[var(--bg-input)] text-[var(--text-secondary)] text-xs font-bold disabled:opacity-50 hover:bg-[var(--bg-hover)] transition-colors">{t('common.prev', 'Prev')}</button>
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-3 py-1.5 rounded-md bg-[var(--bg-input)] text-[var(--text-secondary)] text-xs font-bold disabled:opacity-50 hover:bg-[var(--bg-hover)] transition-colors">{t('common.next', 'Next')}</button>
             </div>
           </div>
         )}
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showModal && !!selectedReq}
@@ -213,31 +214,31 @@ export default function StoreRequests() {
         }
       >
         <form id="action-form" onSubmit={handleAction} className="flex flex-col gap-5">
-          <div className="bg-[#131720] p-4 rounded-lg border border-[#1F2A40] flex flex-col gap-2">
+          <div className="bg-[var(--bg-input)] p-4 rounded-lg border border-[var(--border)] flex flex-col gap-2">
             <div className="flex justify-between items-start">
-              <span className="text-[#E2E8F0] font-bold">{selectedReq?.id}</span>
-              <span className="text-[#94A3B8] text-sm">{selectedReq?.date}</span>
+              <span className="text-[var(--text-primary)] font-bold">{selectedReq?.id}</span>
+              <span className="text-[var(--text-secondary)] text-sm">{selectedReq?.date}</span>
             </div>
             <div className="text-[#D8B4FE] text-sm font-semibold">{selectedReq?.qty}x {selectedReq?.itemName}</div>
-            <div className="text-[#5A6A85] text-xs">{t('storeRequests.requestedBy', 'Requested by')}: <span className="text-[#E2E8F0]">{selectedReq?.requester}</span> ({selectedReq?.dept})</div>
+            <div className="text-[var(--text-muted)] text-xs">{t('storeRequests.requestedBy', 'Requested by')}: <span className="text-[var(--text-primary)]">{selectedReq?.requester}</span> ({selectedReq?.dept})</div>
           </div>
 
           {actionType === 'review' && (
             <>
               <div>
-                <label className="block text-[12px] text-[#94A3B8] font-semibold mb-2">{t('storeRequests.decision', 'Decision')}</label>
+                <label className="block text-[12px] text-[var(--text-muted)] font-semibold mb-2">{t('storeRequests.decision', 'Decision')}</label>
                 <div className="flex gap-3">
                   <button 
                     type="button"
                     onClick={() => setReviewDecision('Approve')}
-                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-[rgba(34,197,94,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#4ADE80]")}
+                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-[rgba(34,197,94,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#4ADE80]")}
                   >
                     {t('common.approve')}
                   </button>
                   <button 
                     type="button"
                     onClick={() => setReviewDecision('Reject')}
-                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#F87171]")}
+                    className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
                   >
                     {t('common.reject')}
                   </button>

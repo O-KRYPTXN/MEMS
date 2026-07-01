@@ -7,6 +7,7 @@ import { useAuthStore } from '../../store/authStore'
 import { ROUTES } from '../../constants/routes'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import clsx from 'clsx'
+import Panel, { PanelHeader } from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useTranslation } from 'react-i18next'
 
@@ -35,8 +36,6 @@ const TaskStatusBadge = ({ status }) => {
   return <span className={`px-2 py-0.5 rounded-full text-[0.65rem] font-bold ${map[status] || map['To Do']}`}>{labelMap[status] || status}</span>
 }
 
-const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#F59E0B] transition-colors"
-const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
 
 export default function TechnicianDashboard() {
   const { t } = useTranslation()
@@ -71,8 +70,8 @@ export default function TechnicianDashboard() {
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('techDashboard.pageTitle', { name: nameFirst })}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('techDashboard.pageSubtitle', { count: activeTasks.length })}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('techDashboard.pageTitle', { name: nameFirst })}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('techDashboard.pageSubtitle', { count: activeTasks.length })}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -82,31 +81,28 @@ export default function TechnicianDashboard() {
           { label: t('techDashboard.waitingParts'), value: waitingCount, icon: <path d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/>, bg: 'bg-[rgba(168,85,247,0.15)] text-[#C084FC]' },
           { label: t('techDashboard.completedMonth'), value: completedCount + 6, icon: <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>, bg: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80]' },
         ].map((kpi, i) => (
-          <div key={i} className="bg-[#181D2A] border border-[#1F2A40] rounded-xl p-[18px] flex flex-row items-center gap-[14px]">
+          <div key={i} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-[18px] flex flex-row items-center gap-[14px]">
             <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0 ${kpi.bg}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">{kpi.icon}</svg></div>
-            <div><div className="text-[1.25rem] font-bold text-[#E2E8F0] leading-none">{kpi.value}</div><div className="text-[0.75rem] text-[#94A3B8] font-semibold mt-1">{kpi.label}</div></div>
+            <div><div className="text-[1.25rem] font-bold text-[var(--text-primary)] leading-none">{kpi.value}</div><div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div></div>
           </div>
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden">
-        <div className="flex justify-between items-center p-4 px-5 border-b border-[#1F2A40]">
-          <h2 className="text-[1rem] font-bold text-[#E2E8F0]">{t('techDashboard.myTaskQueue')}</h2>
-          <button onClick={() => navigate(ROUTES.TECH_WORK_ORDERS)} className="px-2.5 py-1 text-[0.75rem] font-bold text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1A2235] rounded-md transition-colors">{t('techDashboard.viewAll')}</button>
-        </div>
+      <Panel noPadding>
+        <PanelHeader title={t('techDashboard.myTaskQueue')} action={<button onClick={() => navigate(ROUTES.TECH_WORK_ORDERS)} className="px-2.5 py-1 text-[0.75rem] font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] rounded-md transition-colors">{t('techDashboard.viewAll')}</button>} />
         <div className="flex flex-col">
           {activeTasks.length === 0 ? (
             <EmptyState message={t('techDashboard.noActiveTasks')} />
           ) : (
             activeTasks.map(task => (
-              <div key={task.id} className="flex flex-row items-center gap-4 p-4 px-5 border-b border-[#1F2A40] last:border-b-0 hover:bg-[#1A2235] transition-colors">
+              <div key={task.id} className="flex flex-row items-center gap-4 p-4 px-5 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--bg-hover)] transition-colors">
                 <div className={`w-1 h-8 rounded shrink-0 ${task.priority === 'High' ? 'bg-[#F87171]' : task.priority === 'Medium' ? 'bg-[#F59E0B]' : 'bg-[#4ADE80]'}`}></div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[0.9rem] font-bold text-[#E2E8F0] truncate">{task.id} — {task.device}</div>
+                  <div className="text-[0.9rem] font-bold text-[var(--text-primary)] truncate">{task.id} — {task.device}</div>
                   <div className="flex flex-row gap-3 items-center mt-1">
                     <TaskStatusBadge status={task.status} />
-                    <span className="text-[#94A3B8] text-[0.78rem]">{task.priority} {t('techDashboard.priority')}</span>
-                    <span className="text-[#94A3B8] text-[0.78rem]">{task.dept} {t('techDashboard.dept')}</span>
+                    <span className="text-[var(--text-muted)] text-[0.78rem]">{task.priority} {t('techDashboard.priority')}</span>
+                    <span className="text-[var(--text-muted)] text-[0.78rem]">{task.dept} {t('techDashboard.dept')}</span>
                   </div>
                 </div>
                 <button onClick={() => { setActiveWO(task); setUpdateStatus('In Progress'); setNotes(''); setShowModal(true) }} className="bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-[#FCD34D] px-3.5 py-1.5 rounded-lg text-[0.75rem] font-bold hover:bg-[rgba(245,158,11,0.2)] transition-colors shrink-0">{t('techDashboard.quickUpdate')}</button>
@@ -114,7 +110,7 @@ export default function TechnicianDashboard() {
             ))
           )}
         </div>
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showModal && !!activeWO}

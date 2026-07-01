@@ -5,6 +5,7 @@ import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
+import Panel, { PanelHeader } from '../../components/ui/Panel'
 
 const initialRequests = [
   { id: 'DR-1045', device: 'ICU Ventilator V500', desc: 'Screen flickering intermittently during operation.', date: '25/06/2026', status: 'In Progress', techMessage: 'Parts ordered, expected tomorrow.' },
@@ -30,9 +31,6 @@ const StatusBadge = ({ status }) => {
   }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${map[status] || ''}`}>{labelMap[status]}</span>
 }
-
-const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#EC4899] transition-colors"
-const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
 
 export default function DeptRequests() {
   const { t } = useTranslation()
@@ -85,8 +83,8 @@ export default function DeptRequests() {
     <div className="flex flex-col gap-6 relative pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('deptRequests.pageTitle')}</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('deptRequests.pageSubtitle')}</p>
+          <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('deptRequests.pageTitle')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('deptRequests.pageSubtitle')}</p>
         </div>
         <button 
           onClick={() => setShowModal(true)} 
@@ -97,7 +95,7 @@ export default function DeptRequests() {
         </button>
       </div>
 
-      <div className="bg-[#131720] border border-[#1F2A40] rounded-xl p-1 mb-2 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-1 mb-2 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto">
         {[
           { id: 'all', label: t('common.all'), count: counts.all },
           { id: 'Pending', label: t('deptRequests.pending'), count: counts.pending },
@@ -109,13 +107,13 @@ export default function DeptRequests() {
             onClick={() => setActiveTab(tab.id)} 
             className={clsx(
               "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
-              activeTab === tab.id ? "bg-[#181D2A] text-[#F472B6]" : "bg-transparent text-[#5A6A85] hover:text-[#94A3B8]"
+              activeTab === tab.id ? "bg-[var(--bg-hover)] text-[#F472B6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
             )}
           >
             {tab.label}
             <span className={clsx(
               "ml-2 px-1.5 py-0.5 rounded-full text-[0.65rem] font-bold", 
-              activeTab === tab.id ? "bg-[rgba(236,72,153,0.12)] text-[#F472B6]" : "bg-[#1A2235] text-[#5A6A85]"
+              activeTab === tab.id ? "bg-[rgba(236,72,153,0.12)] text-[#F472B6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
             )}>
               {tab.count}
             </span>
@@ -123,31 +121,31 @@ export default function DeptRequests() {
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden -mt-4">
+      <Panel noPadding className="-mt-4">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+              <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {[t('deptRequests.reportId'), t('deptRequests.device'), t('deptRequests.description'), t('deptRequests.dateSubmitted'), t('common.status'), t('deptRequests.messageFromTech')].map((h, i) => (
-                  <th key={i} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={i} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
-              {filtered.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[#5A6A85]">{t('deptRequests.noReports')}</td></tr> : filtered.map(r => (
+            <tbody className="divide-y divide-[var(--border)]">
+              {filtered.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('deptRequests.noReports')}</td></tr> : filtered.map(r => (
                 <tr key={r.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{r.id}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{r.device}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] max-w-[280px]"><div className="truncate">{r.desc}</div></td>
-                  <td className="p-4 text-[12px] text-[#94A3B8] whitespace-nowrap">{r.date}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{r.id}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{r.device}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] max-w-[280px]"><div className="truncate">{r.desc}</div></td>
+                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{r.date}</td>
                   <td className="p-4"><StatusBadge status={r.status} /></td>
                   <td className="p-4">
                     {r.techMessage ? (
-                      <div className="bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.2)] text-[#94A3B8] rounded-md px-2.5 py-1.5 text-xs inline-block max-w-[250px] truncate" title={r.techMessage}>
+                      <div className="bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.2)] text-[var(--text-secondary)] rounded-md px-2.5 py-1.5 text-xs inline-block max-w-[250px] truncate" title={r.techMessage}>
                         {r.techMessage}
                       </div>
                     ) : (
-                      <span className="text-[#5A6A85] block text-center w-[50px]">{t('deptRequests.noTechMessage')}</span>
+                      <span className="text-[var(--text-muted)] block text-center w-[50px]">—</span>
                     )}
                   </td>
                 </tr>
@@ -155,7 +153,7 @@ export default function DeptRequests() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showModal}

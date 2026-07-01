@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
+import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { users as rawUsers } from '../../data/users'
 import KPICard from '../../components/ui/KPICard'
@@ -85,9 +86,9 @@ const DEPT_OPTS = [
   ['ER', 'ER'], ['Radiology', 'Radiology'], ['Surgery', 'Surgery']
 ]
 
-const selectCls = 'h-[36px] px-2.5 bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[0.8125rem] outline-none'
-const inputCls = "w-full bg-[#131823] border border-[#1F2A40] rounded-lg text-[#F8FAFC] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[#4A5568]"
-const labelCls = "block text-[12px] text-[#94A3B8] uppercase font-semibold tracking-[0.4px] mb-1.5"
+const selectCls = 'h-[36px] px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem] outline-none'
+const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[13px] px-[13px] py-[10px] outline-none focus:border-[#3B72F6] placeholder:text-[var(--text-muted)]"
+const labelCls = "block text-[12px] text-[var(--text-secondary)] uppercase font-semibold tracking-[0.4px] mb-1.5"
 
 const getPageNums = (cur, total) => {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
@@ -172,7 +173,7 @@ export default function Users() {
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white" style={{ backgroundColor: getAvatarColor(row.role) }}>
             {getInitials(val)}
           </div>
-          <span className="font-medium text-[#E2E8F0]">{val}</span>
+          <span className="font-medium text-[var(--text-primary)]">{val}</span>
         </div>
       )
     },
@@ -184,7 +185,7 @@ export default function Users() {
       render: (val, row) => (
         <div className="flex justify-end">
           <button onClick={(e) => { e.stopPropagation(); setSelectedUser(row); setShowEditModal(true); }} 
-            className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]">
+            className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
             </svg>
@@ -201,7 +202,7 @@ export default function Users() {
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white" style={{ backgroundColor: getAvatarColor(row.role) }}>
             {getInitials(val)}
           </div>
-          <span className="font-medium text-[#E2E8F0]">{val}</span>
+          <span className="font-medium text-[var(--text-primary)]">{val}</span>
         </div>
       )
     },
@@ -212,7 +213,7 @@ export default function Users() {
     { key: 'status', label: t('users.status'), render: val => <PendingStatusBadge status={val} /> },
     { key: 'id', label: t('users.actions'), align: 'right',
       render: (val, row) => {
-        if (row.status !== 'pending') return <span className="text-[#5A6A85]">—</span>
+        if (row.status !== 'pending') return <span className="text-[var(--text-muted)]">—</span>
         return (
           <div className="flex justify-end gap-2">
             <button onClick={(e) => { e.stopPropagation(); handleApprove(row) }} className="px-2.5 py-1 text-[11px] font-semibold rounded-[6px] border border-[#22c55e] text-[#22c55e] hover:bg-[rgba(34,197,94,0.1)]">✓ Approve</button>
@@ -224,19 +225,19 @@ export default function Users() {
   ], [usersList])
 
   const renderPagination = () => (
-    <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
-      <span className="text-[0.8rem] text-[#5A6A85]">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
+      <span className="text-[0.8rem] text-[var(--text-muted)]">
         {currentList.length === 0 ? t('users.noResults') : t('users.showingResults', { start, end, total: currentList.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">‹</button>
         {pageNums.map(n => (
           <button key={n} type="button" onClick={() => setCurrentPage(n)}
-            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]')}>{n}</button>
+            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]')}>{n}</button>
         ))}
         <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}
-          className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
+          className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default">›</button>
       </div>
     </div>
   )
@@ -273,8 +274,8 @@ export default function Users() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('users.pageTitle')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('users.pageSubtitle')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('users.pageTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('users.pageSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-[16px]">
@@ -285,12 +286,12 @@ export default function Users() {
       </div>
 
       <div className="flex flex-wrap items-center gap-[12px]">
-        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[#1A2235] border border-[#1F2A40] rounded-lg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[#5A6A85] shrink-0">
+        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[var(--text-muted)] shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('users.searchPlaceholder')}
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
         </div>
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className={selectCls}>
           {ROLE_OPTS.map(([v]) => <option key={v||'all'} value={v}>{v ? `${t('users.role')}: ${t(`roles.${v}`)}` : t('users.allRoles')}</option>)}
@@ -298,7 +299,7 @@ export default function Users() {
         <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className={selectCls}>
           {DEPT_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('users.department')}: ${l}` : `${t('users.department')}: ${t('common.all')}`}</option>)}
         </select>
-        <div className="w-[1px] h-[20px] bg-[#1F2A40]"></div>
+        <div className="w-[1px] h-[20px] bg-[var(--border)]"></div>
         <button type="button" onClick={openAddModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -307,11 +308,11 @@ export default function Users() {
         </button>
       </div>
 
-      <div className="flex border-b border-[#1F2A40] overflow-x-auto">
+      <div className="flex border-b border-[var(--border)] overflow-x-auto">
         {TABS.map(tab => (
           <button key={tab.tKey || tab.label} type="button" onClick={() => setActiveTab(tab.value)}
             className={clsx('px-4 py-2.5 text-[0.8125rem] font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-1.5',
-              activeTab === tab.value ? 'text-[#E2E8F0] border-[#3B72F6]' : 'text-[#94A3B8] border-transparent hover:text-[#E2E8F0]')}>
+              activeTab === tab.value ? 'text-[var(--text-primary)] border-[#3B72F6]' : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-primary)]')}>
             {tab.tKey ? t(tab.tKey) : tab.label}
             {tab.value === 'pending' && pendingCount > 0 && (
               <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#F59E0B] text-[#000] text-[10px] font-bold">
@@ -322,14 +323,14 @@ export default function Users() {
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] overflow-hidden">
+      <Panel noPadding>
         {activeTab === 'pending' ? (
           <DataTable columns={pendingColumns} data={paginated} emptyMessage={t('users.noResults')} />
         ) : (
           <DataTable columns={userColumns} data={paginated} emptyMessage={t('users.noResults')} />
         )}
         {renderPagination()}
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showAddModal || showEditModal}

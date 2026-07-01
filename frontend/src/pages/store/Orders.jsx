@@ -4,6 +4,7 @@ import { ROUTES } from '../../constants/routes'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
+import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
@@ -29,8 +30,8 @@ function OrderStatusBadge({ status }) {
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${map[status] || ''}`}>{labelMap[status]}</span>
 }
 
-const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors"
-const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
+const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors"
+const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5"
 
 export default function StoreOrders() {
   const navigate = useNavigate()
@@ -81,8 +82,8 @@ export default function StoreOrders() {
     <div className="flex flex-col gap-6 relative pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeOrders.pageTitle', 'Purchase Orders')}</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeOrders.pageSubtitle', 'Track parts ordered from suppliers and update inventory upon receipt.')}</p>
+          <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeOrders.pageTitle', 'Purchase Orders')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeOrders.pageSubtitle', 'Track parts ordered from suppliers and update inventory upon receipt.')}</p>
         </div>
         <button 
           onClick={() => navigate(ROUTES.STORE_CREATE_ORDER)} 
@@ -93,18 +94,18 @@ export default function StoreOrders() {
         </button>
       </div>
 
-      <div className="bg-[#131720] border border-[#1F2A40] rounded-xl p-1 mb-2 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-1 mb-2 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto">
         <button 
           onClick={() => setActiveTab('active')} 
           className={clsx(
             "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
-            activeTab === 'active' ? "bg-[#181D2A] text-[#8B5CF6]" : "bg-transparent text-[#5A6A85] hover:text-[#94A3B8]"
+            activeTab === 'active' ? "bg-[var(--bg-hover)] text-[#8B5CF6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
           )}
         >
           {t('storeOrders.tabActive', 'Active Orders')}
           <span className={clsx(
             "ml-2 px-1.5 py-0.5 rounded-full text-[0.65rem] font-bold", 
-            activeTab === 'active' ? "bg-[rgba(139,92,246,0.12)] text-[#8B5CF6]" : "bg-[#1A2235] text-[#5A6A85]"
+            activeTab === 'active' ? "bg-[rgba(139,92,246,0.12)] text-[#8B5CF6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
           )}>
             {activeCount}
           </span>
@@ -113,30 +114,30 @@ export default function StoreOrders() {
           onClick={() => setActiveTab('received')} 
           className={clsx(
             "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
-            activeTab === 'received' ? "bg-[#181D2A] text-[#8B5CF6]" : "bg-transparent text-[#5A6A85] hover:text-[#94A3B8]"
+            activeTab === 'received' ? "bg-[var(--bg-hover)] text-[#8B5CF6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
           )}
         >
           {t('storeOrders.tabReceived', 'Received')}
         </button>
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden -mt-4">
+      <Panel noPadding className="-mt-4">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+              <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {[t('storeOrders.poNumber', 'PO #'), t('storeOrders.supplier', 'Supplier'), t('storeOrders.items', 'Items'), t('storeOrders.expectedDelivery', 'Expected Delivery'), t('common.status', 'Status'), t('common.actions', 'Actions')].map(h => (
-                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
-              {filteredOrders.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[#5A6A85]">{t('storeOrders.noOrdersFound', 'No orders found.')}</td></tr> : filteredOrders.map(o => (
+            <tbody className="divide-y divide-[var(--border)]">
+              {filteredOrders.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('storeOrders.noOrdersFound', 'No orders found.')}</td></tr> : filteredOrders.map(o => (
                 <tr key={o.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{o.id}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] font-semibold">{o.supplier}</td>
-                  <td className="p-4 text-[13px] text-[#E2E8F0] font-semibold">{o.item} ({o.qty})</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] whitespace-nowrap">{o.date}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{o.id}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{o.supplier}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-primary)] font-semibold">{o.item} ({o.qty})</td>
+                  <td className="p-4 text-[13px] text-[var(--text-muted)] whitespace-nowrap">{o.date}</td>
                   <td className="p-4"><OrderStatusBadge status={o.status} /></td>
                   <td className="p-4">
                     {o.status === 'pending' && (
@@ -157,7 +158,7 @@ export default function StoreOrders() {
                       </button>
                     )}
                     {o.status === 'delivered' && (
-                      <span className="text-[#5A6A85] pl-4">—</span>
+                      <span className="text-[var(--text-muted)] pl-4">—</span>
                     )}
                   </td>
                 </tr>
@@ -165,7 +166,7 @@ export default function StoreOrders() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showResponseModal && !!selectedOrder}
@@ -181,8 +182,8 @@ export default function StoreOrders() {
           </>
         }
       >
-        <div className="-mx-[22px] -mt-[22px] mb-4 px-[22px] py-3 bg-[rgba(139,92,246,0.07)] border-b border-[#8B5CF6]/20 text-[#5A6A85] text-xs font-semibold">
-          {t('storeOrders.order', 'Order')}: <span className="text-[#94A3B8]">{selectedOrder?.id}</span> • {t('storeOrders.supplier', 'Supplier')}: <span className="text-[#94A3B8]">{selectedOrder?.supplier}</span>
+        <div className="-mx-[22px] -mt-[22px] mb-4 px-[22px] py-3 bg-[rgba(139,92,246,0.07)] border-b border-[#8B5CF6]/20 text-[var(--text-secondary)] text-xs font-semibold">
+          {t('storeOrders.order', 'Order')}: <span className="text-[var(--text-primary)]">{selectedOrder?.id}</span> • {t('storeOrders.supplier', 'Supplier')}: <span className="text-[var(--text-primary)]">{selectedOrder?.supplier}</span>
         </div>
 
         <form id="log-response-form" onSubmit={handleLogResponse} className="flex flex-col gap-[14px]">
@@ -199,14 +200,14 @@ export default function StoreOrders() {
               <button 
                 type="button" 
                 onClick={() => setOutcome('exists')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'exists' ? "bg-[rgba(74,222,128,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#4ADE80]")}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'exists' ? "bg-[rgba(74,222,128,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#4ADE80]")}
               >
                 ✓ {t('storeOrders.exists', 'Exists')}
               </button>
               <button 
                 type="button" 
                 onClick={() => setOutcome('not_exists')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'not_exists' ? "bg-[rgba(248,113,113,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[#1F2A40] text-[#94A3B8] hover:border-[#F87171]")}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'not_exists' ? "bg-[rgba(248,113,113,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
               >
                 ✕ {t('storeOrders.notExists', 'Not Exists')}
               </button>

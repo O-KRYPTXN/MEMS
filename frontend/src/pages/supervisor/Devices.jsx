@@ -4,6 +4,7 @@ import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import Panel from '../../components/ui/Panel'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
 
@@ -121,8 +122,8 @@ export default function SupervisorDevices() {
     <div className="flex flex-col gap-6 relative pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('supDevices.pageTitle')}</h1>
-          <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('supDevices.pageSubtitle')}</p>
+          <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('supDevices.pageTitle')}</h1>
+          <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('supDevices.pageSubtitle')}</p>
         </div>
         <button onClick={() => { setSelectedDevice(null); setShowFaultModal(true) }} className="flex items-center gap-1.5 px-4 py-2.5 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors shadow-lg shadow-teal-500/20 shrink-0">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> {t('supDevices.reportFault')}
@@ -136,34 +137,34 @@ export default function SupervisorDevices() {
           { label: t('supDevices.faulty'), value: kpis.faulty, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />, colorClass: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]' },
           { label: t('supDevices.underMaintenance'), value: kpis.maintenance, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />, colorClass: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]' },
         ].map((kpi, idx) => (
-          <div key={idx} className="bg-[#181D2A] border border-[#1F2A40] rounded-xl p-5 flex items-center gap-4">
+          <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5 flex items-center gap-4">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${kpi.colorClass}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">{kpi.icon}</svg></div>
-            <div><div className="text-[1.25rem] font-bold text-[#E2E8F0] leading-none">{kpi.value}</div><div className="text-[0.75rem] text-[#94A3B8] font-semibold mt-1">{kpi.label}</div></div>
+            <div><div className="text-[1.25rem] font-bold text-[var(--text-primary)] leading-none">{kpi.value}</div><div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div></div>
           </div>
         ))}
       </div>
 
-      <div className="flex gap-[2px] bg-[#131720] border border-[#1F2A40] rounded-[10px] p-1 w-fit overflow-x-auto">
+      <div className="flex gap-[2px] bg-[var(--bg-sidebar)] border border-[var(--border)] rounded-[10px] p-1 w-fit overflow-x-auto">
         {[{id:'all', label:t('common.all')}, {id:'Operational', label:t('supDevices.operational')}, {id:'Faulty', label:t('supDevices.faulty')}, {id:'Under Maintenance', label:t('supDevices.underMaintenance')}, {id:'Repaired', label:t('supDevices.repaired')}].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[#181D2A] text-[#14B8A6]" : "text-[#5A6A85] hover:text-[#94A3B8]")}>
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[var(--bg-panel)] text-[#14B8A6]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
-            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(20,184,166,0.15)] text-[#14B8A6]" : "bg-[#181D2A] text-[#5A6A85]")}>{counts[tab.id]}</span>
+            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(20,184,166,0.15)] text-[#14B8A6]" : "bg-[var(--bg-panel)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
           </button>
         ))}
       </div>
 
       <div className="flex flex-col">
-        <div className="bg-[#131720] border border-[#1F2A40] rounded-t-[10px] p-3 px-4 flex flex-wrap gap-2.5 items-center">
-          <div className="flex items-center gap-2 flex-1 min-w-[200px] h-[34px] bg-[#0F1117] border border-[#1F2A40] rounded-lg px-3 focus-within:border-[#14B8A6] transition-colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px] text-[#5A6A85]"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('supDevices.searchPlaceholder')} className="flex-1 min-w-0 bg-transparent border-none outline-none text-[#E2E8F0] text-[0.8125rem]" />
+        <div className="bg-[var(--bg-sidebar)] border border-[var(--border)] rounded-t-[10px] p-3 px-4 flex flex-wrap gap-2.5 items-center">
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] h-[34px] bg-[var(--bg-input)] border border-[var(--border)] rounded-lg px-3 focus-within:border-[#14B8A6] transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px] text-[var(--text-muted)]"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('supDevices.searchPlaceholder')} className="flex-1 min-w-0 bg-transparent border-none outline-none text-[var(--text-primary)] text-[0.8125rem]" />
           </div>
-          <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="h-[34px] bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
+          <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="h-[34px] bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
             <option value="">{t('supDevices.deptAll')}</option>
             <option value="ICU">ICU</option>
             <option value="ER">ER</option>
           </select>
-          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-[34px] bg-[#0F1117] border border-[#1F2A40] text-[#94A3B8] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
+          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-[34px] bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#14B8A6]">
             <option value="">{t('supDevices.categoryAll')}</option>
             <option value="Ventilators">Ventilators</option>
             <option value="Monitors">Monitors</option>
@@ -173,47 +174,49 @@ export default function SupervisorDevices() {
           </select>
         </div>
 
-        <div className="bg-[#181D2A] border border-[#1F2A40] border-t-0 rounded-b-[12px] overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
-            <thead>
-              <tr className="bg-[#1A2235] border-b border-[#1F2A40]">
+        <Panel noPadding className="border-t-0 rounded-t-none rounded-b-[12px]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
                 {[t('supDevices.deviceId'), t('supDevices.name'), t('supDevices.category'), t('common.department'), t('common.status'), t('supDevices.lastPM'), t('supDevices.nextPMDue'), t('common.actions')].map((h, i) => (
-                  <th key={i} className="p-4 text-[0.75rem] font-bold text-[#5A6A85] uppercase tracking-wider">{h}</th>
+                  <th key={i} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2A40]">
+            <tbody className="divide-y divide-[var(--border)]">
               {paginated.length === 0 ? <tr><td colSpan={8} className="p-0"><EmptyState message={t('supDevices.noDevicesFound')} /></td></tr> : paginated.map(d => (
-                <tr key={d.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[#E2E8F0] whitespace-nowrap">{d.id}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8] whitespace-nowrap font-semibold">{d.name}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8]">{d.category}</td>
-                  <td className="p-4 text-[13px] text-[#94A3B8]">{d.dept}</td>
+                <tr key={d.id} className="hover:bg-[var(--bg-hover)]">
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{d.id}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] whitespace-nowrap font-semibold">{d.name}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{d.category}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{d.dept}</td>
                   <td className="p-4"><DeviceStatusBadge status={d.status} /></td>
-                  <td className="p-4 text-[12px] text-[#94A3B8] whitespace-nowrap">{formatDate(d.lastPM)}</td>
-                  <td className={clsx("p-4 text-[12px] whitespace-nowrap flex items-center gap-1.5 font-semibold", isPastDue(d.nextPM) ? "text-[#F87171]" : "text-[#94A3B8]")}>
+                  <td className="p-4 text-[12px] text-[var(--text-secondary)] whitespace-nowrap">{formatDate(d.lastPM)}</td>
+                  <td className={clsx("p-4 text-[12px] whitespace-nowrap flex items-center gap-1.5 font-semibold", isPastDue(d.nextPM) ? "text-[#F87171]" : "text-[var(--text-secondary)]")}>
                     {formatDate(d.nextPM)}
                     {isPastDue(d.nextPM) && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
                   </td>
                   <td className="p-4">
                     <div className="flex gap-2">
                       {d.status === 'Operational' && <button onClick={() => { setSelectedDevice(d); setShowFaultModal(true) }} className="bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.25)] text-[#F87171] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(239,68,68,0.2)] transition-colors">{t('supDevices.reportFault')}</button>}
-                      <button onClick={() => { setSelectedDevice(d); setShowHistoryModal(true) }} className="w-[28px] h-[28px] rounded flex items-center justify-center border border-[#1F2A40] text-[#5A6A85] hover:bg-[#1F2A40] hover:text-[#E2E8F0] transition-colors" title={t('supDevices.maintenanceHistory')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                      <button onClick={() => { setSelectedDevice(d); setShowHistoryModal(true) }} className="w-[28px] h-[28px] rounded flex items-center justify-center border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors" title={t('supDevices.maintenanceHistory')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="flex justify-between items-center p-3 px-4 border-t border-[#1F2A40]">
-            <span className="text-[0.8rem] text-[#5A6A85]">{t('supDevices.showingResults', { start: filtered.length ? (currentPage - 1) * ROWS + 1 : 0, end: Math.min(currentPage * ROWS, filtered.length), total: filtered.length })}</span>
+          </div>
+          <div className="flex justify-between items-center p-3 px-4 border-t border-[var(--border)]">
+            <span className="text-[0.8rem] text-[var(--text-muted)]">{t('supDevices.showingResults', { start: filtered.length ? (currentPage - 1) * ROWS + 1 : 0, end: Math.min(currentPage * ROWS, filtered.length), total: filtered.length })}</span>
             <div className="flex gap-1">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="w-7 h-7 rounded bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] disabled:opacity-30">‹</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => <button key={n} onClick={() => setCurrentPage(n)} className={clsx("w-7 h-7 rounded text-[0.8rem]", n === currentPage ? "bg-[#14B8A6] text-white" : "bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]")}>{n}</button>)}
-              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="w-7 h-7 rounded bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] disabled:opacity-30">›</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="w-7 h-7 rounded bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30">‹</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => <button key={n} onClick={() => setCurrentPage(n)} className={clsx("w-7 h-7 rounded text-[0.8rem]", n === currentPage ? "bg-[#14B8A6] text-white" : "bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]")}>{n}</button>)}
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="w-7 h-7 rounded bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30">›</button>
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
       <Modal
@@ -252,18 +255,18 @@ export default function SupervisorDevices() {
         }
       >
         <div className="flex flex-col gap-4 mt-2">
-          <div className="text-[#94A3B8] text-[0.85rem] font-semibold">{selectedDevice?.name}</div>
+          <div className="text-[var(--text-secondary)] text-[0.85rem] font-semibold">{selectedDevice?.name}</div>
           {!mockHistory[selectedDevice?.id] ? (
-            <div className="text-center py-6 text-[#5A6A85] text-sm">{t('supDevices.noHistoryFound')}</div>
+            <div className="text-center py-6 text-[var(--text-muted)] text-sm">{t('supDevices.noHistoryFound')}</div>
           ) : (
             <div className="flex flex-col">
               {mockHistory[selectedDevice.id].map((record, idx) => (
-                <div key={idx} className="flex gap-4 py-3 border-b border-[#1F2A40] last:border-0 relative">
+                <div key={idx} className="flex gap-4 py-3 border-b border-[var(--border)] last:border-0 relative">
                   <div className={clsx("w-2.5 h-2.5 rounded-full mt-1.5 shrink-0", record.type === 'Repair' ? "bg-[#F87171]" : "bg-[#14B8A6]")}></div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1"><span className="text-[13px] font-bold text-[#E2E8F0]">{record.type === 'Repair' ? t('supervisor.repair', 'Repair') : t('supervisor.pm', 'PM')}</span><span className="text-[#5A6A85] text-[11px] font-semibold">— {formatDate(record.date)}</span></div>
-                    <div className="text-[11px] text-[#94A3B8] font-semibold mb-1">{t('supDevices.tech', { name: record.tech })}</div>
-                    <div className="text-[12px] text-[#5A6A85] leading-relaxed">{record.notes}</div>
+                    <div className="flex items-center gap-2 mb-1"><span className="text-[13px] font-bold text-[var(--text-primary)]">{record.type === 'Repair' ? t('supervisor.repair', 'Repair') : t('supervisor.pm', 'PM')}</span><span className="text-[var(--text-muted)] text-[11px] font-semibold">— {formatDate(record.date)}</span></div>
+                    <div className="text-[11px] text-[var(--text-secondary)] font-semibold mb-1">{t('supDevices.tech', { name: record.tech })}</div>
+                    <div className="text-[12px] text-[var(--text-muted)] leading-relaxed">{record.notes}</div>
                   </div>
                 </div>
               ))}

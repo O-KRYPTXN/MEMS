@@ -44,6 +44,8 @@ function StatusBadge({ status }) {
   return <span className={`px-2.5 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wide whitespace-nowrap ${map[status] || ''}`}>{labelMap[status] || status}</span>
 }
 
+import Panel, { PanelHeader } from '../../components/ui/Panel'
+
 export default function StoreRejectedOrders() {
   const navigate = useNavigate()
   const [orders, setOrders] = useState(initialRejected)
@@ -87,19 +89,19 @@ export default function StoreRejectedOrders() {
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeRejectedOrders.pageTitle', 'Rejected & Cancelled Orders')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeRejectedOrders.pageSubtitle', 'Review purchase orders that were rejected or cancelled by suppliers.')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeRejectedOrders.pageTitle', 'Rejected & Cancelled Orders')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeRejectedOrders.pageSubtitle', 'Review purchase orders that were rejected or cancelled by suppliers.')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, idx) => (
-          <div key={idx} className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
+          <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
             <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0 ${kpi.bg}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">{kpi.icon}</svg>
             </div>
             <div>
-              <div className="text-[1.5rem] font-[800] text-[#E2E8F0] leading-none">{kpi.value}</div>
-              <div className="text-[0.75rem] text-[#94A3B8] font-semibold mt-1">{kpi.label}</div>
+              <div className="text-[1.5rem] font-[800] text-[var(--text-primary)] leading-none">{kpi.value}</div>
+              <div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div>
             </div>
           </div>
         ))}
@@ -107,19 +109,19 @@ export default function StoreRejectedOrders() {
 
       <div className="flex flex-wrap gap-3">
         <div className="flex-1 max-w-[280px] relative">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px] text-[#5A6A85] absolute left-3 top-1/2 -translate-y-1/2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px] text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
           <input 
             type="text" 
             value={search} 
             onChange={e => setSearch(e.target.value)} 
             placeholder={t('storeRejectedOrders.searchPlaceholder', 'Search PO, item, supplier...')}
-            className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
+            className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
           />
         </div>
         <select 
           value={supplierFilter} 
           onChange={e => setSupplierFilter(e.target.value)} 
-          className="bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
+          className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
         >
           <option value="">{t('storeRejectedOrders.supplierAll', 'Supplier: All')}</option>
           {uniqueSuppliers.map(sup => <option key={sup} value={sup}>{sup}</option>)}
@@ -127,7 +129,7 @@ export default function StoreRejectedOrders() {
         <select 
           value={emailFilter} 
           onChange={e => setEmailFilter(e.target.value)} 
-          className="bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
+          className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
         >
           <option value="">{t('storeRejectedOrders.emailsAll', 'Emails: All')}</option>
           <option value="has_email">{t('storeRejectedOrders.hasLoggedEmails', 'Has Logged Emails')}</option>
@@ -137,23 +139,23 @@ export default function StoreRejectedOrders() {
 
       <div className="flex flex-col gap-4">
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-10 text-[#5A6A85] bg-[#181D2A] border border-[#1F2A40] rounded-xl">{t('storeRejectedOrders.noOrdersFound', 'No rejected orders found.')}</div>
+          <Panel className="text-center py-10 text-[var(--text-muted)]">{t('storeRejectedOrders.noOrdersFound', 'No rejected orders found.')}</Panel>
         ) : (
           filteredOrders.map(o => (
-            <div key={o.id} className="bg-[#181D2A] border border-[rgba(239,68,68,0.25)] rounded-xl overflow-hidden flex flex-col shadow-sm">
-              <div className="p-4 bg-[#131720] border-b border-[#1F2A40] flex justify-between items-center flex-wrap gap-2">
-                <span className="text-sm font-bold text-[#E2E8F0]">{o.id} • {o.supplier}</span>
+            <Panel key={o.id} noPadding className="border-[rgba(239,68,68,0.25)] flex flex-col shadow-sm">
+              <div className="p-4 bg-[var(--bg-card)] border-b border-[var(--border)] flex justify-between items-center flex-wrap gap-2">
+                <span className="text-sm font-bold text-[var(--text-primary)]">{o.id} • {o.supplier}</span>
                 <StatusBadge status={o.status} />
               </div>
               <div className="p-5 flex flex-col gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <div className="font-semibold text-white">{o.item}</div>
-                    <div className="text-sm text-gray-400 mt-0.5">{t('storeInventory.qty', 'Qty')}: {o.qty}</div>
+                    <div className="font-semibold text-[var(--text-primary)]">{o.item}</div>
+                    <div className="text-sm text-[var(--text-muted)] mt-0.5">{t('storeInventory.qty', 'Qty')}: {o.qty}</div>
                   </div>
                   <div className="sm:text-right">
-                    <div className="text-xs text-gray-400">{t('storeRejectedOrders.ordered', 'Ordered')}: {o.orderedAt}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{t('storeRejectedOrders.rejected', 'Rejected')}: {o.rejectedAt}</div>
+                    <div className="text-xs text-[var(--text-muted)]">{t('storeRejectedOrders.ordered', 'Ordered')}: {o.orderedAt}</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('storeRejectedOrders.rejected', 'Rejected')}: {o.rejectedAt}</div>
                   </div>
                 </div>
 
@@ -173,14 +175,14 @@ export default function StoreRejectedOrders() {
                   </button>
                   
                   {expandedEmails[o.id] && (
-                    <div className="bg-[#131720] p-4 rounded-lg mt-2 flex flex-col gap-3">
+                    <div className="bg-[var(--bg-input)] p-4 rounded-lg mt-2 flex flex-col gap-3">
                       {o.emailThread.length === 0 ? (
-                        <div className="text-xs text-[#5A6A85] italic">{t('storeRejectedOrders.noEmailsLogged', 'No emails logged.')}</div>
+                        <div className="text-xs text-[var(--text-muted)] italic">{t('storeRejectedOrders.noEmailsLogged', 'No emails logged.')}</div>
                       ) : (
                         o.emailThread.map((msg, idx) => (
                           <div key={idx}>
                             <div className="text-xs text-purple-300 font-semibold mb-1">{msg.from} • {msg.date}</div>
-                            <div className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">{msg.body}</div>
+                            <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{msg.body}</div>
                           </div>
                         ))
                       )}
@@ -188,10 +190,10 @@ export default function StoreRejectedOrders() {
                   )}
                 </div>
               </div>
-              <div className="p-4 bg-[#131720] border-t border-[#1F2A40] flex justify-end gap-3 flex-wrap">
+              <div className="p-4 bg-[var(--bg-card)] border-t border-[var(--border)] flex justify-end gap-3 flex-wrap">
                 <button 
                   onClick={() => window.location.href = 'mailto:?subject=' + encodeURIComponent(t('storeRejectedOrders.emailSubjectRegarding', 'Regarding {{id}}', { id: o.id }))} 
-                  className="px-4 py-2 border border-[#1F2A40] rounded-lg text-[#94A3B8] text-[12px] font-bold hover:border-[#94A3B8] hover:text-[#E2E8F0] transition-colors"
+                  className="px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-[12px] font-bold hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   {t('storeRejectedOrders.contactSupplier', 'Contact Supplier')}
                 </button>
@@ -208,7 +210,7 @@ export default function StoreRejectedOrders() {
                   {t('common.remove', 'Remove')}
                 </button>
               </div>
-            </div>
+            </Panel>
           ))
         )}
       </div>

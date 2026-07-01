@@ -5,10 +5,10 @@ import EmptyState from '../ui/EmptyState'
 const SKELETON_ROWS = 5
 
 const thClass =
-  'text-left text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-[#5A6A85] py-[10px] px-5 bg-[#131720] border-b border-[#1F2A40]'
+  'text-left text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-[var(--text-table-header)] py-[10px] px-5 bg-[var(--bg-table-header)] border-b border-[var(--border)]'
 
 const tdClass =
-  'py-3 px-5 text-[0.8125rem] text-[#94A3B8] border-b border-[#1A2235] align-middle'
+  'py-3 px-5 text-[0.8125rem] text-[var(--text-secondary)] border-b border-[var(--bg-hover)] align-middle'
 
 const LoadingSkeleton = ({ columnCount }) => (
   <table className="w-full border-collapse">
@@ -17,7 +17,7 @@ const LoadingSkeleton = ({ columnCount }) => (
         <tr key={rowIdx}>
           {Array.from({ length: columnCount }).map((_, colIdx) => (
             <td key={colIdx} className={tdClass}>
-              <div className="h-4 rounded bg-[#1F2A40] animate-pulse" />
+              <div className="h-4 rounded bg-[var(--border)] animate-pulse" />
             </td>
           ))}
         </tr>
@@ -71,7 +71,7 @@ const DataTable = ({
                   key={row.id ?? i}
                   onClick={() => onRowClick?.(row)}
                   className={clsx(
-                    onRowClick && 'cursor-pointer hover:[&_td]:bg-[#1A2235]',
+                    onRowClick && 'cursor-pointer hover:[&_td]:bg-[var(--bg-hover)]',
                     rowClassName && rowClassName(row)
                   )}
                 >
@@ -80,7 +80,7 @@ const DataTable = ({
                       key={col.key}
                       className={clsx(
                         tdClass,
-                        col.primary && 'text-[#E2E8F0] font-medium'
+                        col.primary && 'text-[var(--text-primary)] font-medium'
                       )}
                     >
                       {col.render

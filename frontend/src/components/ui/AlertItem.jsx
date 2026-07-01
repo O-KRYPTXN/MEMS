@@ -13,7 +13,7 @@ const AlertItem = ({ type, title, subtitle, time, icon, isLast = false }) => {
     <div
       role="listitem"
       className={clsx(
-        'flex items-start gap-3 py-[14px] px-5 border-b border-[#1A2235]',
+        'flex items-start gap-3 py-[14px] px-5 border-b border-[var(--bg-hover)]',
         isLast && 'border-b-0'
       )}
     >
@@ -29,16 +29,16 @@ const AlertItem = ({ type, title, subtitle, time, icon, isLast = false }) => {
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="text-[0.8125rem] font-semibold text-[#E2E8F0] truncate">
+        <div className="text-[0.8125rem] font-semibold text-[var(--text-primary)] truncate">
           {title}
         </div>
         {subtitle && (
-          <div className="mt-0.5 text-[0.75rem] text-[#5A6A85]">{subtitle}</div>
+          <div className="mt-0.5 text-[0.75rem] text-[var(--text-muted)]">{subtitle}</div>
         )}
       </div>
 
       {time && (
-        <div className="text-[0.7rem] text-[#5A6A85] whitespace-nowrap shrink-0">
+        <div className="text-[0.7rem] text-[var(--text-muted)] whitespace-nowrap shrink-0">
           {time}
         </div>
       )}

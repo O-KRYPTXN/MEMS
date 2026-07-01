@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
+import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
 import { devices } from '../../data/devices'
 import KPICard from '../../components/ui/KPICard'
@@ -29,8 +30,8 @@ const ICON_WARN = 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71
 const ICON_WRENCH = 'M11.42 15.17l-5.1-5.1m0 0L11.42 4.97m-5.1 5.1h12.76'
 const ICON_TABLE = 'M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5'
 
-const selectCls = 'h-9 px-2.5 bg-[#1A2235] border border-[#1F2A40] rounded-lg text-[#E2E8F0] text-[0.8125rem]'
-const monoCls = 'font-mono text-[#94A3B8]'
+const selectCls = 'h-9 px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem]'
+const monoCls = 'font-mono text-[var(--text-muted)]'
 
 const getPageNums = (cur, total) => {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
@@ -94,7 +95,7 @@ const Devices = () => {
     { key: 'nextPm', label: t('devices.nextPM') },
     { key: 'actions', label: t('devices.actions'), render: (_, row) => (
       <button type="button" onClick={(e) => { e.stopPropagation(); openDevice(row) }}
-        className="w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] flex items-center justify-center text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1F2A40]">
+        className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-3.5 h-3.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -106,19 +107,19 @@ const Devices = () => {
   const handleTab = (value) => { setActiveTab(value); setStatusFilter(''); setCurrentPage(1) }
 
   const renderPagination = () => (
-    <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2A40]">
-      <span className="text-[0.8rem] text-[#5A6A85]">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
+      <span className="text-[0.8rem] text-[var(--text-muted)]">
         {filtered.length === 0 ? t('devices.noDevicesFound') : t('devices.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
-          className={clsx('w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default')}>‹</button>
+          className={clsx('w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default')}>‹</button>
         {pageNums.map((n) => (
           <button key={n} type="button" onClick={() => setCurrentPage(n)}
-            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]')}>{n}</button>
+            className={clsx('w-7 h-7 rounded-md text-[0.8rem]', n === currentPage ? 'bg-[#3B72F6] text-white' : 'bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]')}>{n}</button>
         ))}
         <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
-          className={clsx('w-7 h-7 rounded-md bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8] text-[0.8rem] disabled:opacity-30 disabled:cursor-default')}>›</button>
+          className={clsx('w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] text-[0.8rem] disabled:opacity-30 disabled:cursor-default')}>›</button>
       </div>
     </div>
   )
@@ -132,8 +133,8 @@ const Devices = () => {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-bold text-[#E2E8F0]">{t('devices.catalogTitle')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('devices.catalogSubtitle')}</p>
+        <h1 className="text-xl font-bold text-[var(--text-primary)]">{t('devices.catalogTitle')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('devices.catalogSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -144,12 +145,12 @@ const Devices = () => {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 w-60 h-9 px-3 bg-[#1A2235] border border-[#1F2A40] rounded-lg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[#5A6A85] shrink-0">
+        <div className="flex items-center gap-2 w-60 h-9 px-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[var(--text-muted)] shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
           </svg>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('devices.searchPlaceholder')}
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[#E2E8F0] placeholder:text-[#5A6A85]" />
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
         </div>
         <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className={selectCls}>
           {DEPT_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v === '' ? t('devices.allDepartments') : l}</option>)}
@@ -165,11 +166,11 @@ const Devices = () => {
           <option value="">{t('devices.allCategories')}</option>
           {categories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <div className="w-px h-6 bg-[#1F2A40]" />
+        <div className="w-px h-6 bg-[var(--border)]" />
         <div className="flex gap-1">
           {['table', 'grid'].map((v) => (
             <button key={v} type="button" onClick={() => setView(v)} title={v === 'table' ? t('devices.tableView') : t('devices.gridView')} aria-label={v === 'table' ? t('devices.tableView') : t('devices.gridView')}
-              className={clsx('w-8 h-8 rounded-md flex items-center justify-center', view === v ? 'bg-[#3B72F6] text-white' : 'bg-[#1A2235] border border-[#1F2A40] text-[#94A3B8]')}>
+              className={clsx('w-8 h-8 rounded-md flex items-center justify-center', view === v ? 'bg-[#3B72F6] text-white' : 'bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)]')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d={v === 'table' ? ICON_TABLE : ICON_GRID} />
               </svg>
@@ -185,39 +186,39 @@ const Devices = () => {
         </button>
       </div>
 
-      <div className="flex border-b border-[#1F2A40]">
+      <div className="flex border-b border-[var(--border)]">
         {TABS.map((tab) => (
           <button key={tab.tKey} type="button" onClick={() => handleTab(tab.value)}
             className={clsx('px-4 py-2.5 text-[0.8125rem] font-medium border-b-2 transition-colors',
-              activeTab === tab.value ? 'text-[#E2E8F0] border-[#3B72F6]' : 'text-[#94A3B8] border-transparent hover:text-[#E2E8F0]')}>
+              activeTab === tab.value ? 'text-[var(--text-primary)] border-[#3B72F6]' : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-primary)]')}>
             {t(tab.tKey)}
-            <span className="ms-1.5 px-[7px] py-px rounded-full bg-[#1F2A40] text-[#94A3B8] text-[0.7rem]">{tabCounts[tab.value]}</span>
+            <span className="ms-1.5 px-[7px] py-px rounded-full bg-[var(--bg-hover)] text-[var(--text-muted)] text-[0.7rem]">{tabCounts[tab.value]}</span>
           </button>
         ))}
       </div>
 
-      <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl overflow-hidden">
+      <Panel noPadding>
         {view === 'table' ? (
           <DataTable columns={columns} data={paginated} emptyMessage={t('devices.noResults')} />
         ) : paginated.length === 0 ? (
-          <p className="py-8 text-center text-[0.8125rem] text-[#5A6A85]">{t('devices.noResults')}</p>
+          <p className="py-8 text-center text-[0.8125rem] text-[var(--text-muted)]">{t('devices.noResults')}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
             {paginated.map((d) => (
-              <div key={d.id} className="flex flex-col gap-3 p-4 border border-[#1F2A40] rounded-xl">
+              <div key={d.id} className="flex flex-col gap-3 p-4 border border-[var(--border)] rounded-xl bg-[var(--bg-card)]">
                 <div className="flex items-start justify-between gap-2">
-                  <div><div className="text-[0.875rem] font-semibold text-[#E2E8F0]">{d.name}</div><div className="text-[0.75rem] text-[#5A6A85] font-mono">{d.id} · {d.serial}</div></div>
+                  <div><div className="text-[0.875rem] font-semibold text-[var(--text-primary)]">{d.name}</div><div className="text-[0.75rem] text-[var(--text-muted)] font-mono">{d.id} · {d.serial}</div></div>
                   <StatusBadge variant={d.status} label={t(`status.${d.status}`)} />
                 </div>
-                <div className="flex justify-between text-[0.8rem]"><span className="text-[#5A6A85]">{t('devices.department')}</span><span className="text-[#E2E8F0]">{d.dept}</span></div>
-                <div className="flex justify-between text-[0.8rem]"><span className="text-[#5A6A85]">{t('devices.category')}</span><span className="text-[#E2E8F0]">{d.category}</span></div>
-                <div className="flex justify-between pt-3 border-t border-[#1F2A40]"><span className="text-[0.75rem] text-[#5A6A85]">{t('devices.nextPM')}</span><span className="text-[0.8rem] font-semibold text-[#E2E8F0]">{d.nextPm}</span></div>
+                <div className="flex justify-between text-[0.8rem]"><span className="text-[var(--text-muted)]">{t('devices.department')}</span><span className="text-[var(--text-primary)]">{d.dept}</span></div>
+                <div className="flex justify-between text-[0.8rem]"><span className="text-[var(--text-muted)]">{t('devices.category')}</span><span className="text-[var(--text-primary)]">{d.category}</span></div>
+                <div className="flex justify-between pt-3 border-t border-[var(--border)]"><span className="text-[0.75rem] text-[var(--text-muted)]">{t('devices.nextPM')}</span><span className="text-[0.8rem] font-semibold text-[var(--text-primary)]">{d.nextPm}</span></div>
               </div>
             ))}
           </div>
         )}
         {renderPagination()}
-      </div>
+      </Panel>
 
       <Modal
         isOpen={showModal && !!viewDevice}
@@ -228,7 +229,7 @@ const Devices = () => {
       >
         <div className="grid grid-cols-2 gap-3">
           {modalFields?.map(([label, val]) => (
-            <div key={label}><div className="text-[0.75rem] text-[#5A6A85]">{label}</div><div className="text-[#E2E8F0] font-semibold mt-0.5">{val}</div></div>
+            <div key={label}><div className="text-[0.75rem] text-[var(--text-muted)]">{label}</div><div className="text-[var(--text-primary)] font-semibold mt-0.5">{val}</div></div>
           ))}
         </div>
       </Modal>

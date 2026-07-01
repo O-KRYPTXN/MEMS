@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import { useNavigate } from 'react-router-dom'
+import Panel, { PanelHeader } from '../../components/ui/Panel'
 import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
@@ -51,37 +52,37 @@ export default function StoreDashboard() {
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
-        <h1 className="text-[1.25rem] font-bold text-[#E2E8F0]">{t('storeDashboard.pageTitle', 'Store Dashboard')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[#5A6A85]">{t('storeDashboard.pageSubtitle', 'Overview of inventory alerts, pending orders, and recent fulfillments.')}</p>
+        <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeDashboard.pageTitle', 'Store Dashboard')}</h1>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeDashboard.pageSubtitle', 'Overview of inventory alerts, pending orders, and recent fulfillments.')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, idx) => (
-          <div key={idx} className="bg-[#181D2A] border border-[#1F2A40] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
+          <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
             <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0 ${kpi.bg}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">{kpi.icon}</svg>
             </div>
             <div>
-              <div className="text-[1.5rem] font-[800] text-[#E2E8F0] leading-none">{kpi.value}</div>
-              <div className="text-[0.75rem] text-[#94A3B8] font-semibold mt-1">{kpi.label}</div>
+              <div className="text-[1.5rem] font-[800] text-[var(--text-primary)] leading-none">{kpi.value}</div>
+              <div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div>
             </div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
-        <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col">
-          <div className="p-4 border-b border-[#1F2A40]"><h2 className="text-sm font-bold text-[#E2E8F0]">{t('storeDashboard.pendingRequestsTitle', 'Pending Department Requests')}</h2></div>
+        <Panel className="flex flex-col !p-0">
+          <div className="p-4 border-b border-[var(--border)]"><h2 className="text-sm font-bold text-[var(--text-primary)]">{t('storeDashboard.pendingRequestsTitle', 'Pending Department Requests')}</h2></div>
           <div className="p-4 flex flex-col gap-3">
             {requests.length === 0 ? (
               <EmptyState message={t('storeDashboard.noPendingRequests', 'No pending requests')} />
             ) : (
               requests.map(r => (
-                <div key={r.id} className="bg-[#131720] border border-[#1F2A40] p-4 rounded-lg flex justify-between items-center gap-4">
+                <div key={r.id} className="bg-[var(--bg-input)] border border-[var(--border)] p-4 rounded-lg flex justify-between items-center gap-4">
                   <div className="min-w-0">
-                    <span className="text-[0.7rem] font-bold uppercase tracking-wide bg-[#1A2235] px-2 py-0.5 rounded text-[#94A3B8] inline-block mb-1">{t('common.dept')} {r.dept}</span>
-                    <div className="text-xs text-[#5A6A85]">{r.id} — {r.date}</div>
-                    <div className="text-sm font-bold text-[#E2E8F0] mt-1 truncate">{r.qty}x {r.itemName}</div>
+                    <span className="text-[0.7rem] font-bold uppercase tracking-wide bg-[var(--bg-card)] px-2 py-0.5 rounded text-[var(--text-secondary)] inline-block mb-1">{t('common.dept')} {r.dept}</span>
+                    <div className="text-xs text-[var(--text-muted)]">{r.id} — {r.date}</div>
+                    <div className="text-sm font-bold text-[var(--text-primary)] mt-1 truncate">{r.qty}x {r.itemName}</div>
                   </div>
                   <button onClick={() => { setSelectedReq(r); setShowFulfillModal(true) }} className="bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] text-[#D8B4FE] hover:bg-[rgba(139,92,246,0.2)] px-4 py-1.5 rounded-md text-[0.8rem] font-bold transition-colors shrink-0">
                     {t('storeDashboard.fulfillBtn', 'Fulfill')}
@@ -90,19 +91,19 @@ export default function StoreDashboard() {
               ))
             )}
           </div>
-        </div>
+        </Panel>
 
-        <div className="bg-[#181D2A] border border-[#1F2A40] rounded-xl flex flex-col">
-          <div className="p-4 border-b border-[#1F2A40]"><h2 className="text-sm font-bold text-[#E2E8F0]">{t('storeDashboard.criticalAlertsTitle', 'Critical Stock Alerts')}</h2></div>
+        <Panel className="flex flex-col !p-0">
+          <div className="p-4 border-b border-[var(--border)]"><h2 className="text-sm font-bold text-[var(--text-primary)]">{t('storeDashboard.criticalAlertsTitle', 'Critical Stock Alerts')}</h2></div>
           <div className="p-4 flex flex-col gap-3">
             {stockAlerts.length === 0 ? (
-              <div className="text-center py-6 text-[#5A6A85] text-sm">{t('storeDashboard.noStockAlerts', 'No stock alerts')}</div>
+              <div className="text-center py-6 text-[var(--text-muted)] text-sm">{t('storeDashboard.noStockAlerts', 'No stock alerts')}</div>
             ) : (
               stockAlerts.map(i => (
-                <div key={i.id} className="bg-[#131720] border border-[#1F2A40] p-3.5 rounded-lg flex justify-between items-center gap-4">
+                <div key={i.id} className="bg-[var(--bg-input)] border border-[var(--border)] p-3.5 rounded-lg flex justify-between items-center gap-4">
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-[#E2E8F0] truncate">{i.name}</div>
-                    <div className="text-xs text-[#5A6A85] mt-0.5">{i.id} • {t('dashboard.min')}: {i.min}</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)] truncate">{i.name}</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{i.id} • {t('dashboard.min')}: {i.min}</div>
                   </div>
                   <div className={clsx("px-2.5 py-1 rounded-md text-xs font-bold shrink-0 whitespace-nowrap", i.qty === 0 ? "bg-[rgba(239,68,68,0.12)] text-[#F87171]" : "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]")}>
                     {t('storeInventory.qty', 'Qty')}: {i.qty}
@@ -111,7 +112,7 @@ export default function StoreDashboard() {
               ))
             )}
           </div>
-        </div>
+        </Panel>
       </div>
 
       <Modal
@@ -132,9 +133,9 @@ export default function StoreDashboard() {
           {selectedReq ? t('storeDashboard.fulfillDisclaimer', 'You are about to fulfill {{qty}}x {{name}} for the {{dept}} department. This will deduct from current inventory.', { qty: selectedReq.qty, name: selectedReq.itemName, dept: selectedReq.dept }) : ''}
         </div>
         <div>
-          <label className="block text-[12px] text-[#94A3B8] font-semibold mb-1.5">{t('storeDashboard.fulfillmentNotes', 'Fulfillment Notes')}</label>
+          <label className="block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5">{t('storeDashboard.fulfillmentNotes', 'Fulfillment Notes')}</label>
           <textarea 
-            className="w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
+            className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors min-h-[80px] resize-y" 
             placeholder={t('storeDashboard.fulfillmentNotesPlaceholder', 'Optional fulfillment notes...')}
           ></textarea>
         </div>
