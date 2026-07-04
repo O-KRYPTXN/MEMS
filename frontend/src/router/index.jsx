@@ -13,6 +13,7 @@ import StoreLayout from '../layouts/StoreLayout'
 // Auth
 import Login from '../pages/auth/Login'
 import Signup from '../pages/auth/Signup'
+import SetPassword from '../pages/auth/SetPassword'
 
 // Admin pages
 import AdminDashboard from '../pages/admin/Dashboard'
@@ -69,6 +70,7 @@ const router = createBrowserRouter([
   // Public routes
   { path: ROUTES.LOGIN, element: <Login /> },
   { path: ROUTES.SIGNUP, element: <Signup /> },
+  { path: '/activate/:token', element: <SetPassword /> },
   { path: ROUTES.UNAUTHORIZED, element: <Unauthorized /> },
 
   // Admin routes

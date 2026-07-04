@@ -1,0 +1,12 @@
+
+# Keep environment variables out of version control
+frontend/.env
+backend/.env
+/generated/prisma
+backend/prisma/seed.js
+AGENTS.md
+frontend/node_modules
+backend/node_modules
+frontend/dist
+
+

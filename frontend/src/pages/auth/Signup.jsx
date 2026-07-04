@@ -2,24 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 
-function getPasswordStrength(pw) {
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (/[A-Z]/.test(pw)) score++;
-  if (/[0-9]/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  
-  const colors = ['#EF4444', '#F97316', '#EAB308', '#22C55E'];
-  const labels = ['Too weak', 'Weak', 'Good', 'Strong'];
-  
-  return {
-    score,
-    color: pw.length ? (colors[score - 1] || '#EF4444') : '#1F2A40',
-    width: pw.length ? `${score * 25}%` : '100%',
-    label: pw.length ? (labels[score - 1] || 'Too weak') : ''
-  };
-}
-
 const DEPARTMENTS = [
   'ICU', 'ER', 'Surgery', 'Radiology', 'Cardiology', 
   'Laboratory', 'General Ward', 'Central Storeroom', 'Administration'
@@ -39,7 +21,7 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
-    role: '', department: '', password: '', confirmPassword: ''
+    role: '', department: ''
   });
 
   const handleChange = (e) => {
@@ -83,21 +65,10 @@ export default function Signup() {
     if (validateStep1()) setStep(2);
   };
 
-  const handleNextStep2 = () => {
-    if (validateStep2()) setStep(3);
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      return;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-
+    if (!validateStep2()) return;
+    
     setIsLoading(true);
     setTimeout(() => {
       const pending = JSON.parse(localStorage.getItem('mems_pending_registrations') || '[]');
@@ -109,7 +80,6 @@ export default function Signup() {
         phone: formData.phone,
         role: formData.role,
         department: formData.department,
-        password: formData.password, // In a real app, hash this!
         submittedAt: new Date().toISOString(),
         status: 'pending'
       };
@@ -118,8 +88,6 @@ export default function Signup() {
       setStep('success');
     }, 1200);
   };
-
-  const pwStrength = getPasswordStrength(formData.password);
 
   const inputCls = "w-full bg-[#131823] border border-[#1F2A40] rounded-lg text-[#F8FAFC] text-[13px] px-[13px] py-[10px] pl-[36px] outline-none focus:border-[#3B82F6] placeholder:text-[#4A5568] transition-colors";
   const labelCls = "block text-[12px] text-[#94A3B8] font-semibold tracking-wide mb-1.5";
@@ -159,7 +127,7 @@ export default function Signup() {
             </div>
 
             <div className="flex gap-1.5 mb-6">
-              {[1, 2, 3].map(s => (
+              {[1, 2].map(s => (
                 <div key={s} className={clsx(
                   "h-1.5 rounded-full flex-1 transition-all duration-300",
                   step > s ? "bg-[#3B82F6]" : step === s ? "bg-gradient-to-r from-[#3B82F6] to-[#60A5FA]" : "bg-[#1F2A40]"
@@ -178,7 +146,7 @@ export default function Signup() {
 
         {step === 1 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 1 OF 3 — PERSONAL INFORMATION</div>
+            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 1 OF 2 — PERSONAL INFORMATION</div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="relative">
                 <label className={labelCls}>First Name</label>
@@ -218,7 +186,7 @@ export default function Signup() {
 
         {step === 2 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 2 OF 3 — ROLE & DEPARTMENT</div>
+            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 2 OF 2 — ROLE & DEPARTMENT</div>
             <label className={labelCls}>Requested Role</label>
             <div className="grid grid-cols-2 gap-3 mb-5">
               {ROLES.map(role => (
@@ -248,48 +216,7 @@ export default function Signup() {
               <button onClick={() => setStep(1)} className="w-[100px] h-[42px] rounded-lg border border-[#1F2A40] text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1E293B] text-[13px] font-bold tracking-wide transition-colors">
                 ← Back
               </button>
-              <button onClick={handleNextStep2} className="flex-1 h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2">
-                Next — Set Password 
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <form onSubmit={handleSubmit} className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 3 OF 3 — CREATE PASSWORD</div>
-            <div className="mb-2 relative">
-              <label className={labelCls}>Password</label>
-              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
-              </div>
-              <input type="password" name="password" value={formData.password} onChange={handleChange} className={inputCls} placeholder="••••••••" />
-            </div>
-            
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-[#5A6A85] font-semibold">Password Strength</span>
-                <span className="text-[11px] font-bold" style={{ color: pwStrength.color }}>{pwStrength.label}</span>
-              </div>
-              <div className="h-1 bg-[#1F2A40] rounded-full overflow-hidden">
-                <div className="h-full transition-all duration-300 rounded-full" style={{ width: pwStrength.width, backgroundColor: pwStrength.color }}></div>
-              </div>
-            </div>
-
-            <div className="mb-8 relative">
-              <label className={labelCls}>Confirm Password</label>
-              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
-              </div>
-              <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className={inputCls} placeholder="••••••••" />
-            </div>
-
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setStep(2)} disabled={isLoading} className="w-[100px] h-[42px] rounded-lg border border-[#1F2A40] text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1E293B] text-[13px] font-bold tracking-wide transition-colors disabled:opacity-50">
-                ← Back
-              </button>
-              <button type="submit" disabled={isLoading} className="flex-1 h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-80">
+              <button onClick={handleSubmit} disabled={isLoading} className="flex-1 h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-80">
                 {isLoading ? (
                   <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
@@ -300,7 +227,7 @@ export default function Signup() {
                 )}
               </button>
             </div>
-          </form>
+          </div>
         )}
 
         {step === 'success' && (
