@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
+import { useAuthStore } from '../../store/authStore';
 
 const DEPARTMENTS = [
   'ICU', 'ER', 'Surgery', 'Radiology', 'Cardiology', 
@@ -17,8 +18,16 @@ const ROLES = [
 export default function Signup() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { signup, isLoading, error: storeError, clearError } = useAuthStore();
+  const [localError, setLocalError] = useState(null);
+
+  // We use localError for step 1 validation, and storeError for API errors
+  const error = localError || storeError;
+
+  const setError = (msg) => {
+    setLocalError(msg);
+    clearError?.();
+  };
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     role: '', department: ''
@@ -40,12 +49,7 @@ export default function Signup() {
       return false;
     }
 
-    const pending = JSON.parse(localStorage.getItem('mems_pending_registrations') || '[]');
-    const approved = JSON.parse(localStorage.getItem('mems_approved_users') || '[]');
-    if (pending.some(u => u.email === formData.email) || approved.some(u => u.email === formData.email)) {
-      setError('An account or pending request with this email already exists.');
-      return false;
-    }
+    // Remove mock DB check, the real backend will check if email exists
     return true;
   };
 
@@ -65,28 +69,16 @@ export default function Signup() {
     if (validateStep1()) setStep(2);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep2()) return;
     
-    setIsLoading(true);
-    setTimeout(() => {
-      const pending = JSON.parse(localStorage.getItem('mems_pending_registrations') || '[]');
-      const newRequest = {
-        id: 'REG-' + Date.now(),
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        role: formData.role,
-        department: formData.department,
-        submittedAt: new Date().toISOString(),
-        status: 'pending'
-      };
-      localStorage.setItem('mems_pending_registrations', JSON.stringify([newRequest, ...pending]));
-      setIsLoading(false);
+    setError(null);
+    const result = await signup(formData);
+    
+    if (result.success) {
       setStep('success');
-    }, 1200);
+    }
   };
 
   const inputCls = "w-full bg-[#131823] border border-[#1F2A40] rounded-lg text-[#F8FAFC] text-[13px] px-[13px] py-[10px] pl-[36px] outline-none focus:border-[#3B82F6] placeholder:text-[#4A5568] transition-colors";

@@ -21,7 +21,10 @@ initSocket(httpServer);
 
 // Middleware
 app.use(helmet()); // Security headers
-app.use(cors()); // Allow your frontend to talk to this API
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+})); // Allow your frontend to talk to this API and send cookies
 app.use(express.json()); // Parse incoming JSON payloads
 app.use(morgan('dev')); // Log API requests to the console
 app.use(cookieParser()); // Parse cookies

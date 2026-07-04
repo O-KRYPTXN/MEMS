@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import clsx from 'clsx';
-import { useAuthStore } from '../../store/authStore';
-import api from '../../services/api'; // Or use fetch directly if needed
+import { useAuthStore, getHomeRoute } from '../../store/authStore';
 
 function getPasswordStrength(pw) {
   let score = 0;
@@ -25,12 +24,14 @@ function getPasswordStrength(pw) {
 export default function SetPassword() {
   const { token } = useParams();
   const navigate = useNavigate();
-  const login = useAuthStore(state => state.login);
-  
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { activateAccount, isLoading, error: storeError, clearError } = useAuthStore();
+  const [localError, setLocalError] = useState(null);
+
+  const error = localError || storeError;
+  const setError = (msg) => {
+    setLocalError(msg);
+    clearError?.();
+  };
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -44,32 +45,10 @@ export default function SetPassword() {
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Real API call to activate account
-      const response = await api.post('/api/auth/activate', { token, password });
-      
-      // On success, the backend should set the HTTP-Only cookie and return user info
-      if (response.data && response.data.user) {
-        login(response.data.user);
-        
-        // Mock routing based on role similar to getHomeRoute
-        const role = response.data.user.role;
-        const map = {
-          'ADMIN': '/admin',
-          'SUPERVISOR': '/supervisor',
-          'TECHNICIAN': '/technician',
-          'DEPARTMENT': '/department',
-          'STORE': '/store',
-        };
-        navigate(map[role] || '/');
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to activate account. The link might be expired or invalid.');
-    } finally {
-      setIsLoading(false);
+    const result = await activateAccount(token, password);
+    
+    if (result.success) {
+      navigate(getHomeRoute(useAuthStore.getState().user.role));
     }
   };
 

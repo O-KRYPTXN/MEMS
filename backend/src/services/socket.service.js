@@ -10,7 +10,7 @@ let io;
 export const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: '*', // Adjust this in production to match your frontend URL
+      origin: 'http://localhost:5173', // Must exactly match the frontend URL for credentials
       methods: ['GET', 'POST'],
       credentials: true,
     },

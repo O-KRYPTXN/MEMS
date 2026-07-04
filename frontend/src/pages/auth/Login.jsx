@@ -6,11 +6,11 @@ import { useToastStore, TOAST_COLORS } from '../../store/toastStore';
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal';
 
 const DEMO_ACCOUNTS = {
-  'admin@hospital.org': { role: 'admin', name: 'Admin User', initials: 'AD', dept: 'Administration' },
-  'supervisor@hospital.org': { role: 'supervisor', name: 'Tech Supervisor', initials: 'TS', dept: 'Maintenance' },
-  'tech@hospital.org': { role: 'technician', name: 'Biomed Tech', initials: 'BT', dept: 'Maintenance' },
-  'dept@hospital.org': { role: 'department', name: 'ICU Manager', initials: 'IM', dept: 'ICU' },
-  'store@hospital.org': { role: 'store', name: 'Storekeeper', initials: 'SK', dept: 'Central Stores' }
+  'admin@mems.hospital': { role: 'Admin', password: 'asdfasdf' },
+  'supervisor@mems.hospital': { role: 'Supervisor', password: 'asdfasdf' },
+  'tech@mems.hospital': { role: 'Technician', password: 'asdfasdf' },
+  'dept@mems.hospital': { role: 'Department', password: 'asdfasdf' },
+  'store@mems.hospital': { role: 'Store', password: 'asdfasdf' }
 };
 
 export default function Login() {
@@ -18,32 +18,21 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
 
-  const login = useAuthStore(state => state.login);
+  const { login, isLoading, error, clearError } = useAuthStore();
   const { showToast } = useToastStore();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    setTimeout(() => {
-      const user = DEMO_ACCOUNTS[email.trim()];
-      if (user && password) {
-        // In this demo we accept any password as long as it's not empty, 
-        // since the instructions state to simulate it by matching the email.
-        login(user);
-        navigate(getHomeRoute(user.role));
-      } else {
-        setError('Invalid email or password.');
-      }
-      setIsLoading(false);
-    }, 1000);
+    clearError?.(); // if we added clearError to store
+    
+    const result = await login(email.trim(), password);
+    if (result.success) {
+      navigate(getHomeRoute(useAuthStore.getState().user.role));
+    }
   };
 
   const handleForgotSubmit = (e) => {
@@ -195,11 +184,11 @@ export default function Login() {
           <div className="absolute top-0 left-0 w-1 h-full bg-[#3B82F6]"></div>
           <div className="text-[10px] text-[#5A6A85] font-bold uppercase tracking-wider mb-2 pl-2">Demo Credentials</div>
           <div className="text-[11px] text-[#94A3B8] font-mono leading-relaxed pl-2">
-            admin@hospital.org / admin123<br/>
-            supervisor@hospital.org / super123<br/>
-            tech@hospital.org / tech123<br/>
-            dept@hospital.org / dept123<br/>
-            store@hospital.org / store123
+            admin@mems.hospital / asdfasdf<br/>
+            supervisor@mems.hospital / asdfasdf<br/>
+            tech@mems.hospital / asdfasdf<br/>
+            dept@mems.hospital / asdfasdf<br/>
+            store@mems.hospital / asdfasdf
           </div>
         </div>
       </div>

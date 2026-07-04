@@ -2,27 +2,81 @@ import { create } from 'zustand'
 import { ROLES } from '../constants/roles'
 import { ROUTES } from '../constants/routes'
 import { useThemeStore } from './themeStore'
+import api from '../api/axios'
 
 export const useAuthStore = create((set) => ({
-  user: {
-    id: '1',
-    name: 'Ahmed Hassan',
-    email: 'ahmed@hospital.com',
-    //role: ROLES.ADMIN,
-    //role: ROLES.SUPERVISOR,
-    //role: ROLES.TECHNICIAN,
-    role: ROLES.DEPARTMENT,
-    //role: ROLES.STORE,
-    department: 'ICU',
-    initials: 'AH',
+  user: null,
+  isLoading: false,
+  isCheckingAuth: true, // true by default so we can show a loading spinner on initial load
+  error: null,
+
+  checkAuth: async () => {
+    set({ isCheckingAuth: true, error: null })
+    try {
+      const response = await api.get('/auth/me')
+      set({ user: response.data.user, isCheckingAuth: false })
+      useThemeStore.getState().initTheme(response.data.user.id)
+    } catch (error) {
+      set({ user: null, isCheckingAuth: false })
+    }
   },
 
-  login: (userData) => {
-    set({ user: userData })
-    useThemeStore.getState().initTheme(userData.id)
+  login: async (email, password) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await api.post('/auth/login', { email, password })
+      const userData = response.data.user
+      set({ user: userData, isLoading: false })
+      useThemeStore.getState().initTheme(userData.id)
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Login failed'
+      set({ error: message, isLoading: false })
+      return { success: false, message }
+    }
   },
 
-  logout: () => set({ user: null }),
+  signup: async (userData) => {
+    set({ isLoading: true, error: null })
+    try {
+      await api.post('/auth/signup', userData)
+      set({ isLoading: false })
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Signup failed'
+      let errors = error.response?.data?.errors || null
+      set({ error: message, isLoading: false })
+      return { success: false, message, errors }
+    }
+  },
+
+  activateAccount: async (token, password) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await api.post('/auth/activate', { token, password })
+      const userData = response.data.user
+      set({ user: userData, isLoading: false })
+      useThemeStore.getState().initTheme(userData.id)
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Activation failed'
+      set({ error: message, isLoading: false })
+      return { success: false, message }
+    }
+  },
+
+  logout: async () => {
+    set({ isLoading: true })
+    try {
+      await api.post('/auth/logout')
+    } catch (error) {
+      console.error('Logout error', error)
+    } finally {
+      set({ user: null, isLoading: false })
+    }
+  },
+
+  clearError: () => set({ error: null })
 }))
 
 // Helper: returns the home route for a given role
@@ -36,6 +90,3 @@ export const getHomeRoute = (role) => {
   }
   return map[role] ?? ROUTES.LOGIN
 }
-
-// Initialize theme for the default mock user on load
-useThemeStore.getState().initTheme('1')
