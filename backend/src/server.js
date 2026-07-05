@@ -7,6 +7,9 @@ import cookieParser from 'cookie-parser';
 import { notFound } from './middleware/notFound.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import authRoutes from './modules/auth/auth.routes.js';
+import usersRoutes from './modules/users/users.routes.js';
+import departmentsRoutes from './modules/departments/departments.routes.js';
+import registrationRoutes from './modules/registrationRequests/registration.routes.js';
 
 
 // Load validated environment variables
@@ -36,6 +39,9 @@ app.get('/api/health', (req, res) => {
 
 // We will add our entity routes here later
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/departments', departmentsRoutes);
+app.use('/api/registrations', registrationRoutes);
 // app.use('/api/devices', deviceRoutes);
 
 // Error Handling Middlewares

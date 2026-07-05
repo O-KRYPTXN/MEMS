@@ -26,6 +26,15 @@ export const protect = async (req, res, next) => {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
+      // Check if role changed since token was issued
+      if (decoded.role && decoded.role !== req.user.role) {
+        res.cookie('jwt', '', {
+          httpOnly: true,
+          expires: new Date(0)
+        });
+        return res.status(401).json({ message: 'Session expired due to role change. Please log in again.' });
+      }
+
       // If user is suspended, they shouldn't be allowed access
       if (req.user.isSuspended) {
         // Clear cookie if suspended

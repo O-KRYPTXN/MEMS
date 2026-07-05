@@ -166,7 +166,8 @@
     "admin": "مسؤول",
     "technician": "فني",
     "storekeeper": "أمين مستودع",
-    "supervisor": "مشرف قسم"
+    "supervisor": "مشرف القسم",
+    "department": "القسم"
   },
   "users": {
     "pageTitle": "إدارة المستخدمين",
@@ -175,6 +176,7 @@
     "activeUsers": "المستخدمون النشطون",
     "admins": "المسؤولون",
     "technicians": "الفنيون",
+    "pendingRequests": "الطلبات المعلقة",
     "searchPlaceholder": "ابحث بالاسم، البريد الإلكتروني، أو الصلاحية...",
     "allRoles": "جميع الصلاحيات",
     "allStatuses": "جميع الحالات",
@@ -191,7 +193,13 @@
     "userDetails": "تفاصيل المستخدم",
     "close": "إغلاق",
     "editUser": "تعديل المستخدم",
-    "deleteUser": "حذف المستخدم"
+    "deleteUser": "حذف المستخدم",
+    "suspend": "تجميد",
+    "unsuspend": "إلغاء التجميد",
+    "suspendUser": "تجميد المستخدم",
+    "unsuspendUser": "إلغاء تجميد المستخدم",
+    "confirmSuspend": "نعم، قم بالتجميد",
+    "confirmUnsuspend": "نعم، إلغاء التجميد"
   },
   "reports": {
     "pageTitle": "تقارير النظام",

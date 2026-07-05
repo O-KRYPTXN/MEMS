@@ -5,10 +5,11 @@ import { env } from '../../config/env.js';
  * Generate JWT token and set it in a cookie
  * @param {object} res Express response object
  * @param {string} userId The user's ID
+ * @param {string} role The user's role
  * @returns {string} The generated JWT token
  */
-export const generateTokenAndSetCookie = (res, userId) => {
-  const token = jwt.sign({ userId }, env.JWT_SECRET, {
+export const generateTokenAndSetCookie = (res, userId, role) => {
+  const token = jwt.sign({ userId, role }, env.JWT_SECRET, {
     expiresIn: '30d',
   });
 

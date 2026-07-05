@@ -24,7 +24,7 @@ export const login = async (req, res) => {
     const { email, password } = parsed.data;
 
     const user = await authService.loginUser(email, password);
-    const token = generateTokenAndSetCookie(res, user.id);
+    const token = generateTokenAndSetCookie(res, user.id, user.role);
 
     res.status(200).json({
       message: 'Logged in successfully',
@@ -143,7 +143,7 @@ export const activate = async (req, res) => {
     const { token, password } = parsed.data;
 
     const { updatedUser, department } = await authService.activateUser(token, password);
-    const sessionToken = generateTokenAndSetCookie(res, updatedUser.id);
+    const sessionToken = generateTokenAndSetCookie(res, updatedUser.id, updatedUser.role);
 
     res.status(200).json({
       message: 'Account activated successfully',

@@ -166,7 +166,8 @@
     "admin": "Administrator",
     "technician": "Technician",
     "storekeeper": "Storekeeper",
-    "supervisor": "Dept Supervisor"
+    "supervisor": "Dept Supervisor",
+    "department": "Department"
   },
   "users": {
     "pageTitle": "User Management",
@@ -175,6 +176,7 @@
     "activeUsers": "Active Users",
     "admins": "Administrators",
     "technicians": "Technicians",
+    "pendingRequests": "Pending Requests",
     "searchPlaceholder": "Search by name, email, or role...",
     "allRoles": "All Roles",
     "allStatuses": "All Statuses",
@@ -191,7 +193,13 @@
     "userDetails": "User Details",
     "close": "Close",
     "editUser": "Edit User",
-    "deleteUser": "Delete User"
+    "deleteUser": "Delete User",
+    "suspend": "Suspend",
+    "unsuspend": "Unsuspend",
+    "suspendUser": "Suspend User",
+    "unsuspendUser": "Unsuspend User",
+    "confirmSuspend": "Yes, Suspend",
+    "confirmUnsuspend": "Yes, Unsuspend"
   },
   "reports": {
     "pageTitle": "System Reports",
