@@ -30,6 +30,7 @@ import SupervisorDashboard from '../pages/supervisor/Dashboard'
 import SupervisorTeam from '../pages/supervisor/Team'
 import SupervisorWorkOrders from '../pages/supervisor/WorkOrders'
 import SupervisorDevices from '../pages/supervisor/Devices'
+import SupervisorAddDevice from '../pages/supervisor/AddDevice'
 import SupervisorInventory from '../pages/supervisor/Inventory'
 
 // Technician pages
@@ -111,6 +112,7 @@ const router = createBrowserRouter([
       { path: 'team', element: <SupervisorTeam /> },
       { path: 'work-orders', element: <SupervisorWorkOrders /> },
       { path: 'devices', element: <SupervisorDevices /> },
+      { path: 'devices/add', element: <SupervisorAddDevice /> },
       { path: 'inventory', element: <SupervisorInventory /> },
       { path: 'profile', element: <Profile /> },
     ],

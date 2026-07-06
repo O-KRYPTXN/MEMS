@@ -1,60 +1,98 @@
+import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import EmptyState from '../../components/ui/EmptyState'
-import Panel, { PanelHeader } from '../../components/ui/Panel'
-import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
+import Panel from '../../components/ui/Panel'
+import Modal, { ModalCancelBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
-import { useMemo } from 'react';
-import { useState } from 'react';
+import deviceService from '../../api/deviceService'
 
-const initialDevices = [
-  { id: 'DEV-0101', name: 'ICU Ventilator V-12', dept: 'ICU', status: 'Operational', lastPM: '2026-02-10', nextPM: '2026-05-10', category: 'Respiratory', type: 'Ventilator' },
-  { id: 'DEV-0102', name: 'Patient Monitor PM-01', dept: 'ICU', status: 'Faulty', lastPM: '2026-03-15', nextPM: '2026-06-15', category: 'Monitoring', type: 'Monitor' },
-  { id: 'DEV-0103', name: 'Defibrillator AED-7', dept: 'ER', status: 'Operational', lastPM: '2026-01-20', nextPM: '2026-04-20', category: 'Resuscitation', type: 'Defibrillator' },
-  { id: 'DEV-0104', name: 'Infusion Pump IP-22', dept: 'ICU', status: 'Operational', lastPM: '2026-04-05', nextPM: '2026-07-05', category: 'Pumps', type: 'Pump' }
-]
+const isPastDue = (dateStr) => {
+  if (!dateStr) return false;
+  return new Date(dateStr) < new Date(new Date().setHours(0, 0, 0, 0));
+}
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 const DeviceStatusBadge = ({ status }) => {
   const { t } = useTranslation()
-  const isOperational = status === 'Operational'
-
-  const labelMap = {
-    'Operational': t('common.statusOperational', 'Operational'),
-    'Faulty': t('common.statusFaulty', 'Faulty')
+  const map = {
+    'OPERATIONAL': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+    'FAULTY': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+    'MAINTENANCE': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+    'DECOMMISSIONED': 'bg-[rgba(100,116,139,0.12)] text-[#94A3B8]',
   }
-
   return (
-    <span className={clsx("inline-flex items-center px-2 py-0.5 rounded-full text-[0.7rem] font-bold", isOperational ? "bg-[rgba(34,197,94,0.12)] text-[#4ADE80]" : "bg-[rgba(239,68,68,0.12)] text-[#F87171]")}>
-      {labelMap[status] || status}
+    <span className={clsx("inline-flex items-center px-2 py-0.5 rounded-full text-[0.7rem] font-bold", map[status])}>
+      {t(`status.${status?.toLowerCase()}`)}
     </span>
   )
 }
 
-const isPastDue = (dateStr) => new Date(dateStr) < new Date(new Date().setHours(0, 0, 0, 0))
-const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-
-
 export default function TechDevices() {
   const { t } = useTranslation()
-  const [devices, setDevices] = useState(initialDevices)
+  
+  const [devices, setDevices] = useState([])
+  const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1 })
+  const [isLoading, setIsLoading] = useState(true)
+  
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  
   const [showFaultModal, setShowFaultModal] = useState(false)
   const [showManualsModal, setShowManualsModal] = useState(false)
   const [selectedDevice, setSelectedDevice] = useState(null)
+  
   const { showToast } = useToastStore()
+  const ROWS = 10
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase()
-    return devices.filter(d => !q || d.id.toLowerCase().includes(q) || d.name.toLowerCase().includes(q) || d.dept.toLowerCase().includes(q))
-  }, [devices, search])
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search)
+      setCurrentPage(1)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [search])
 
-  const handleReportFault = (e) => {
+  const fetchDevices = async () => {
+    try {
+      setIsLoading(true)
+      const params = {
+        page: currentPage,
+        limit: ROWS,
+        search: debouncedSearch || undefined,
+      }
+      const data = await deviceService.getDevices(params)
+      setDevices(data.items || [])
+      setMeta(data.meta || { totalItems: 0, totalPages: 1 })
+    } catch (err) {
+      showToast('Failed to load devices', TOAST_COLORS.error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDevices()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, debouncedSearch])
+
+  const handleReportFault = async (e) => {
     e.preventDefault()
-    setDevices(prev => prev.map(d => d.id === selectedDevice.id ? { ...d, status: 'Faulty' } : d))
-    setShowFaultModal(false)
-    showToast(t('common.toastFaultLogged', { id: Math.floor(1000 + Math.random() * 9000) }), TOAST_COLORS.technician)
+    try {
+      await deviceService.updateDeviceStatus(selectedDevice.id, 'FAULTY')
+      showToast(t('common.toastFaultLogged', { id: selectedDevice.assetCode }), TOAST_COLORS.technician)
+      setShowFaultModal(false)
+      fetchDevices() // Refetch
+    } catch (err) {
+      showToast('Failed to report fault', TOAST_COLORS.error)
+    }
   }
 
   return (
@@ -82,18 +120,22 @@ export default function TechDevices() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {filtered.length === 0 ? <tr><td colSpan={7} className="p-0"><EmptyState message={t('techDevices.noDevicesFound')} /></td></tr> : filtered.map(d => (
+              {isLoading ? (
+                <tr><td colSpan={7} className="p-10 text-center text-[var(--text-muted)]">Loading...</td></tr>
+              ) : devices.length === 0 ? (
+                <tr><td colSpan={7} className="p-0"><EmptyState message={t('techDevices.noDevicesFound')} /></td></tr>
+              ) : devices.map(d => (
                 <tr key={d.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{d.id}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{d.assetCode}</td>
                   <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{d.name}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{d.dept}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{d.department?.name || '—'}</td>
                   <td className="p-4"><DeviceStatusBadge status={d.status} /></td>
-                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{formatDate(d.lastPM)}</td>
-                  <td className={clsx("p-4 text-[12px] whitespace-nowrap", isPastDue(d.nextPM) ? "text-[#F87171] font-bold" : "text-[var(--text-muted)]")}>{formatDate(d.nextPM)}</td>
+                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{formatDate(d.lastPmDate)}</td>
+                  <td className={clsx("p-4 text-[12px] whitespace-nowrap", isPastDue(d.nextPmDate) ? "text-[#F87171] font-bold" : "text-[var(--text-muted)]")}>{formatDate(d.nextPmDate)}</td>
                   <td className="p-4">
                     <div className="flex gap-2">
                       <button onClick={() => { setSelectedDevice(d); setShowManualsModal(true) }} className="px-2.5 py-1 text-[11px] font-bold bg-transparent border border-[var(--border)] text-[var(--text-secondary)] rounded-md hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors">{t('common.manuals', 'Manuals')}</button>
-                      <button disabled={d.status === 'Faulty'} onClick={() => { setSelectedDevice(d); setShowFaultModal(true) }} className="px-2.5 py-1 text-[11px] font-bold bg-transparent border border-[rgba(239,68,68,0.3)] text-[#F87171] rounded-md hover:bg-[rgba(239,68,68,0.1)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{t('common.reportFault', 'Report Fault')}</button>
+                      <button disabled={d.status === 'FAULTY'} onClick={() => { setSelectedDevice(d); setShowFaultModal(true) }} className="px-2.5 py-1 text-[11px] font-bold bg-transparent border border-[rgba(239,68,68,0.3)] text-[#F87171] rounded-md hover:bg-[rgba(239,68,68,0.1)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{t('common.reportFault', 'Report Fault')}</button>
                     </div>
                   </td>
                 </tr>
@@ -101,12 +143,23 @@ export default function TechDevices() {
             </tbody>
           </table>
         </div>
+        
+        <div className="flex justify-between items-center p-3 px-4 border-t border-[var(--border)]">
+          <span className="text-[0.8rem] text-[var(--text-muted)]">
+            {meta.totalItems === 0 ? t('devices.noDevicesFound') : t('devices.showingResults', { start: (currentPage - 1) * ROWS + 1, end: Math.min(currentPage * ROWS, meta.totalItems), total: meta.totalItems })}
+          </span>
+          <div className="flex gap-1">
+            <button disabled={currentPage === 1 || isLoading} onClick={() => setCurrentPage(p => p - 1)} className="w-7 h-7 rounded bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30">‹</button>
+            {Array.from({ length: meta.totalPages }, (_, i) => i + 1).map(n => <button key={n} disabled={isLoading} onClick={() => setCurrentPage(n)} className={clsx("w-7 h-7 rounded text-[0.8rem]", n === currentPage ? "bg-[#F59E0B] text-white" : "bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-50")}>{n}</button>)}
+            <button disabled={currentPage === meta.totalPages || isLoading || meta.totalPages === 0} onClick={() => setCurrentPage(p => p + 1)} className="w-7 h-7 rounded bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30">›</button>
+          </div>
+        </div>
       </Panel>
 
       <Modal
         isOpen={showFaultModal && !!selectedDevice}
         onClose={() => setShowFaultModal(false)}
-        title={selectedDevice ? t('common.reportFaultTitle', { id: selectedDevice.id }) : t('common.reportFault')}
+        title={selectedDevice ? t('common.reportFaultTitle', { id: selectedDevice.assetCode }) : t('common.reportFault')}
         maxWidth="420px"
         footer={
           <>

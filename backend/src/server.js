@@ -10,6 +10,7 @@ import authRoutes from './modules/auth/auth.routes.js';
 import usersRoutes from './modules/users/users.routes.js';
 import departmentsRoutes from './modules/departments/departments.routes.js';
 import registrationRoutes from './modules/registrationRequests/registration.routes.js';
+import devicesRoutes from './modules/devices/devices.routes.js';
 
 
 // Load validated environment variables
@@ -42,6 +43,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/departments', departmentsRoutes);
 app.use('/api/registrations', registrationRoutes);
+app.use('/api/devices', devicesRoutes);
 // app.use('/api/devices', deviceRoutes);
 
 // Error Handling Middlewares

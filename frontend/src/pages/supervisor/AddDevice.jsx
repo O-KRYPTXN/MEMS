@@ -20,7 +20,7 @@ const statuses = [
 
 const secHeaderCls = "text-[0.7rem] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-4 pb-2 border-b border-[var(--border)] mt-6 first:mt-0"
 
-export default function AddDevice() {
+export default function SupervisorAddDevice() {
   const { t } = useTranslation()
   const { register, handleSubmit, formState: { errors } } = useForm()
   const [isLoading, setIsLoading] = useState(false)
@@ -55,7 +55,7 @@ export default function AddDevice() {
       
       await deviceService.createDevice(payload)
       showToast('✓ Device added successfully!', TOAST_COLORS.success)
-      navigate(ROUTES.ADMIN_DEVICES)
+      navigate(ROUTES.SUPERVISOR_DEVICES)
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to create device', TOAST_COLORS.error)
     } finally {
@@ -67,7 +67,7 @@ export default function AddDevice() {
     <div className="flex flex-col relative pb-10">
       <div className="max-w-[720px] mx-auto w-full mb-6">
         <button 
-          onClick={() => navigate(ROUTES.ADMIN_DEVICES)} 
+          onClick={() => navigate(ROUTES.SUPERVISOR_DEVICES)} 
           className="text-[var(--text-muted)] hover:text-[var(--text-primary)] font-semibold text-sm flex items-center gap-2 mb-4 transition-colors"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
@@ -114,7 +114,7 @@ export default function AddDevice() {
           <div className="p-5 px-7 border-t border-[var(--border)] bg-[var(--bg-input)] flex justify-end gap-3 rounded-b-xl">
             <button 
               type="button" 
-              onClick={() => navigate(ROUTES.ADMIN_DEVICES)}
+              onClick={() => navigate(ROUTES.SUPERVISOR_DEVICES)}
               className="px-5 py-2.5 rounded-lg text-sm font-bold text-[var(--text-secondary)] bg-transparent hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
             >
               {t('common.cancel')}
@@ -122,7 +122,7 @@ export default function AddDevice() {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-[#3B72F6] hover:bg-[#2563EB] disabled:opacity-70 disabled:cursor-not-allowed transition-colors flex items-center justify-center min-w-[140px]"
+              className="px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-[#14B8A6] hover:bg-[#0D9488] disabled:opacity-70 disabled:cursor-not-allowed transition-colors flex items-center justify-center min-w-[140px]"
             >
               {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">

@@ -17,6 +17,7 @@ export const ROUTES = {
   SUPERVISOR_TEAM: '/supervisor/team',
   SUPERVISOR_WORK_ORDERS: '/supervisor/work-orders',
   SUPERVISOR_DEVICES: '/supervisor/devices',
+  SUPERVISOR_ADD_DEVICE: '/supervisor/devices/add',
   SUPERVISOR_INVENTORY: '/supervisor/inventory',
 
   // Technician
