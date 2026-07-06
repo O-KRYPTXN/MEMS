@@ -7,16 +7,10 @@ import Panel from '../../components/ui/Panel'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
 
-const initialParts = [
-  { id: 'PART-1001', name: 'O2 Sensor – Nellcor', category: 'Sensors', stock: 12, min: 10, status: 'In Stock' },
-  { id: 'PART-1002', name: 'ECG Patient Cable 5-Lead', category: 'Cables', stock: 3, min: 5, status: 'Low Stock' },
-  { id: 'PART-1003', name: 'Defibrillator Pads (Adult)', category: 'Consumables', stock: 0, min: 10, status: 'Out of Stock' },
-  { id: 'PART-1004', name: 'Ventilator Circuit Set', category: 'Consumables', stock: 8, min: 15, status: 'Low Stock' },
-  { id: 'PART-1005', name: 'NIBP Cuff – Adult', category: 'Accessories', stock: 24, min: 10, status: 'In Stock' },
-  { id: 'PART-1006', name: 'SpO2 Probe – Pediatric', category: 'Sensors', stock: 2, min: 5, status: 'Low Stock' },
-  { id: 'PART-1007', name: 'Syringe Pump Battery 12V', category: 'Power', stock: 15, min: 5, status: 'In Stock' },
-  { id: 'PART-1008', name: 'Infusion Set Micro-Drip', category: 'Consumables', stock: 0, min: 20, status: 'Out of Stock' },
-]
+import { useQuery } from '@tanstack/react-query'
+import * as partsService from '../../api/partsService'
+
+const getStatus = (qty, min) => qty === 0 ? 'Out of Stock' : qty <= min ? 'Low Stock' : 'In Stock'
 
 const StockBadge = ({ status }) => {
   const { t } = useTranslation()
@@ -38,7 +32,17 @@ const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
 
 export default function SupervisorInventory() {
   const { t } = useTranslation()
-  const [parts, setParts] = useState(initialParts)
+  const { showToast } = useToastStore()
+  const { data: partsData, isLoading, isError } = useQuery({
+    queryKey: ['parts'],
+    queryFn: () => partsService.getParts({ limit: 1000 })
+  })
+
+  useEffect(() => {
+    if (isError) showToast(t('common.toastLoadError', 'Failed to load parts catalog'), TOAST_COLORS.error)
+  }, [isError, showToast, t])
+  
+  const parts = partsData?.items || []
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -47,15 +51,15 @@ export default function SupervisorInventory() {
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [selectedPartId, setSelectedPartId] = useState('')
   const [pendingRequestsCount, setPendingRequestsCount] = useState(3)
-  
-  const { showToast } = useToastStore()
+
   const ROWS = 8
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
     return parts.filter(p => {
-      const matchTab = activeTab === 'all' || p.status === activeTab
-      const matchQ = !q || p.id.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
+      const status = getStatus(p.qty, p.minLevel)
+      const matchTab = activeTab === 'all' || status === activeTab
+      const matchQ = !q || p.partCode?.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
       const matchCat = !categoryFilter || p.category === categoryFilter
       return matchTab && matchQ && matchCat
     })
@@ -65,9 +69,9 @@ export default function SupervisorInventory() {
 
   const kpis = {
     total: parts.length,
-    inStock: parts.filter(p => p.status === 'In Stock').length,
-    lowStock: parts.filter(p => p.status === 'Low Stock').length,
-    outOfStock: parts.filter(p => p.status === 'Out of Stock').length,
+    inStock: parts.filter(p => getStatus(p.qty, p.minLevel) === 'In Stock').length,
+    lowStock: parts.filter(p => getStatus(p.qty, p.minLevel) === 'Low Stock').length,
+    outOfStock: parts.filter(p => getStatus(p.qty, p.minLevel) === 'Out of Stock').length,
   }
   
   const counts = {
@@ -155,19 +159,21 @@ export default function SupervisorInventory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {paginated.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('supInventory.noPartsFound')}</td></tr> : paginated.map(p => (
+              {isLoading ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr> : paginated.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('supInventory.noPartsFound')}</td></tr> : paginated.map(p => {
+                const status = getStatus(p.qty, p.minLevel)
+                return (
                 <tr key={p.id} className="hover:bg-[var(--bg-hover)]">
-                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.id}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.partCode}</td>
                   <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{p.name}</td>
                   <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.category}</td>
-                  <td className="p-4 text-[13.5px] font-bold text-[var(--text-primary)]">{p.stock}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-muted)]">{p.min}</td>
-                  <td className="p-4"><StockBadge status={p.status} /></td>
+                  <td className="p-4 text-[13.5px] font-bold text-[var(--text-primary)]">{p.qty}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-muted)]">{p.minLevel}</td>
+                  <td className="p-4"><StockBadge status={status} /></td>
                   <td className="p-4">
                     <button onClick={() => { setSelectedPartId(p.id); setShowRequestModal(true) }} className="bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors">{t('supInventory.requestRestock')}</button>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
           </div>
@@ -201,7 +207,7 @@ export default function SupervisorInventory() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 mt-0.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <span className="text-[0.8rem] font-medium leading-relaxed">{t('supInventory.requestDisclaimer')}</span>
           </div>
-          <SelectField label={t('supInventory.selectPart')} name="partId" value={selectedPartId} onChange={e => setSelectedPartId(e.target.value)} placeholder={t('supInventory.selectInventoryPart')} options={parts.map(p => ({value: p.id, label: `${p.name} (${t('supInventory.stockLevel')}: ${p.stock})`}))} />
+          <SelectField label={t('supInventory.selectPart')} name="partId" value={selectedPartId} onChange={e => setSelectedPartId(e.target.value)} placeholder={t('supInventory.selectInventoryPart')} options={parts.map(p => ({value: p.id, label: `${p.name} (${t('supInventory.stockLevel')}: ${p.qty})`}))} />
           <InputField type="number" label={t('supInventory.quantityRequired')} name="qty" min="1" defaultValue="1" />
           <InputField type="textarea" label={t('supInventory.reasonNotes')} name="notes" placeholder={t('supInventory.reasonPlaceholder')} />
         </form>

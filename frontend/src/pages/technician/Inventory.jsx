@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
@@ -13,13 +13,7 @@ const initialRequests = [
   { id: 'REQ-1085', part: 'Ventilator Circuit Set', qty: 3, wo: 'WO-2022', date: '2026-06-20', status: 'Rejected' }
 ]
 
-const catalogParts = [
-  { id: 'PART-1001', name: 'O2 Sensor – Nellcor', category: 'Sensors', stock: 12, min: 10, status: 'In Stock' },
-  { id: 'PART-1002', name: 'ECG Patient Cable 5-Lead', category: 'Cables', stock: 3, min: 5, status: 'Low Stock' },
-  { id: 'PART-1003', name: 'Defibrillator Pads (Adult)', category: 'Consumables', stock: 0, min: 10, status: 'Out of Stock' },
-  { id: 'PART-1004', name: 'Ventilator Circuit Set', category: 'Consumables', stock: 8, min: 15, status: 'Low Stock' },
-  { id: 'PART-1005', name: 'NIBP Cuff – Adult', category: 'Accessories', stock: 24, min: 10, status: 'In Stock' }
-]
+const getStatus = (qty, min) => qty === 0 ? 'Out of Stock' : qty <= min ? 'Low Stock' : 'In Stock'
 
 const mockWOs = ['WO-2039 (ECG Monitor)', 'WO-2036 (Patient Monitor)', 'WO-2034 (Pulse Oximeter)']
 
@@ -56,27 +50,38 @@ const StockBadge = ({ status }) => {
 }
 
 import Panel, { PanelHeader } from '../../components/ui/Panel'
+import { useQuery } from '@tanstack/react-query'
+import * as partsService from '../../api/partsService'
 
 const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#F59E0B] transition-colors"
 const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5"
 
 export default function TechnicianInventory() {
   const { t } = useTranslation()
+  const { showToast } = useToastStore()
   const [requests, setRequests] = useState(initialRequests)
-  const [parts] = useState(catalogParts)
+  const { data: partsData, isLoading, isError } = useQuery({
+    queryKey: ['parts'],
+    queryFn: () => partsService.getParts({ limit: 1000 })
+  })
+
+  useEffect(() => {
+    if (isError) showToast(t('common.toastLoadError', 'Failed to load parts catalog'), TOAST_COLORS.error)
+  }, [isError, showToast, t])
+
+  const parts = partsData?.items || []
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [showReqModal, setShowReqModal] = useState(false)
   const [selectedPart, setSelectedPart] = useState(null)
-  
-  const { showToast } = useToastStore()
 
   const filteredParts = useMemo(() => {
     const q = search.toLowerCase()
     return parts.filter(p => {
-      const matchTab = activeTab === 'all' || p.status === activeTab
-      const matchQ = !q || p.id.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
+      const status = getStatus(p.qty, p.minLevel)
+      const matchTab = activeTab === 'all' || status === activeTab
+      const matchQ = !q || p.partCode?.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
       const matchCat = !categoryFilter || p.category === categoryFilter
       return matchTab && matchQ && matchCat
     })
@@ -84,9 +89,9 @@ export default function TechnicianInventory() {
 
   const counts = {
     all: parts.length,
-    'In Stock': parts.filter(p => p.status === 'In Stock').length,
-    'Low Stock': parts.filter(p => p.status === 'Low Stock').length,
-    'Out of Stock': parts.filter(p => p.status === 'Out of Stock').length,
+    'In Stock': parts.filter(p => getStatus(p.qty, p.minLevel) === 'In Stock').length,
+    'Low Stock': parts.filter(p => getStatus(p.qty, p.minLevel) === 'Low Stock').length,
+    'Out of Stock': parts.filter(p => getStatus(p.qty, p.minLevel) === 'Out of Stock').length,
   }
 
   const handleRequestSubmit = (e) => {
@@ -177,18 +182,20 @@ export default function TechnicianInventory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {filteredParts.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('techInventory.noPartsFound')}</td></tr> : filteredParts.map(p => (
+              {isLoading ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr> : filteredParts.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('techInventory.noPartsFound')}</td></tr> : filteredParts.map(p => {
+                const status = getStatus(p.qty, p.minLevel)
+                return (
                 <tr key={p.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.id}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.partCode}</td>
                   <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{p.name}</td>
                   <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.category}</td>
-                  <td className={clsx("p-4 text-[13.5px] font-bold", p.stock === 0 ? "text-[#F87171]" : p.stock <= p.min ? "text-[#FCD34D]" : "text-[var(--text-primary)]")}>{p.stock}</td>
-                  <td className="p-4"><StockBadge status={p.status} /></td>
+                  <td className={clsx("p-4 text-[13.5px] font-bold", p.qty === 0 ? "text-[#F87171]" : p.qty <= p.minLevel ? "text-[#FCD34D]" : "text-[var(--text-primary)]")}>{p.qty}</td>
+                  <td className="p-4"><StockBadge status={status} /></td>
                   <td className="p-4">
                     <button onClick={() => { setSelectedPart(p); setShowReqModal(true) }} className="px-2.5 py-1 text-[11px] font-bold bg-transparent border border-[var(--border)] text-[var(--text-secondary)] rounded-md hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors">{t('techInventory.requestPartBtn')}</button>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

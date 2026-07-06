@@ -7,16 +7,8 @@ import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Moda
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
 
-const initialParts = [
-  { id: 'PRT-1001', name: 'O2 Sensor – Nellcor', category: 'Sensors', qty: 12, min: 10 },
-  { id: 'PRT-1002', name: 'ECG Patient Cable 5-Lead', category: 'Cables', qty: 3, min: 5 },
-  { id: 'PRT-1003', name: 'Defibrillator Pads (Adult)', category: 'Consumables', qty: 0, min: 10 },
-  { id: 'PRT-1004', name: 'Ventilator Circuit Set', category: 'Consumables', qty: 8, min: 15 },
-  { id: 'PRT-1005', name: 'NIBP Cuff – Adult', category: 'Accessories', qty: 24, min: 10 },
-  { id: 'PRT-1006', name: 'SpO2 Probe – Pediatric', category: 'Sensors', qty: 2, min: 5 },
-  { id: 'PRT-1007', name: 'Syringe Pump Battery 12V', category: 'Power', qty: 15, min: 5 },
-  { id: 'PRT-1008', name: 'Infusion Set Micro-Drip', category: 'Consumables', qty: 0, min: 20 },
-]
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import * as partsService from '../../api/partsService'
 
 const getStatus = (qty, min) => qty === 0 ? 'Out of Stock' : qty <= min ? 'Low Stock' : 'In Stock'
 
@@ -39,7 +31,18 @@ const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] text
 const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5"
 
 export default function StoreInventory() {
-  const [parts, setParts] = useState(initialParts)
+  const { t } = useTranslation()
+  const { showToast } = useToastStore()
+  const queryClient = useQueryClient()
+  const { data: partsData, isLoading, isError } = useQuery({
+    queryKey: ['parts'],
+    queryFn: () => partsService.getParts({ limit: 1000 })
+  })
+
+  useEffect(() => {
+    if (isError) showToast(t('common.toastLoadError', 'Failed to load parts catalog'), TOAST_COLORS.error)
+  }, [isError, showToast, t])
+  const parts = partsData?.items || []
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -47,27 +50,27 @@ export default function StoreInventory() {
   
   const [showAddModal, setShowAddModal] = useState(false)
   const [showRestockModal, setShowRestockModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingPartId, setEditingPartId] = useState(null)
   const [selectedPart, setSelectedPart] = useState(null)
   
   const [restockQty, setRestockQty] = useState(1)
-  const [addFormData, setAddFormData] = useState({ id: '', name: '', category: 'Sensors', qty: 0, min: 1 })
-  
-  const { t } = useTranslation()
-  const { showToast } = useToastStore()
+  const [addFormData, setAddFormData] = useState({ name: '', category: 'Sensors', qty: 0, minLevel: 1 })
+  const [editFormData, setEditFormData] = useState({ name: '', category: 'Sensors', qty: 0, minLevel: 1 })
 
   const ROWS_PER_PAGE = 8
 
   const kpiTotal = parts.length
-  const kpiLow = parts.filter(p => p.qty > 0 && p.qty <= p.min).length
+  const kpiLow = parts.filter(p => p.qty > 0 && p.qty <= p.minLevel).length
   const kpiOut = parts.filter(p => p.qty === 0).length
   const kpiCats = new Set(parts.map(p => p.category)).size
 
   const filteredParts = useMemo(() => {
     const q = search.toLowerCase()
     return parts.filter(p => {
-      const status = getStatus(p.qty, p.min)
+      const status = getStatus(p.qty, p.minLevel)
       const matchTab = activeTab === 'all' || p.category.toLowerCase() === activeTab.toLowerCase()
-      const matchQ = !q || p.id.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
+      const matchQ = !q || p.partCode?.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
       const matchStatus = !statusFilter || status === statusFilter
       return matchTab && matchQ && matchStatus
     })
@@ -78,28 +81,71 @@ export default function StoreInventory() {
   const totalPages = Math.ceil(filteredParts.length / ROWS_PER_PAGE) || 1
   const paginatedParts = filteredParts.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE)
 
+  const restockMutation = useMutation({
+    mutationFn: ({ id, qty }) => partsService.updatePart(id, { qty }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['parts'])
+      setShowRestockModal(false)
+      setRestockQty(1)
+      showToast(t('storeInventory.toastStockUpdated', '✓ Stock updated successfully.'), TOAST_COLORS.store)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || 'Failed to update stock', TOAST_COLORS.error)
+    }
+  })
+
   const handleRestock = (e) => {
     e.preventDefault()
     if (!selectedPart) return
-    setParts(prev => prev.map(p => p.id === selectedPart.id ? { ...p, qty: p.qty + parseInt(restockQty, 10) } : p))
-    setShowRestockModal(false)
-    setRestockQty(1)
-    showToast(t('storeInventory.toastStockUpdated', '✓ Stock updated successfully.'), TOAST_COLORS.store)
+    restockMutation.mutate({ 
+      id: selectedPart.id, 
+      qty: selectedPart.qty + parseInt(restockQty, 10) 
+    })
   }
+
+  const addPartMutation = useMutation({
+    mutationFn: (data) => partsService.createPart(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['parts'])
+      setShowAddModal(false)
+      setAddFormData({ name: '', category: 'Sensors', qty: 0, minLevel: 1 })
+      showToast(t('storeInventory.toastPartAdded', '✓ New part added to catalog.'), TOAST_COLORS.store)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || 'Failed to add part', TOAST_COLORS.error)
+    }
+  })
 
   const handleAddPart = (e) => {
     e.preventDefault()
-    const newPart = {
-      id: addFormData.id,
+    addPartMutation.mutate({
       name: addFormData.name,
       category: addFormData.category,
       qty: parseInt(addFormData.qty, 10),
-      min: parseInt(addFormData.min, 10)
+      minLevel: parseInt(addFormData.minLevel, 10)
+    })
+  }
+
+  const editPartMutation = useMutation({
+    mutationFn: (data) => partsService.updatePart(editingPartId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['parts'])
+      setShowEditModal(false)
+      showToast(t('common.toastUpdated', '✓ Part updated successfully.'), TOAST_COLORS.store)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || 'Failed to update part', TOAST_COLORS.error)
     }
-    setParts(prev => [newPart, ...prev])
-    setShowAddModal(false)
-    setAddFormData({ id: '', name: '', category: 'Sensors', qty: 0, min: 1 })
-    showToast(t('storeInventory.toastPartAdded', '✓ New part added to catalog.'), TOAST_COLORS.store)
+  })
+
+  const handleEditPart = (e) => {
+    e.preventDefault()
+    editPartMutation.mutate({
+      name: editFormData.name,
+      category: editFormData.category,
+      qty: parseInt(editFormData.qty, 10),
+      minLevel: parseInt(editFormData.minLevel, 10)
+    })
   }
 
   const kpis = [
@@ -193,23 +239,36 @@ export default function StoreInventory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {paginatedParts.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('storeInventory.noPartsFound', 'No parts found.')}</td></tr> : paginatedParts.map(p => {
-                const status = getStatus(p.qty, p.min)
-                const qtyColor = p.qty === 0 ? "text-[#F87171]" : p.qty <= p.min ? "text-[#FCD34D]" : "text-[var(--text-primary)]"
+              {isLoading ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr> : paginatedParts.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('storeInventory.noPartsFound', 'No parts found.')}</td></tr> : paginatedParts.map(p => {
+                const status = getStatus(p.qty, p.minLevel)
+                const qtyColor = p.qty === 0 ? "text-[#F87171]" : p.qty <= p.minLevel ? "text-[#FCD34D]" : "text-[var(--text-primary)]"
                 return (
                   <tr key={p.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                    <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.id}</td>
+                    <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.partCode}</td>
                     <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{p.name}</td>
                     <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.category}</td>
                     <td className={`p-4 text-[13.5px] font-bold ${qtyColor}`}>{p.qty}</td>
-                    <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.min}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.minLevel}</td>
                     <td className="p-4"><StockBadge status={status} /></td>
-                    <td className="p-4">
+                    <td className="p-4 flex items-center gap-2">
                       <button 
                         onClick={() => { setSelectedPart(p); setShowRestockModal(true) }} 
                         className="px-3 py-1 bg-transparent border border-[var(--border)] rounded text-[var(--text-secondary)] text-[12px] font-bold hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors"
                       >
                         {t('storeInventory.restockBtn', 'Restock')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingPartId(p.id);
+                          setEditFormData({ name: p.name, category: p.category, qty: p.qty, minLevel: p.minLevel });
+                          setShowEditModal(true);
+                        }}
+                        className="w-[26px] h-[26px] rounded bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)] hover:border-[rgba(139,92,246,0.2)] transition-colors"
+                        title={t('common.edit', 'Edit')}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[12px] h-[12px]">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.89 1.14l-2.81.936.936-2.81a4.5 4.5 0 011.14-1.89l8.931-8.932z" />
+                        </svg>
                       </button>
                     </td>
                   </tr>
@@ -247,7 +306,7 @@ export default function StoreInventory() {
         <form id="restock-form" onSubmit={handleRestock} className="flex flex-col gap-[14px]">
           <div>
             <label className={labelCls}>{t('storeInventory.selectedPart', 'Selected Part')}</label>
-            <input type="text" readOnly value={`${selectedPart?.name} (${selectedPart?.id})`} className={inputCls + " opacity-70 cursor-not-allowed"} />
+            <input type="text" readOnly value={`${selectedPart?.name} (${selectedPart?.partCode})`} className={inputCls + " opacity-70 cursor-not-allowed"} />
           </div>
           <InputField type="number" label={t('storeInventory.qtyToAdd', 'Quantity to Add')} min="1" value={restockQty} onChange={e => setRestockQty(e.target.value)} required />
           <InputField type="textarea" label={t('storeInventory.deliveryNotes', 'Delivery Notes (Optional)')} placeholder={t('storeInventory.deliveryNotesPlaceholder', 'Order #, Supplier, etc...')} />
@@ -269,13 +328,36 @@ export default function StoreInventory() {
         }
       >
         <form id="add-part-form" onSubmit={handleAddPart} className="grid grid-cols-2 gap-4">
-          <InputField label={t('storeInventory.partCodeInput', 'Part Code')} value={addFormData.id} onChange={e => setAddFormData(f => ({...f, id: e.target.value}))} placeholder="e.g. PRT-2050" required />
           <SelectField label={t('storeInventory.categoryInput', 'Category')} value={addFormData.category} onChange={e => setAddFormData(f => ({...f, category: e.target.value}))} options={['Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']} required />
           <div className="col-span-2">
             <InputField label={t('storeInventory.partNameInput', 'Part Name')} value={addFormData.name} onChange={e => setAddFormData(f => ({...f, name: e.target.value}))} placeholder={t('storeInventory.partNamePlaceholder', 'Full descriptive name')} required />
           </div>
           <InputField type="number" label={t('storeInventory.initialStock', 'Initial Stock')} min="0" value={addFormData.qty} onChange={e => setAddFormData(f => ({...f, qty: e.target.value}))} required />
-          <InputField type="number" label={t('storeInventory.minimumLevel', 'Minimum Level')} min="1" value={addFormData.min} onChange={e => setAddFormData(f => ({...f, min: e.target.value}))} required />
+          <InputField type="number" label={t('storeInventory.minimumLevel', 'Minimum Level')} min="1" value={addFormData.minLevel} onChange={e => setAddFormData(f => ({...f, minLevel: e.target.value}))} required />
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title={t('storeInventory.editPartTitle', 'Edit Part')}
+        maxWidth="500px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowEditModal(false)}>{t('common.cancel')}</ModalCancelBtn>
+            <ModalPrimaryBtn type="submit" form="edit-part-form" color="#8B5CF6">
+              {t('common.save', 'Save')}
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="edit-part-form" onSubmit={handleEditPart} className="grid grid-cols-2 gap-4">
+          <SelectField label={t('storeInventory.categoryInput', 'Category')} value={editFormData.category} onChange={e => setEditFormData(f => ({...f, category: e.target.value}))} options={['Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']} required />
+          <div className="col-span-2">
+            <InputField label={t('storeInventory.partNameInput', 'Part Name')} value={editFormData.name} onChange={e => setEditFormData(f => ({...f, name: e.target.value}))} placeholder={t('storeInventory.partNamePlaceholder', 'Full descriptive name')} required />
+          </div>
+          <InputField type="number" label={t('storeInventory.stockQty', 'Stock Qty')} min="0" value={editFormData.qty} onChange={e => setEditFormData(f => ({...f, qty: e.target.value}))} required />
+          <InputField type="number" label={t('storeInventory.minimumLevel', 'Minimum Level')} min="1" value={editFormData.minLevel} onChange={e => setEditFormData(f => ({...f, minLevel: e.target.value}))} required />
         </form>
       </Modal>
     </div>

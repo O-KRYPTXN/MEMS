@@ -8,12 +8,22 @@ export const validateRequest = (schema, source = 'body') => {
     const parsed = schema.safeParse(req[source]);
     
     if (!parsed.success) {
-      const errorMessages = parsed.error.errors.map((err) => err.message).join(', ');
+      const errorMessages = parsed.error.issues.map((err) => err.message).join(', ');
       return res.status(400).json({ message: errorMessages });
     }
     
     // Replace the request property with the parsed (and potentially transformed/type-coerced) data
-    req[source] = parsed.data;
+    if (source === 'body') {
+      req[source] = parsed.data;
+    } else {
+      // req.query and req.params often have only getters in Express, so we must redefine the property
+      Object.defineProperty(req, source, {
+        value: parsed.data,
+        writable: true,
+        configurable: true,
+        enumerable: true
+      });
+    }
     next();
   };
 };

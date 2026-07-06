@@ -3,21 +3,23 @@ import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
 import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
-import { inventory as initialInventory } from '../../data/inventory'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import * as partsService from '../../api/partsService'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
 import { useTranslation } from 'react-i18next'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 function getStatus(item) {
   if (item.qty === 0) return 'critical'
-  if (item.qty <= item.min) return 'warning'
+  if (item.qty <= item.minLevel) return 'warning'
   return 'ok'
 }
 
 function getQtyColor(item) {
   if (item.qty === 0) return 'text-[#F87171]'
-  if (item.qty <= Math.ceil(item.min * 0.3)) return 'text-[#F87171]'
-  if (item.qty <= item.min) return 'text-[#FCD34D]'
+  if (item.qty <= Math.ceil(item.minLevel * 0.3)) return 'text-[#F87171]'
+  if (item.qty <= item.minLevel) return 'text-[#FCD34D]'
   return 'text-[#4ADE80]'
 }
 
@@ -89,7 +91,17 @@ const getPageNums = (cur, total) => {
 
 export default function Inventory() {
   const { t } = useTranslation()
-  const [inventoryList, setInventoryList] = useState(initialInventory)
+  const { showToast } = useToastStore()
+  const queryClient = useQueryClient()
+  const { data: partsData, isError } = useQuery({
+    queryKey: ['parts'],
+    queryFn: () => partsService.getParts({ limit: 1000 })
+  })
+
+  useEffect(() => {
+    if (isError) showToast(t('common.toastLoadError', 'Failed to load parts catalog'), TOAST_COLORS.error)
+  }, [isError, showToast, t])
+  const inventoryList = partsData?.items || []
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -99,7 +111,20 @@ export default function Inventory() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingItemId, setEditingItemId] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => partsService.deletePart(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['parts'])
+      showToast(t('common.toastDeleted', '✓ Part deleted successfully'), TOAST_COLORS.admin)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || 'Failed to delete part', TOAST_COLORS.error)
+    }
+  })
 
   const { register, handleSubmit, reset } = useForm()
 
@@ -113,7 +138,7 @@ export default function Inventory() {
   const totalParts = inventoryList.length
   const lowStock = inventoryList.filter(i => getStatus(i) === 'warning').length
   const outOfStock = inventoryList.filter(i => getStatus(i) === 'critical').length
-  const totalValue = inventoryList.reduce((sum, i) => sum + i.qty * i.price, 0)
+  const totalValue = inventoryList.reduce((sum, i) => sum + i.qty * Number(i.unitPrice || 0), 0)
 
   const baseFiltered = useMemo(() => {
     const q = search.toLowerCase()
@@ -121,7 +146,7 @@ export default function Inventory() {
       const matchCat  = !categoryFilter || item.category === categoryFilter
       const matchLoc  = !locationFilter || item.location === locationFilter
       const matchQ    = !q ||
-        item.code.toLowerCase().includes(q) ||
+        item.partCode?.toLowerCase().includes(q) ||
         item.name.toLowerCase().includes(q) ||
         item.category.toLowerCase().includes(q)
       return matchCat && matchLoc && matchQ
@@ -134,7 +159,7 @@ export default function Inventory() {
       let tabMatch = true
       if (activeTab === 'warning')  tabMatch = s === 'warning'
       if (activeTab === 'critical') tabMatch = s === 'critical'
-      if (activeTab === 'recent')   tabMatch = item.recent === true
+      if (activeTab === 'recent')   tabMatch = item.isRecent === true
       const statMatch = !statusFilter || s === statusFilter
       return tabMatch && statMatch
     })
@@ -152,7 +177,7 @@ export default function Inventory() {
     all:      baseFiltered.length,
     warning:  baseFiltered.filter(i => getStatus(i) === 'warning').length,
     critical: baseFiltered.filter(i => getStatus(i) === 'critical').length,
-    recent:   baseFiltered.filter(i => i.recent).length,
+    recent:   baseFiltered.filter(i => i.isRecent).length,
   }), [baseFiltered])
 
   const handleTabClick = (value) => {
@@ -171,15 +196,15 @@ export default function Inventory() {
   }
 
   const columns = useMemo(() => [
-    { key:'code', label: t('inventory.partCode'), render: val => <span className="font-mono text-[0.775rem] text-[var(--text-muted)]">{val}</span> },
+    { key:'partCode', label: t('inventory.partCode'), render: val => <span className="font-mono text-[0.775rem] text-[var(--text-muted)]">{val}</span> },
     { key:'name', label: t('inventory.partName'), primary: true },
     { key:'category', label: t('reports.category') },
     { key:'unit', label: t('inventory.unit') },
     { key:'qty', label: t('inventory.stockQty'), render: (val, row) => <span className={`font-bold ${getQtyColor(row)}`}>{val}</span> },
-    { key:'min', label: t('inventory.minLevel') },
+    { key:'minLevel', label: t('inventory.minLevel') },
     { key:'location', label: t('inventory.location') },
-    { key:'price', label: t('inventory.unitPrice'), render: val => fmt(val) },
-    { key:'total', label: t('inventory.totalValue'), render: (_, row) => fmt(row.qty * row.price) },
+    { key:'unitPrice', label: t('inventory.unitPrice'), render: val => fmt(val) },
+    { key:'total', label: t('inventory.totalValue'), render: (_, row) => fmt(row.qty * Number(row.unitPrice || 0)) },
     { key:'status', label: t('common.status'), render: (_, row) => <StockStatusBadge item={row} /> },
     { key:'actions', label: t('reports.actions'), render: (_, row) => (
         <div className="flex gap-1.5">
@@ -191,6 +216,24 @@ export default function Inventory() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); openEditModal(row); }}
+            className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#3B72F6] hover:bg-[rgba(59,114,246,0.1)] hover:border-[rgba(59,114,246,0.2)]"
+            title={t('common.edit')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.89 1.14l-2.81.936.936-2.81a4.5 4.5 0 011.14-1.89l8.931-8.932z" />
+            </svg>
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); if(confirm('Are you sure you want to delete this part?')) deleteMutation.mutate(row.id); }}
+            className="w-7 h-7 rounded-md bg-[var(--bg-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] hover:border-[rgba(239,68,68,0.2)]"
+            title={t('common.delete')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>
         </div>
@@ -216,24 +259,69 @@ export default function Inventory() {
     </div>
   )
 
+  const addMutation = useMutation({
+    mutationFn: (data) => partsService.createPart(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['parts'])
+      setShowAddModal(false)
+      reset()
+      showToast(t('common.toastSaved', '✓ Part saved successfully'), TOAST_COLORS.admin)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || 'Failed to save part', TOAST_COLORS.error)
+    }
+  })
+
+  const editMutation = useMutation({
+    mutationFn: (data) => partsService.updatePart(editingItemId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['parts'])
+      setShowEditModal(false)
+      reset()
+      showToast(t('common.toastUpdated', '✓ Part updated successfully'), TOAST_COLORS.admin)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || 'Failed to update part', TOAST_COLORS.error)
+    }
+  })
+
   const onAddSubmit = (data) => {
-    const newCode = `INV-${String(inventoryList.length + 1).padStart(4, '0')}`
     const newItem = {
-      code: newCode,
-      recent: true,
+      isRecent: true,
       ...data,
       qty: Number(data.qty),
-      min: Number(data.min),
-      price: Number(data.price)
+      minLevel: Number(data.minLevel),
+      unitPrice: Number(data.unitPrice)
     }
-    setInventoryList([newItem, ...inventoryList])
-    setShowAddModal(false)
-    reset()
+    addMutation.mutate(newItem)
+  }
+
+  const onEditSubmit = (data) => {
+    editMutation.mutate({
+      ...data,
+      qty: Number(data.qty),
+      minLevel: Number(data.minLevel),
+      unitPrice: Number(data.unitPrice)
+    })
   }
 
   const openAddModal = () => {
-    reset({ code: '', name: '', category: '', unit: '', qty: '', min: '', location: '', price: '' })
+    reset({ name: '', category: '', unit: '', qty: '', minLevel: '', location: '', unitPrice: '' })
     setShowAddModal(true)
+  }
+
+  const openEditModal = (item) => {
+    setEditingItemId(item.id)
+    reset({
+      name: item.name,
+      category: item.category,
+      unit: item.unit,
+      qty: item.qty,
+      minLevel: item.minLevel,
+      location: item.location,
+      unitPrice: item.unitPrice
+    })
+    setShowEditModal(true)
   }
 
   return (
@@ -289,15 +377,12 @@ export default function Inventory() {
           {LOC_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('inventory.location')}: ${l}` : `${t('inventory.location')}: ${t('common.allStatuses')}`}</option>)}
         </select>
         <div className="w-[1px] h-[20px] bg-[var(--border)]"></div>
-        {/* Add Item Button hidden per phase 6 requirement */}
-        {false && (
-          <button type="button" onClick={openAddModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            {t('inventory.addItem')}
-          </button>
-        )}
+        <button type="button" onClick={openAddModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px]">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          {t('inventory.addItem')}
+        </button>
       </div>
 
       <div className="flex border-b border-[var(--border)]">
@@ -324,15 +409,15 @@ export default function Inventory() {
         footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>}
       >
         <div className="grid grid-cols-2 gap-[16px]">
-          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.partCode')}</div><div className="text-[13px] font-mono font-semibold text-[var(--text-primary)] mt-1">{selectedItem?.code}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.partCode')}</div><div className="text-[13px] font-mono font-semibold text-[var(--text-primary)] mt-1">{selectedItem?.partCode}</div></div>
           <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.partName')}</div><div className="text-[13px] font-medium text-[var(--text-primary)] mt-1">{selectedItem?.name}</div></div>
           <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('reports.category')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.category}</div></div>
           <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.unit')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.unit}</div></div>
-          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.minLevel')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.min}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.minLevel')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.minLevel}</div></div>
           <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.stockQty')}</div><div className={`text-[13px] mt-1 font-bold ${selectedItem ? getQtyColor(selectedItem) : ''}`}>{selectedItem?.qty}</div></div>
           <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.location')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem?.location}</div></div>
-          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.unitPrice')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem && fmt(selectedItem.price)}</div></div>
-          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.totalValue')}</div><div className="text-[13px] font-semibold text-[var(--text-primary)] mt-1">{selectedItem && fmt(selectedItem.qty * selectedItem.price)}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.unitPrice')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedItem && fmt(selectedItem.unitPrice)}</div></div>
+          <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('inventory.totalValue')}</div><div className="text-[13px] font-semibold text-[var(--text-primary)] mt-1">{selectedItem && fmt(selectedItem.qty * Number(selectedItem.unitPrice || 0))}</div></div>
           <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedItem && <StockStatusBadge item={selectedItem} />}</div></div>
         </div>
       </Modal>
@@ -354,18 +439,13 @@ export default function Inventory() {
         <form id="add-item-form" onSubmit={handleSubmit(onAddSubmit)} className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-[14px]">
             <div>
-              <label className={labelCls}>{t('inventory.partCode')}</label>
-              <input {...register('code', { required: true })} className={inputCls} placeholder="e.g. INV-0348" />
+              <label className={labelCls}>{t('inventory.unit')}</label>
+              <input {...register('unit', { required: true })} className={inputCls} placeholder="e.g. PCS, SET, BOX" />
             </div>
             <div>
-              <label className={labelCls}>{t('inventory.unit')}</label>
-              <input {...register('unit', { required: true })} className={inputCls} placeholder="e.g. pcs, set, box" />
+              <label className={labelCls}>{t('inventory.partName')}</label>
+              <input {...register('name', { required: true })} className={inputCls} placeholder="Full part / item name" />
             </div>
-          </div>
-          
-          <div>
-            <label className={labelCls}>{t('inventory.partName')}</label>
-            <input {...register('name', { required: true })} className={inputCls} placeholder="Full part / item name" />
           </div>
 
           <div className="grid grid-cols-2 gap-[14px]">
@@ -392,13 +472,74 @@ export default function Inventory() {
             </div>
             <div>
               <label className={labelCls}>{t('inventory.minLevel')}</label>
-              <input type="number" min="0" {...register('min', { required: true, min: 0 })} className={inputCls} />
+              <input type="number" min="0" {...register('minLevel', { required: true, min: 0 })} className={inputCls} />
             </div>
           </div>
 
           <div>
             <label className={labelCls}>{t('inventory.unitPrice')}</label>
-            <input type="number" min="0" step="0.01" {...register('price', { required: true, min: 0 })} className={inputCls} placeholder="0.00" />
+            <input type="number" min="0" step="0.01" {...register('unitPrice', { required: true, min: 0 })} className={inputCls} placeholder="0.00" />
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title={t('common.edit')}
+        maxWidth="480px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowEditModal(false)}>{t('common.cancel')}</ModalCancelBtn>
+            <ModalPrimaryBtn type="submit" form="edit-item-form" color="#3B72F6">
+              {t('common.save')}
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <form id="edit-item-form" onSubmit={handleSubmit(onEditSubmit)} className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>{t('inventory.unit')}</label>
+              <input {...register('unit', { required: true })} className={inputCls} placeholder="e.g. PCS, SET, BOX" />
+            </div>
+            <div>
+              <label className={labelCls}>{t('inventory.partName')}</label>
+              <input {...register('name', { required: true })} className={inputCls} placeholder="Full part / item name" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>{t('reports.category')}</label>
+              <select {...register('category', { required: true })} className={inputCls}>
+                <option value="">{t('addDevice.selectCategory')}</option>
+                {CAT_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>{t('inventory.location')}</label>
+              <select {...register('location', { required: true })} className={inputCls}>
+                <option value="">Select Location</option>
+                {LOC_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-[14px]">
+            <div>
+              <label className={labelCls}>{t('inventory.stockQty')}</label>
+              <input type="number" min="0" {...register('qty', { required: true, min: 0 })} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>{t('inventory.minLevel')}</label>
+              <input type="number" min="0" {...register('minLevel', { required: true, min: 0 })} className={inputCls} />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>{t('inventory.unitPrice')}</label>
+            <input type="number" min="0" step="0.01" {...register('unitPrice', { required: true, min: 0 })} className={inputCls} placeholder="0.00" />
           </div>
         </form>
       </Modal>

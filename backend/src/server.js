@@ -14,6 +14,7 @@ import faultReportsRoutes from './modules/faultReports/faultReports.routes.js';
 import workOrdersRoutes from './modules/workOrders/workOrders.routes.js';
 import devicesRoutes from './modules/devices/devices.routes.js';
 import pmTasksRoutes from './modules/pmTasks/pmTasks.routes.js';
+import partsRoutes from './modules/parts/parts.routes.js';
 
 
 // Load validated environment variables
@@ -50,6 +51,7 @@ app.use('/api/devices', devicesRoutes);
 app.use('/api/fault-reports', faultReportsRoutes);
 app.use('/api/work-orders', workOrdersRoutes);
 app.use('/api/pm-tasks', pmTasksRoutes);
+app.use('/api/parts', partsRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);
