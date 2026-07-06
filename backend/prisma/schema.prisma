@@ -289,6 +289,10 @@ model WorkOrder {
   faultReportId String?      @unique
   faultReport   FaultReport? @relation(fields: [faultReportId], references: [id])
 
+  // ── FK: Source PM Task (nullable) ──
+  pmTaskId String? @unique
+  pmTask   PMTask? @relation(fields: [pmTaskId], references: [id])
+
   // ── Relations ──────────────────────────────────────────
   partRequests PartRequest[]
   auditLogs    AuditLog[]
@@ -324,6 +328,9 @@ model PMTask {
   // ── FK: Creator (admin / supervisor who scheduled it) ──
   createdById String?
   createdBy   User?  @relation("CreatedByUser", fields: [createdById], references: [id])
+
+  // ── Reverse relation: WO generated from this PM Task ──
+  workOrder WorkOrder?
 
   @@index([scheduledAt])
   @@index([assignedToId])

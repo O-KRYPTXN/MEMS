@@ -1,82 +1,98 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
-import Panel, { PanelHeader } from '../../components/ui/Panel'
+import Panel from '../../components/ui/Panel'
+import faultReportService from '../../api/faultReportService'
+import deviceService from '../../api/deviceService'
 
-const initialRequests = [
-  { id: 'DR-1045', device: 'ICU Ventilator V500', desc: 'Screen flickering intermittently during operation.', date: '25/06/2026', status: 'In Progress', techMessage: 'Parts ordered, expected tomorrow.' },
-  { id: 'DR-1046', device: 'Patient Monitor #12', desc: 'Alarm speaker not working.', date: '26/06/2026', status: 'Pending Assignment', techMessage: null },
-  { id: 'DR-1047', device: 'Defibrillator AED-7', desc: 'Battery discharges very fast after full charge.', date: '27/06/2026', status: 'Pending Assignment', techMessage: null },
-  { id: 'DR-1043', device: 'ECG Monitor Pro', desc: 'Thermal printer jammed.', date: '20/06/2026', status: 'Solved', techMessage: 'Cleared jam and replaced paper roll.' },
-  { id: 'DR-1044', device: 'Infusion Pump IP-400', desc: 'Continuous occlusion false alarms.', date: '24/06/2026', status: 'In Progress', techMessage: 'Testing sensor calibration.' },
-]
-
-const mockDevices = ['ICU Ventilator V500', 'Patient Monitor #12', 'Defibrillator AED-7', 'ECG Monitor Pro', 'Infusion Pump IP-400', 'Syringe Pump SP-1', 'Portable Ultrasound']
+const formatDate = (dateString) => {
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)
+}
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'Pending Assignment': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'In Progress': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
-    'Solved': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+    'PENDING': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+    'IN_PROGRESS': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
+    'SOLVED': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+    'REJECTED': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
   }
   const labelMap = {
-    'Pending Assignment': t('deptRequests.statusPending'),
-    'In Progress': t('deptRequests.inProgress'),
-    'Solved': t('deptRequests.solved')
+    'PENDING': t('deptRequests.statusPending', 'Pending'),
+    'IN_PROGRESS': t('deptRequests.inProgress', 'In Progress'),
+    'SOLVED': t('deptRequests.solved', 'Solved'),
+    'REJECTED': t('common.reject', 'Rejected')
   }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${map[status] || ''}`}>{labelMap[status]}</span>
 }
 
 export default function DeptRequests() {
   const { t } = useTranslation()
-  const [requests, setRequests] = useState(initialRequests)
+  const [requests, setRequests] = useState([])
+  const [devices, setDevices] = useState([])
   const [activeTab, setActiveTab] = useState('all')
   const [showModal, setShowModal] = useState(false)
-  const [formData, setFormData] = useState({ device: '', desc: '' })
+  const [formData, setFormData] = useState({ deviceId: '', desc: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   const { showToast } = useToastStore()
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [reportsRes, devicesRes] = await Promise.all([
+          faultReportService.getFaultReports({ limit: 100 }),
+          deviceService.getDevices({ all: 'true' })
+        ])
+        setRequests(reportsRes.items || [])
+        setDevices(devicesRes.data || [])
+      } catch (err) {
+        showToast('Failed to load data', TOAST_COLORS.error)
+      }
+    }
+    fetchInitialData()
+  }, [showToast])
 
   const filtered = useMemo(() => {
     return requests.filter(r => {
       if (activeTab === 'all') return true
-      if (activeTab === 'Pending') return r.status === 'Pending Assignment'
       return r.status === activeTab
     })
   }, [requests, activeTab])
 
   const counts = {
     all: requests.length,
-    pending: requests.filter(r => r.status === 'Pending Assignment').length,
-    progress: requests.filter(r => r.status === 'In Progress').length,
-    solved: requests.filter(r => r.status === 'Solved').length,
+    pending: requests.filter(r => r.status === 'PENDING').length,
+    progress: requests.filter(r => r.status === 'IN_PROGRESS').length,
+    solved: requests.filter(r => r.status === 'SOLVED').length,
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!formData.device || !formData.desc.trim()) return
+    if (!formData.deviceId || !formData.desc.trim()) return
 
-    const now = new Date()
-    const pad = n => n.toString().padStart(2, '0')
-    const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`
-
-    const newReq = {
-      id: `DR-${Math.floor(1000 + Math.random() * 9000)}`,
-      device: formData.device,
-      desc: formData.desc,
-      date: dateStr,
-      status: 'Pending Assignment',
-      techMessage: null
+    setIsSubmitting(true)
+    try {
+      const res = await faultReportService.createFaultReport({
+        deviceId: formData.deviceId,
+        description: formData.desc
+      })
+      
+      setRequests(prev => [res.data, ...prev])
+      setShowModal(false)
+      setFormData({ deviceId: '', desc: '' })
+      showToast(t('deptRequests.toastSubmitSuccess'), TOAST_COLORS.department)
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to submit report', TOAST_COLORS.error)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    setRequests(prev => [newReq, ...prev])
-    setShowModal(false)
-    setFormData({ device: '', desc: '' })
-    showToast(t('deptRequests.toastSubmitSuccess'), TOAST_COLORS.department)
   }
 
   return (
@@ -98,9 +114,9 @@ export default function DeptRequests() {
       <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-1 mb-2 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto">
         {[
           { id: 'all', label: t('common.all'), count: counts.all },
-          { id: 'Pending', label: t('deptRequests.pending'), count: counts.pending },
-          { id: 'In Progress', label: t('deptRequests.inProgress'), count: counts.progress },
-          { id: 'Solved', label: t('deptRequests.solved'), count: counts.solved }
+          { id: 'PENDING', label: t('deptRequests.pending'), count: counts.pending },
+          { id: 'IN_PROGRESS', label: t('deptRequests.inProgress'), count: counts.progress },
+          { id: 'SOLVED', label: t('deptRequests.solved'), count: counts.solved }
         ].map(tab => (
           <button 
             key={tab.id} 
@@ -134,15 +150,15 @@ export default function DeptRequests() {
             <tbody className="divide-y divide-[var(--border)]">
               {filtered.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('deptRequests.noReports')}</td></tr> : filtered.map(r => (
                 <tr key={r.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{r.id}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{r.device}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-secondary)] max-w-[280px]"><div className="truncate">{r.desc}</div></td>
-                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{r.date}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap" title={r.id}>FR-{r.id.slice(-4).toUpperCase()}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{r.device?.name}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] max-w-[280px]"><div className="truncate" title={r.description}>{r.description}</div></td>
+                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{formatDate(r.createdAt)}</td>
                   <td className="p-4"><StatusBadge status={r.status} /></td>
                   <td className="p-4">
-                    {r.techMessage ? (
-                      <div className="bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.2)] text-[var(--text-secondary)] rounded-md px-2.5 py-1.5 text-xs inline-block max-w-[250px] truncate" title={r.techMessage}>
-                        {r.techMessage}
+                    {r.workOrder?.notes ? (
+                      <div className="bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.2)] text-[var(--text-secondary)] rounded-md px-2.5 py-1.5 text-xs inline-block max-w-[250px] truncate" title={r.workOrder.notes}>
+                        {r.workOrder.notes}
                       </div>
                     ) : (
                       <span className="text-[var(--text-muted)] block text-center w-[50px]">—</span>
@@ -163,14 +179,14 @@ export default function DeptRequests() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="report-problem-form" color="#EC4899">
-              {t('deptRequests.submitReportBtn')}
+            <ModalPrimaryBtn type="submit" form="report-problem-form" color="#EC4899" disabled={isSubmitting}>
+              {isSubmitting ? '...' : t('deptRequests.submitReportBtn')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <form id="report-problem-form" onSubmit={handleSubmit} className="flex flex-col gap-[14px] mt-1">
-          <SelectField label={t('deptRequests.affectedDevice')} name="device" value={formData.device} onChange={e => setFormData({ ...formData, device: e.target.value })} placeholder={t('deptRequests.selectDevicePlaceholder')} options={mockDevices} required />
+          <SelectField label={t('deptRequests.affectedDevice')} name="deviceId" value={formData.deviceId} onChange={e => setFormData({ ...formData, deviceId: e.target.value })} placeholder={t('deptRequests.selectDevicePlaceholder')} options={devices.map(d => ({ value: d.id, label: `${d.name} (${d.assetCode})` }))} required />
           <InputField type="textarea" label={t('deptRequests.problemDescription')} name="desc" value={formData.desc} onChange={e => setFormData({ ...formData, desc: e.target.value })} placeholder={t('deptRequests.descriptionPlaceholder')} required />
         </form>
       </Modal>

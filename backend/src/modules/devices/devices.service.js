@@ -1,12 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
-class DeviceServiceError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+import { AppError } from '../../utils/AppError.js';
 
 /**
  * Generate a unique Asset Code (e.g. DEV-0001)
@@ -32,7 +27,7 @@ const generateAssetCode = async () => {
  * Get all devices with pagination, filtering, and search
  */
 export const getAllDevices = async (page, limit, filters) => {
-  const { category, status, departmentId, search } = filters;
+  const { category, status, departmentId, search, all } = filters;
   const where = {};
 
   if (category) where.category = category;
@@ -45,6 +40,14 @@ export const getAllDevices = async (page, limit, filters) => {
       { assetCode: { contains: search, mode: 'insensitive' } },
       { serialNumber: { contains: search, mode: 'insensitive' } }
     ];
+  }
+
+  if (all === 'true') {
+    const data = await prisma.device.findMany({
+      where,
+      orderBy: { name: 'asc' }
+    });
+    return { data };
   }
 
   const skip = (page - 1) * limit;
@@ -71,13 +74,15 @@ export const getAllDevices = async (page, limit, filters) => {
 /**
  * Get device statistics (total count grouped by status)
  */
-export const getDeviceStats = async () => {
+export const getDeviceStats = async (departmentId = null) => {
+  const where = departmentId ? { departmentId } : {};
+
   const [total, operational, faulty, maintenance, decommissioned] = await Promise.all([
-    prisma.device.count(),
-    prisma.device.count({ where: { status: 'OPERATIONAL' } }),
-    prisma.device.count({ where: { status: 'FAULTY' } }),
-    prisma.device.count({ where: { status: 'MAINTENANCE' } }),
-    prisma.device.count({ where: { status: 'DECOMMISSIONED' } })
+    prisma.device.count({ where }),
+    prisma.device.count({ where: { ...where, status: 'OPERATIONAL' } }),
+    prisma.device.count({ where: { ...where, status: 'FAULTY' } }),
+    prisma.device.count({ where: { ...where, status: 'MAINTENANCE' } }),
+    prisma.device.count({ where: { ...where, status: 'DECOMMISSIONED' } })
   ]);
 
   return {
@@ -103,7 +108,7 @@ export const getDeviceById = async (id) => {
   });
 
   if (!device) {
-    throw new DeviceServiceError('Device not found', 404);
+    throw new AppError('Device not found', 404);
   }
 
   return device;
@@ -118,7 +123,7 @@ export const createDevice = async (data) => {
   // Check if serial number already exists
   const existing = await prisma.device.findUnique({ where: { serialNumber } });
   if (existing) {
-    throw new DeviceServiceError('A device with this serial number already exists', 400);
+    throw new AppError('A device with this serial number already exists', 400);
   }
 
   // Generate Asset Code

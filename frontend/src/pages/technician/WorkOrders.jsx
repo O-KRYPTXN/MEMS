@@ -7,40 +7,41 @@ import EmptyState from '../../components/ui/EmptyState'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
+import workOrderService from '../../api/workOrderService'
 
-const initialWOs = [
-  { id: 'WO-2039', device: 'ECG Monitor E-12', type: 'Repair', dept: 'ICU', priority: 'High', status: 'In Progress', date: '2026-06-28', timeLog: '1.5', parts: 'None', notes: '' },
-  { id: 'WO-2045', device: 'Defibrillator AED-9', type: 'Preventive Maintenance', dept: 'ER', priority: 'Medium', status: 'Unassigned', date: '2026-06-28', timeLog: '0', parts: '', notes: '' },
-  { id: 'WO-2036', device: 'Patient Monitor #3', type: 'Repair', dept: 'ICU', priority: 'High', status: 'In Progress', date: '2026-06-28', timeLog: '2.0', parts: 'Sensor Cable', notes: 'Diagnosing sensor issue.' },
-  { id: 'WO-2034', device: 'Pulse Oximeter P-8', type: 'Repair', dept: 'ICU', priority: 'Medium', status: 'Waiting Parts', date: '2026-06-27', timeLog: '0.5', parts: '', notes: 'Waiting for replacement screen.' },
-  { id: 'WO-2030', device: 'O2 Concentrator', type: 'Calibration', dept: 'ER', priority: 'Low', status: 'Solved Tasks', date: '2026-06-26', timeLog: '1.0', parts: 'None', notes: 'Calibrated output to standard.' },
-  { id: 'WO-2028', device: 'Infusion Pump IP-2', type: 'Preventive Maintenance', dept: 'ICU', priority: 'Low', status: 'Unassigned', date: '2026-06-26', timeLog: '0', parts: '', notes: '' }
-]
+const formatDate = (dateString) => {
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)
+}
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'In Progress': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Waiting Parts': 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
-    'Unassigned': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
-    'Solved Tasks': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+    'IN_PROGRESS': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+    'WAITING_PARTS': 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
+    'OPEN': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
+    'PENDING_APPROVAL': 'bg-[rgba(20,184,166,0.12)] text-[#14B8A6]',
+    'DONE': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
   }
   const labelMap = {
-    'In Progress': t('common.statusInProgress', 'In Progress'),
-    'Waiting Parts': t('common.statusWaitingParts', 'Waiting Parts'),
-    'Unassigned': t('common.statusToDo', 'To Do'),
-    'Solved Tasks': t('common.statusSolved', 'Solved Tasks')
+    'IN_PROGRESS': t('common.statusInProgress', 'In Progress'),
+    'WAITING_PARTS': t('common.statusWaitingParts', 'Waiting Parts'),
+    'OPEN': t('common.statusToDo', 'To Do'),
+    'PENDING_APPROVAL': t('supWorkOrders.pendingApproval', 'Pending Approval'),
+    'DONE': t('common.statusSolved', 'Done')
   }
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${map[status] || ''}`}>{labelMap[status] || status}</span>
 }
 
 const PriorityBadge = ({ priority }) => {
   const { t } = useTranslation()
-  const map = { High: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]', Medium: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]', Low: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]' }
+  const map = { HIGH: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]', MEDIUM: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]', LOW: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]', CRITICAL: 'bg-[rgba(220,38,38,0.12)] text-[#DC2626]' }
   const labelMap = {
-    'High': t('common.priorityHigh', 'High'),
-    'Medium': t('common.priorityMedium', 'Medium'),
-    'Low': t('common.priorityLow', 'Low')
+    'HIGH': t('common.priorityHigh', 'High'),
+    'MEDIUM': t('common.priorityMedium', 'Medium'),
+    'LOW': t('common.priorityLow', 'Low'),
+    'CRITICAL': 'Critical'
   }
   return <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[0.65rem] font-bold uppercase tracking-wider ${map[priority] || ''}`}>{labelMap[priority] || priority}</span>
 }
@@ -48,14 +49,14 @@ const PriorityBadge = ({ priority }) => {
 const TypeBadge = ({ type }) => {
   const { t } = useTranslation()
   const map = {
-    'Repair': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-    'Preventive Maintenance': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Calibration': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
+    'REPAIR': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+    'PREVENTIVE_MAINTENANCE': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+    'DECOMMISSION': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
   }
   const labelMap = {
-    'Repair': t('common.typeRepair', 'Repair'),
-    'Preventive Maintenance': t('common.typePM', 'PM'),
-    'Calibration': t('common.typeCalibration', 'Calibration')
+    'REPAIR': t('common.typeRepair', 'Repair'),
+    'PREVENTIVE_MAINTENANCE': t('common.typePM', 'PM'),
+    'DECOMMISSION': 'Decommission'
   }
   const label = labelMap[type] || type
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[0.7rem] font-bold whitespace-nowrap ${map[type] || ''}`}>{label}</span>
@@ -66,26 +67,38 @@ const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.
 
 export default function TechnicianWorkOrders() {
   const { t } = useTranslation()
-  const [wos, setWos] = useState(initialWOs)
+  const [wos, setWos] = useState([])
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedWO, setSelectedWO] = useState(null)
-  const [updateForm, setUpdateForm] = useState({ status: '', timeLog: '', parts: '', notes: '' })
+  const [updateForm, setUpdateForm] = useState({ status: '', notes: '' })
   
   const { showToast } = useToastStore()
   const ROWS = 8
+
+  const loadData = async () => {
+    try {
+      const res = await workOrderService.getWorkOrders({ limit: 500 })
+      setWos(res.items || [])
+    } catch (err) {
+      showToast('Failed to load work orders', TOAST_COLORS.error)
+    }
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
     return wos.filter(w => {
       const matchTab = activeTab === 'all' || w.status === activeTab
-      const matchQ = !q || w.id.toLowerCase().includes(q) || w.device.toLowerCase().includes(q)
+      const matchQ = !q || w.workOrderNumber.toLowerCase().includes(q) || w.device?.name?.toLowerCase().includes(q)
       const matchPri = !priorityFilter || w.priority === priorityFilter
       const matchType = !typeFilter || w.type === typeFilter
       return matchTab && matchQ && matchPri && matchType
@@ -96,10 +109,10 @@ export default function TechnicianWorkOrders() {
 
   const counts = {
     all: wos.length,
-    'Unassigned': wos.filter(w => w.status === 'Unassigned').length,
-    'In Progress': wos.filter(w => w.status === 'In Progress').length,
-    'Waiting Parts': wos.filter(w => w.status === 'Waiting Parts').length,
-    'Solved Tasks': wos.filter(w => w.status === 'Solved Tasks').length,
+    'IN_PROGRESS': wos.filter(w => w.status === 'IN_PROGRESS').length,
+    'WAITING_PARTS': wos.filter(w => w.status === 'WAITING_PARTS').length,
+    'PENDING_APPROVAL': wos.filter(w => w.status === 'PENDING_APPROVAL').length,
+    'DONE': wos.filter(w => w.status === 'DONE').length,
   }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS))
@@ -107,15 +120,23 @@ export default function TechnicianWorkOrders() {
 
   const handleOpenUpdate = (row) => {
     setSelectedWO(row)
-    setUpdateForm({ status: row.status, timeLog: row.timeLog, parts: row.parts, notes: row.notes })
+    setUpdateForm({ status: row.status, notes: row.notes || '' })
     setShowUpdateModal(true)
   }
 
-  const handleUpdateSubmit = (e) => {
+  const handleUpdateSubmit = async (e) => {
     e.preventDefault()
-    setWos(prev => prev.map(w => w.id === selectedWO.id ? { ...w, ...updateForm } : w))
-    setShowUpdateModal(false)
-    showToast(t('techWorkOrders.toastUpdated', { id: selectedWO.id }), TOAST_COLORS.technician)
+    setIsSubmitting(true)
+    try {
+      await workOrderService.updateWorkOrder(selectedWO.id, updateForm)
+      setShowUpdateModal(false)
+      showToast(t('techWorkOrders.toastUpdated', { id: selectedWO.workOrderNumber }), TOAST_COLORS.technician)
+      loadData()
+    } catch (err) {
+      showToast('Failed to update work order', TOAST_COLORS.error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -125,11 +146,11 @@ export default function TechnicianWorkOrders() {
         <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('techWorkOrders.pageSubtitle')}</p>
       </div>
 
-      <div className="flex gap-[2px] bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-1 w-fit overflow-x-auto">
-        {[{id:'all', label:t('techWorkOrders.tabAll')}, {id:'Unassigned', label:t('common.statusToDo')}, {id:'In Progress', label:t('techWorkOrders.tabInProgress')}, {id:'Waiting Parts', label:t('techWorkOrders.tabPendingParts')}, {id:'Solved Tasks', label:t('techWorkOrders.tabCompleted')}].map(tab => (
+      <div className="flex gap-[2px] bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-1 w-fit overflow-x-auto max-w-full">
+        {[{id:'all', label:t('techWorkOrders.tabAll')}, {id:'IN_PROGRESS', label:t('techWorkOrders.tabInProgress')}, {id:'WAITING_PARTS', label:t('techWorkOrders.tabPendingParts')}, {id:'PENDING_APPROVAL', label:t('supWorkOrders.pendingApproval', 'Pending Approval')}, {id:'DONE', label:t('techWorkOrders.tabCompleted')}].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
-            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
+            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id] || 0}</span>
           </button>
         ))}
       </div>
@@ -142,15 +163,15 @@ export default function TechnicianWorkOrders() {
           </div>
           <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className="h-[34px] bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#F59E0B]">
             <option value="">{t('common.allPriority')}</option>
-            <option value="High">{t('common.priorityHigh')}</option>
-            <option value="Medium">{t('common.priorityMedium')}</option>
-            <option value="Low">{t('common.priorityLow')}</option>
+            <option value="HIGH">{t('common.priorityHigh')}</option>
+            <option value="MEDIUM">{t('common.priorityMedium')}</option>
+            <option value="LOW">{t('common.priorityLow')}</option>
           </select>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="h-[34px] bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-[0.8rem] px-2 outline-none focus:border-[#F59E0B]">
             <option value="">{t('techWorkOrders.allTypes')}</option>
-            <option value="Repair">{t('common.typeRepair')}</option>
-            <option value="Preventive Maintenance">{t('common.typePM')}</option>
-            <option value="Calibration">{t('common.typeCalibration')}</option>
+            <option value="REPAIR">{t('common.typeRepair')}</option>
+            <option value="PREVENTIVE_MAINTENANCE">{t('common.typePM')}</option>
+            <option value="DECOMMISSION">Decommission</option>
           </select>
         </div>
 
@@ -166,13 +187,13 @@ export default function TechnicianWorkOrders() {
             <tbody className="divide-y divide-[var(--border)]">
               {paginated.length === 0 ? <tr><td colSpan={8} className="p-0"><EmptyState message={t('techWorkOrders.noWorkOrders')} /></td></tr> : paginated.map(w => (
                 <tr key={w.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{w.id}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{w.device}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{w.workOrderNumber}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{w.device?.name}</td>
                   <td className="p-4"><TypeBadge type={w.type} /></td>
-                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{w.dept}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)]">{w.device?.department?.name}</td>
                   <td className="p-4"><PriorityBadge priority={w.priority} /></td>
                   <td className="p-4"><StatusBadge status={w.status} /></td>
-                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{w.date}</td>
+                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{w.dueDate ? formatDate(w.dueDate) : '—'}</td>
                   <td className="p-4">
                     <div className="flex gap-2">
                       <button onClick={() => handleOpenUpdate(w)} className="bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-[#FCD34D] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(245,158,11,0.2)] transition-colors">{t('techWorkOrders.update')}</button>
@@ -197,27 +218,19 @@ export default function TechnicianWorkOrders() {
       <Modal
         isOpen={showUpdateModal && !!selectedWO}
         onClose={() => setShowUpdateModal(false)}
-        title={selectedWO ? t('techWorkOrders.updateWOModalTitle', { id: selectedWO.id }) : 'Update Work Order'}
+        title={selectedWO ? t('techWorkOrders.updateWOModalTitle', { id: selectedWO.workOrderNumber }) : 'Update Work Order'}
         maxWidth="460px"
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowUpdateModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="update-form" color="#F59E0B">
-              {t('techWorkOrders.saveUpdate')}
+            <ModalPrimaryBtn type="submit" form="update-form" color="#F59E0B" disabled={isSubmitting}>
+              {isSubmitting ? '...' : t('techWorkOrders.saveUpdate')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <form id="update-form" onSubmit={handleUpdateSubmit} className="flex flex-col gap-[14px] mt-1">
-          <SelectField label={t('techWorkOrders.statusLabel')} value={updateForm.status} onChange={e => setUpdateForm({ ...updateForm, status: e.target.value })} options={[{value: 'Unassigned', label: t('common.statusToDo')}, {value: 'In Progress', label: t('common.statusInProgress')}, {value: 'Waiting Parts', label: t('common.statusWaitingParts')}, {value: 'Solved Tasks', label: t('common.statusSolved')}]} />
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <InputField type="number" label={t('techWorkOrders.hoursLogged')} step="0.5" min="0" value={updateForm.timeLog} onChange={e => setUpdateForm({ ...updateForm, timeLog: e.target.value })} />
-            </div>
-            <div className="flex-1">
-              <InputField label={t('common.partsUsed')} value={updateForm.parts} onChange={e => setUpdateForm({ ...updateForm, parts: e.target.value })} placeholder="e.g. O2 Sensor" />
-            </div>
-          </div>
+          <SelectField label={t('techWorkOrders.statusLabel')} value={updateForm.status} onChange={e => setUpdateForm({ ...updateForm, status: e.target.value })} options={[{value: 'IN_PROGRESS', label: t('common.statusInProgress')}, {value: 'WAITING_PARTS', label: t('common.statusWaitingParts')}, {value: 'PENDING_APPROVAL', label: t('supWorkOrders.pendingApproval', 'Pending Approval')}]} />
           <InputField type="textarea" label={t('techWorkOrders.workNotes')} value={updateForm.notes} onChange={e => setUpdateForm({ ...updateForm, notes: e.target.value })} placeholder={t('techWorkOrders.workNotesPlaceholder')} />
         </form>
       </Modal>
@@ -225,7 +238,7 @@ export default function TechnicianWorkOrders() {
       <Modal
         isOpen={showViewModal && !!selectedWO}
         onClose={() => setShowViewModal(false)}
-        title={selectedWO ? t('common.woDetailsTitle', { id: selectedWO.id }) : t('common.woDetails', 'Work Order Details')}
+        title={selectedWO ? t('common.woDetailsTitle', { id: selectedWO.workOrderNumber }) : t('common.woDetails', 'Work Order Details')}
         maxWidth="500px"
         footer={
           <ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>
@@ -234,10 +247,9 @@ export default function TechnicianWorkOrders() {
         <div className="mt-2">
           <div className="grid grid-cols-2 gap-2.5 mb-4">
             {[
-              { l: t('techWorkOrders.device'), v: selectedWO?.device }, { l: t('common.dept'), v: selectedWO?.dept },
+              { l: t('techWorkOrders.device'), v: selectedWO?.device?.name }, { l: t('common.dept'), v: selectedWO?.device?.department?.name },
               { l: t('techWorkOrders.type'), v: selectedWO ? <TypeBadge type={selectedWO.type} /> : null }, { l: t('techWorkOrders.priority'), v: selectedWO ? <PriorityBadge priority={selectedWO.priority} /> : null },
-              { l: t('techWorkOrders.status'), v: selectedWO ? <StatusBadge status={selectedWO.status} /> : null }, { l: t('techWorkOrders.dueDate', 'Due Date'), v: selectedWO?.date },
-              { l: t('techWorkOrders.hoursLogged'), v: `${selectedWO?.timeLog} hrs` }, { l: t('common.partsUsed', 'Parts Used'), v: selectedWO?.parts || 'None' }
+              { l: t('techWorkOrders.status'), v: selectedWO ? <StatusBadge status={selectedWO.status} /> : null }, { l: t('techWorkOrders.dueDate', 'Due Date'), v: selectedWO?.dueDate ? formatDate(selectedWO.dueDate) : '—' }
             ].map((item, idx) => (
               <div key={idx} className="bg-[var(--bg-input)] rounded-lg p-3">
                 <div className="text-[11px] font-semibold text-[var(--text-muted)] mb-1">{item.l}</div>
@@ -246,6 +258,10 @@ export default function TechnicianWorkOrders() {
             ))}
           </div>
           <div className="bg-[var(--bg-input)] rounded-lg p-3">
+            <div className="text-[11px] font-semibold text-[var(--text-muted)] mb-1">Issue Description</div>
+            <div className="text-[13px] text-[var(--text-primary)] whitespace-pre-wrap">{selectedWO?.description || 'No description provided.'}</div>
+          </div>
+          <div className="bg-[var(--bg-input)] rounded-lg p-3 mt-2">
             <div className="text-[11px] font-semibold text-[var(--text-muted)] mb-1">{t('techWorkOrders.workNotes')}</div>
             <div className="text-[13px] text-[var(--text-secondary)] whitespace-pre-wrap">{selectedWO?.notes || 'No notes provided yet.'}</div>
           </div>

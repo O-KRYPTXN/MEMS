@@ -11,6 +11,7 @@ export const ROUTES = {
   ADMIN_INVENTORY: '/admin/inventory',
   ADMIN_USERS: '/admin/users',
   ADMIN_REPORTS: '/admin/reports',
+  ADMIN_FAULT_REPORTS: '/admin/fault-reports',
 
   // Supervisor
   SUPERVISOR_DASHBOARD: '/supervisor/dashboard',
@@ -19,6 +20,7 @@ export const ROUTES = {
   SUPERVISOR_DEVICES: '/supervisor/devices',
   SUPERVISOR_ADD_DEVICE: '/supervisor/devices/add',
   SUPERVISOR_INVENTORY: '/supervisor/inventory',
+  SUPERVISOR_FAULT_REPORTS: '/supervisor/fault-reports',
 
   // Technician
   TECH_DASHBOARD: '/technician/dashboard',

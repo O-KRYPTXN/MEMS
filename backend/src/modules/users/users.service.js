@@ -3,12 +3,7 @@ import prisma from '../../../prisma/prisma.js';
 import { sendActivationEmail } from '../../services/email.service.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
-class UserServiceError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+import { AppError } from '../../utils/AppError.js';
 
 /**
  * Get all users with pagination and filtering
@@ -94,7 +89,7 @@ export const getUserById = async (id) => {
   });
 
   if (!user) {
-    throw new UserServiceError('User not found', 404);
+    throw new AppError('User not found', 404);
   }
 
   return user;
@@ -112,7 +107,7 @@ export const createUser = async (data) => {
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    throw new UserServiceError('A user with this email already exists', 400);
+    throw new AppError('A user with this email already exists', 400);
   }
 
   // Generate activation token

@@ -5,17 +5,20 @@ import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
 import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
-import { workOrders as initialWorkOrders } from '../../data/workOrders'
 import KPICard from '../../components/ui/KPICard'
 import StatusBadge from '../../components/ui/StatusBadge'
 import DataTable from '../../components/tables/DataTable'
 import { formatDate } from '../../utils/formatDate'
 import { useTranslation } from 'react-i18next'
+import workOrderService from '../../api/workOrderService'
+import * as usersService from '../../api/usersService'
+import deviceService from '../../api/deviceService'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const typeVariantMap = {
-  'Repair':                 { variant: 'high',   label: 'Repair' },
-  'Preventive Maintenance': { variant: 'medium', label: 'PM' },
-  'Decommission':           { variant: 'low',    label: 'Decommission' },
+  'REPAIR':                 { variant: 'high',   label: 'Repair' },
+  'PREVENTIVE_MAINTENANCE': { variant: 'medium', label: 'PM' },
+  'DECOMMISSION':           { variant: 'low',    label: 'Decommission' },
 }
 
 const TypeBadge = ({ type }) => {
@@ -39,17 +42,16 @@ const DEPT_OPTS = [
 ]
 
 const TYPE_OPTS = [
-  ['', 'All'], ['Repair', 'Repair'], ['Preventive Maintenance', 'Preventive Maintenance'], ['Decommission', 'Decommission']
+  ['', 'All'], ['REPAIR', 'Repair'], ['PREVENTIVE_MAINTENANCE', 'Preventive Maintenance'], ['DECOMMISSION', 'Decommission']
 ]
 
 const STATUS_OPTS = [
-  ['', 'All'], ['open', 'Open'], ['progress', 'In Progress'],
-  ['waiting', 'Waiting Parts'], ['done', 'Completed'], ['cancelled', 'Cancelled']
+  ['', 'All'], ['OPEN', 'Open'], ['IN_PROGRESS', 'In Progress'],
+  ['WAITING_PARTS', 'Waiting Parts'], ['PENDING_APPROVAL', 'Pending Approval'], ['DONE', 'Completed'], ['CANCELLED', 'Cancelled']
 ]
 
-const ASSIGN_OPTS = [
-  ['', 'All'], ['J. Smith', 'J. Smith'], ['A. Hassan', 'A. Hassan'],
-  ['M. Youssef', 'M. Youssef'], ['S. Khalid', 'S. Khalid']
+const PRIORITY_OPTS = [
+  ['LOW', 'Low'], ['MEDIUM', 'Medium'], ['HIGH', 'High'], ['CRITICAL', 'Critical']
 ]
 
 const selectCls = 'h-[36px] px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem] outline-none'
@@ -65,7 +67,11 @@ const getPageNums = (cur, total) => {
 
 export default function WorkOrders() {
   const { t } = useTranslation()
-  const [woList, setWoList] = useState(initialWorkOrders)
+  const { showToast } = useToastStore()
+  
+  const [woList, setWoList] = useState([])
+  const [technicians, setTechnicians] = useState([])
+  const [devices, setDevices] = useState([])
   
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
@@ -75,6 +81,7 @@ export default function WorkOrders() {
   const [activeTab, setActiveTab] = useState('')
   
   const [currentPage, setCurrentPage] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [showViewModal, setShowViewModal] = useState(false)
   const [showFormModal, setShowFormModal] = useState(false)
@@ -83,20 +90,37 @@ export default function WorkOrders() {
 
   const { register, handleSubmit, reset } = useForm()
 
+  const loadData = async () => {
+    try {
+      const [woRes, usersRes, devRes] = await Promise.all([
+        workOrderService.getWorkOrders({ limit: 500 }),
+        usersService.getUsers({ role: 'TECHNICIAN', all: 'true' }),
+        deviceService.getDevices({ all: 'true' })
+      ])
+      setWoList(woRes.items || [])
+      setTechnicians(usersRes.data || usersRes.items || [])
+      setDevices(devRes.data || [])
+    } catch (err) {
+      showToast('Failed to load data', TOAST_COLORS.error)
+    }
+  }
+
+  useEffect(() => { loadData() }, [])
+
   const TABS = useMemo(() => [
     { label: t('common.allStatuses'), value: '' },
-    { label: t('workOrders.open'), value: 'open' },
-    { label: t('pm.inProgress'), value: 'progress' },
-    { label: t('workOrders.waitingParts'), value: 'waiting' },
-    { label: t('pm.completed'), value: 'done' },
+    { label: t('workOrders.open'), value: 'OPEN' },
+    { label: t('pm.inProgress'), value: 'IN_PROGRESS' },
+    { label: t('workOrders.waitingParts'), value: 'WAITING_PARTS' },
+    { label: t('pm.completed'), value: 'DONE' },
   ], [t])
 
   const tabCounts = useMemo(() => ({
     '': woList.length,
-    open: woList.filter(w => w.status === 'open').length,
-    progress: woList.filter(w => w.status === 'progress').length,
-    waiting: woList.filter(w => w.status === 'waiting').length,
-    done: woList.filter(w => w.status === 'done').length,
+    OPEN: woList.filter(w => w.status === 'OPEN').length,
+    IN_PROGRESS: woList.filter(w => w.status === 'IN_PROGRESS').length,
+    WAITING_PARTS: woList.filter(w => w.status === 'WAITING_PARTS').length,
+    DONE: woList.filter(w => w.status === 'DONE').length,
   }), [woList])
 
   const filtered = useMemo(() => {
@@ -105,9 +129,9 @@ export default function WorkOrders() {
       const matchTab    = !activeTab   || wo.status === activeTab
       const matchStatus = !statusFilter|| wo.status === statusFilter
       const matchType   = !typeFilter  || wo.type === typeFilter
-      const matchAssign = !assignedFilter || wo.assigned === assignedFilter
-      const matchDept   = !deptFilter  || wo.dept === deptFilter
-      const matchSearch = !q || [wo.id, wo.device, wo.dept, wo.assigned, wo.issue, wo.status]
+      const matchAssign = !assignedFilter || wo.assignedToId === assignedFilter
+      const matchDept   = !deptFilter  || wo.device?.department?.name === deptFilter
+      const matchSearch = !q || [wo.workOrderNumber, wo.device?.name, wo.device?.department?.name, wo.assignedTo?.name, wo.description]
         .some(v => String(v).toLowerCase().includes(q))
       return matchTab && matchStatus && matchType && matchAssign && matchDept && matchSearch
     })
@@ -129,7 +153,7 @@ export default function WorkOrders() {
   const handleStatusFilterChange = (e) => {
     const val = e.target.value
     setStatusFilter(val)
-    if (['', 'open', 'progress', 'waiting', 'done'].includes(val)) {
+    if (['', 'OPEN', 'IN_PROGRESS', 'WAITING_PARTS', 'DONE'].includes(val)) {
       setActiveTab(val)
     } else {
       setActiveTab('')
@@ -137,14 +161,14 @@ export default function WorkOrders() {
   }
 
   const columns = useMemo(() => [
-    { key: 'id', label: t('workOrders.woNumber'), render: val => <span className="font-mono text-[#3B82F6] font-semibold text-[12px]">{val}</span> },
-    { key: 'device', label: t('devices.deviceName'), render: val => <span className="text-[var(--text-primary)] font-medium">{val}</span> },
-    { key: 'dept', label: t('users.department'), render: val => <span className="inline-block bg-[var(--bg-hover)] border border-[var(--border)] rounded-[6px] px-[9px] py-[2px] text-[11px] text-[var(--text-muted)]">{val}</span> },
-    { key: 'issue', label: t('workOrders.issueDescription'), render: val => <span className="inline-block max-w-[200px] truncate text-[var(--text-muted)] align-middle text-[12px]" title={val}>{val}</span> },
+    { key: 'id', label: t('workOrders.woNumber'), render: (_, row) => <span className="font-mono text-[#3B82F6] font-semibold text-[12px]">{row.workOrderNumber}</span> },
+    { key: 'device', label: t('devices.deviceName'), render: (_, row) => <span className="text-[var(--text-primary)] font-medium">{row.device?.name}</span> },
+    { key: 'dept', label: t('users.department'), render: (_, row) => <span className="inline-block bg-[var(--bg-hover)] border border-[var(--border)] rounded-[6px] px-[9px] py-[2px] text-[11px] text-[var(--text-muted)]">{row.device?.department?.name || '—'}</span> },
+    { key: 'issue', label: t('workOrders.issueDescription'), render: (_, row) => <span className="inline-block max-w-[200px] truncate text-[var(--text-muted)] align-middle text-[12px]" title={row.description}>{row.description}</span> },
     { key: 'type', label: t('reports.type'), render: val => <TypeBadge type={val} /> },
-    { key: 'assigned', label: t('workOrders.assignedTo') },
-    { key: 'status', label: t('common.status'), render: val => <StatusBadge variant={val} /> },
-    { key: 'created', label: t('workOrders.createdDate'), render: val => formatDate(val) },
+    { key: 'assigned', label: t('workOrders.assignedTo'), render: (_, row) => row.assignedTo?.name || 'Unassigned' },
+    { key: 'status', label: t('common.status'), render: val => <StatusBadge variant={val.toLowerCase()} label={STATUS_OPTS.find(o => o[0] === val)?.[1] || val} /> },
+    { key: 'created', label: t('workOrders.createdDate'), render: (_, row) => formatDate(row.createdAt) },
     { key: 'actions', label: '', render: (_, row) => (
       <div className="flex gap-1.5">
         <button
@@ -179,37 +203,58 @@ export default function WorkOrders() {
     </div>
   )
 
-  const onFormSubmit = (data) => {
-    if (editingWO) {
-      setWoList(prev => prev.map(wo => wo.id === editingWO.id ? { ...wo, ...data } : wo))
-    } else {
-      const lastIdNum = woList.reduce((max, wo) => {
-        const num = parseInt(wo.id.split('-')[2], 10)
-        return isNaN(num) ? max : Math.max(max, num)
-      }, 0)
-      const newId = `WO-2024-${String(lastIdNum + 1).padStart(4, '0')}`
-      const newWo = {
-        id: newId,
-        created: new Date().toISOString().split('T')[0],
-        status: 'open',
-        ...data
+  const onFormSubmit = async (data) => {
+    setIsSubmitting(true)
+    try {
+      if (editingWO) {
+        await workOrderService.updateWorkOrder(editingWO.id, {
+          status: data.status,
+          type: data.type,
+          priority: data.priority,
+          assignedToId: data.assignedToId || null,
+          description: data.description,
+          dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined
+        })
+        showToast('Work order updated successfully', TOAST_COLORS.success)
+      } else {
+        await workOrderService.createWorkOrder({
+          deviceId: data.deviceId,
+          type: data.type,
+          priority: data.priority,
+          assignedToId: data.assignedToId || null,
+          description: data.description,
+          dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined
+        })
+        showToast('Work order created successfully', TOAST_COLORS.success)
       }
-      setWoList([newWo, ...woList])
+      setShowFormModal(false)
+      reset()
+      loadData()
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Action failed', TOAST_COLORS.error)
+    } finally {
+      setIsSubmitting(false)
     }
-    setShowFormModal(false)
-    reset()
   }
 
   const openEditModal = () => {
     setShowViewModal(false)
     setEditingWO(selectedWO)
-    reset(selectedWO)
+    reset({
+      deviceId: selectedWO.deviceId,
+      type: selectedWO.type,
+      priority: selectedWO.priority,
+      status: selectedWO.status,
+      assignedToId: selectedWO.assignedToId || '',
+      description: selectedWO.description,
+      dueDate: selectedWO.dueDate ? new Date(selectedWO.dueDate).toISOString().split('T')[0] : ''
+    })
     setShowFormModal(true)
   }
 
   const openCreateModal = () => {
     setEditingWO(null)
-    reset({ device: '', dept: '', type: '', issue: '', assigned: '', dueDate: '' })
+    reset({ deviceId: '', type: 'REPAIR', priority: 'MEDIUM', assignedToId: '', description: '', dueDate: '' })
     setShowFormModal(true)
   }
 
@@ -229,12 +274,12 @@ export default function WorkOrders() {
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-[16px]">
-        <KPICard title={t('workOrders.created')} value={tabCounts.open} iconVariant="blue" iconPath="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2 M10 3h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1z M9 12h6 M9 16h4" />
-        <KPICard title={t('pm.inProgress')} value={tabCounts.progress} iconVariant="orange" iconPath="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        <KPICard title={t('workOrders.created')} value={tabCounts['OPEN'] || 0} iconVariant="blue" iconPath="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2 M10 3h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1z M9 12h6 M9 16h4" />
+        <KPICard title={t('pm.inProgress')} value={tabCounts['IN_PROGRESS'] || 0} iconVariant="orange" iconPath="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
         <div className="[&_.bg-\\[rgba\\(59\\,114\\,246\\,0\\.15\\)\\]]:bg-[rgba(168,85,247,0.15)] [&_.text-\\[\\#5E8FFF\\]]:text-[#C084FC]">
-            <KPICard title={t('workOrders.pendingApproval')} value={tabCounts.waiting} iconVariant="blue" iconPath="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12" />
+            <KPICard title={t('workOrders.pendingApproval')} value={tabCounts['WAITING_PARTS'] || tabCounts['PENDING_APPROVAL'] || 0} iconVariant="blue" iconPath="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12" />
         </div>
-        <KPICard title={t('pm.completed')} value={tabCounts.done} iconVariant="green" iconPath="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" />
+        <KPICard title={t('pm.completed')} value={tabCounts['DONE'] || 0} iconVariant="green" iconPath="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" />
       </div>
 
       <div className="flex flex-wrap items-center gap-[12px]">
@@ -252,7 +297,8 @@ export default function WorkOrders() {
           {STATUS_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('common.status')}: ${l}` : `${t('common.status')}: ${t('common.allStatuses')}`}</option>)}
         </select>
         <select value={assignedFilter} onChange={e => setAssignedFilter(e.target.value)} className={selectCls}>
-          {ASSIGN_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('workOrders.assignedTo')}: ${l}` : t('common.allStatuses')}</option>)}
+          <option value="">{t('common.allStatuses')}</option>
+          {technicians.map(tItem => <option key={tItem.id} value={tItem.id}>{`${t('workOrders.assignedTo')}: ${tItem.name}`}</option>)}
         </select>
         <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className={selectCls}>
           {DEPT_OPTS.map(([v, l]) => <option key={v||'all'} value={v}>{v ? `${t('users.department')}: ${l}` : `${t('users.department')}: All`}</option>)}
@@ -288,19 +334,19 @@ export default function WorkOrders() {
         }
       >
         <div className="grid grid-cols-2 gap-[16px]">
-          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.woNumber')}</div><div className="text-[13px] font-mono text-[#3B82F6]">{selectedWO?.id}</div></div>
-          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.createdDate')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO && formatDate(selectedWO.created)}</div></div>
-          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('devices.deviceName')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.device}</div></div>
-          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('users.department')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.dept}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.woNumber')}</div><div className="text-[13px] font-mono text-[#3B82F6]">{selectedWO?.workOrderNumber}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.createdDate')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO && formatDate(selectedWO.createdAt)}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('devices.deviceName')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.device?.name}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('users.department')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.device?.department?.name}</div></div>
           <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.priorityType')}</div><div className="mt-1">{selectedWO && <TypeBadge type={selectedWO.type} />}</div></div>
-          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('common.status')}</div><div className="mt-1">{selectedWO && <StatusBadge variant={selectedWO.status} />}</div></div>
-          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.assignedTo')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.assigned}</div></div>
-          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.dueDate')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO && formatDate(selectedWO.dueDate)}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('common.status')}</div><div className="mt-1">{selectedWO && <StatusBadge variant={selectedWO.status.toLowerCase()} label={STATUS_OPTS.find(o => o[0] === selectedWO.status)?.[1] || selectedWO.status} />}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.assignedTo')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.assignedTo?.name || 'Unassigned'}</div></div>
+          <div><div className="text-[11px] text-[var(--text-muted)] uppercase mb-1">{t('workOrders.dueDate')}</div><div className="text-[13px] text-[var(--text-primary)]">{selectedWO?.dueDate ? formatDate(selectedWO.dueDate) : '—'}</div></div>
           
           <div className="col-span-2 mt-2">
             <div className="text-[11px] text-[var(--text-muted)] uppercase mb-[6px]">{t('workOrders.issueDescription')}</div>
             <div className="bg-[var(--bg-input)] border border-[var(--border)] rounded-lg p-3 max-h-[140px] overflow-y-auto text-[13px] text-[var(--text-primary)] whitespace-pre-wrap">
-              {selectedWO?.issue}
+              {selectedWO?.description}
             </div>
           </div>
         </div>
@@ -314,28 +360,28 @@ export default function WorkOrders() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowFormModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="wo-form" color="#3B72F6">
-              {editingWO ? t('workOrders.saveChanges') : t('workOrders.createWorkOrder')}
+            <ModalPrimaryBtn type="submit" form="wo-form" color="#3B72F6" disabled={isSubmitting}>
+              {isSubmitting ? '...' : (editingWO ? t('workOrders.saveChanges') : t('workOrders.createWorkOrder'))}
             </ModalPrimaryBtn>
           </>
         }
       >
         <form id="wo-form" onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
-          <InputField label={t('devices.deviceName')} name="device" {...register('device', { required: true })} placeholder="e.g. Philips IntelliVue MX800" required />
+          <SelectField label={t('devices.deviceName')} name="deviceId" {...register('deviceId', { required: true })} options={devices.map(d => ({value: d.id, label: `${d.assetCode} - ${d.name}`}))} required disabled={!!editingWO} />
           
           <div className="grid grid-cols-2 gap-[14px]">
-            <SelectField label={t('users.department')} name="dept" {...register('dept', { required: true })} placeholder={t('addDevice.selectDepartment')} options={DEPT_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required />
-            <SelectField label={t('workOrders.priorityType')} name="type" {...register('type', { required: true })} placeholder="Select Type" options={TYPE_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required />
+            <SelectField label={t('workOrders.priorityType')} name="type" {...register('type', { required: true })} options={TYPE_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required disabled={!!editingWO} />
+            <SelectField label="Priority" name="priority" {...register('priority')} options={PRIORITY_OPTS.map(([v,l]) => ({value: v, label: l}))} />
           </div>
 
           {editingWO && (
-            <SelectField label={t('common.status')} name="status" {...register('status')} placeholder="Select Status" options={STATUS_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} />
+            <SelectField label={t('common.status')} name="status" {...register('status')} options={STATUS_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} />
           )}
 
-          <InputField type="textarea" label={t('workOrders.issueDescription')} name="issue" {...register('issue', { required: true })} placeholder="Describe the issue in detail…" required />
+          <InputField type="textarea" label={t('workOrders.issueDescription')} name="description" {...register('description', { required: true })} placeholder="Describe the issue in detail…" required />
 
           <div className="grid grid-cols-2 gap-[14px]">
-            <SelectField label={t('workOrders.assignedTo')} name="assigned" {...register('assigned', { required: true })} placeholder="Select Assignee" options={ASSIGN_OPTS.slice(1).map(([v,l]) => ({value: v, label: l}))} required />
+            <SelectField label={t('workOrders.assignedTo')} name="assignedToId" {...register('assignedToId')} options={[{value: '', label: 'Unassigned'}, ...technicians.map(tItem => ({value: tItem.id, label: tItem.name}))]} />
             <InputField type="date" label={t('workOrders.dueDate')} name="dueDate" {...register('dueDate')} />
           </div>
         </form>

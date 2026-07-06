@@ -9,8 +9,13 @@ export const getDevices = catchAsync(async (req, res) => {
     category: req.query.category,
     status: req.query.status,
     departmentId: req.query.departmentId,
-    search: req.query.search
+    search: req.query.search,
+    all: req.query.all
   };
+
+  if (req.user.role === 'DEPARTMENT' || req.user.role === 'SUPERVISOR') {
+    filters.departmentId = req.user.departmentId;
+  }
 
   const result = await deviceService.getAllDevices(page, limit, filters);
 
@@ -18,7 +23,12 @@ export const getDevices = catchAsync(async (req, res) => {
 });
 
 export const getDeviceStats = catchAsync(async (req, res) => {
-  const stats = await deviceService.getDeviceStats();
+  let departmentId = null;
+  if (req.user.role === 'DEPARTMENT' || req.user.role === 'SUPERVISOR') {
+    departmentId = req.user.departmentId;
+  }
+
+  const stats = await deviceService.getDeviceStats(departmentId);
   
   res.status(200).json({
     message: 'Device stats fetched successfully',

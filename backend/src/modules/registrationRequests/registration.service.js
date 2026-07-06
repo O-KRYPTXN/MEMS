@@ -2,13 +2,7 @@ import crypto from 'crypto';
 import prisma from '../../../prisma/prisma.js';
 import { sendActivationEmail, sendRejectionEmail } from '../../services/email.service.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
-
-class RegistrationServiceError extends Error {
-    constructor(message, statusCode) {
-        super(message);
-        this.statusCode = statusCode;
-    }
-}
+import { AppError } from '../../utils/AppError.js';
 
 /**
  * Get paginated registration requests
@@ -56,17 +50,17 @@ export const approveRegistration = async (id) => {
     const request = await prisma.registrationRequest.findUnique({ where: { id } });
 
     if (!request) {
-        throw new RegistrationServiceError('Registration request not found', 404);
+        throw new AppError('Registration request not found', 404);
     }
 
     if (request.status !== 'PENDING') {
-        throw new RegistrationServiceError(`Request is already ${request.status}`, 400);
+        throw new AppError(`Request is already ${request.status}`, 400);
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email: request.email } });
 
     if (existingUser) {
-        throw new RegistrationServiceError('A user with this email already exists', 400);
+        throw new AppError('A user with this email already exists', 400);
     }
 
     const rawToken = crypto.randomBytes(32).toString('hex');
@@ -109,11 +103,11 @@ export const rejectRegistration = async (id, reason) => {
     const request = await prisma.registrationRequest.findUnique({ where: { id } });
 
     if (!request) {
-        throw new RegistrationServiceError('Registration request not found', 404);
+        throw new AppError('Registration request not found', 404);
     }
 
     if (request.status !== 'PENDING') {
-        throw new RegistrationServiceError(`Request is already ${request.status}`, 400);
+        throw new AppError(`Request is already ${request.status}`, 400);
     }
 
     await prisma.registrationRequest.update({

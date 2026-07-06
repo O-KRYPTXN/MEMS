@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import faultReportService from '../../api/faultReportService'
 import StatusDonutChart from '../../components/charts/StatusDonutChart'
 import EmptyState from '../../components/ui/EmptyState'
 import { useForm } from 'react-hook-form'
@@ -62,6 +63,19 @@ export default function SupervisorDashboard() {
   const [activeApproval, setActiveApproval] = useState(null)
   const { showToast } = useToastStore()
   const [approveNotes, setApproveNotes] = useState('')
+  const [pendingFaults, setPendingFaults] = useState([])
+
+  useEffect(() => {
+    const fetchFaults = async () => {
+      try {
+        const res = await faultReportService.getFaultReports({ status: 'PENDING', limit: 3 })
+        setPendingFaults(res.items || [])
+      } catch (err) {
+        console.error('Failed to fetch pending faults:', err)
+      }
+    }
+    fetchFaults()
+  }, [])
 
   const { register: regAssign, handleSubmit: submitAssign, reset: resetAssign } = useForm()
 
@@ -143,8 +157,8 @@ export default function SupervisorDashboard() {
               <div className="text-[0.8125rem] text-[var(--text-muted)] font-semibold mt-1">{t('supervisor.pendingYourApproval')}</div>
             </div>
           </div>
-          <div onClick={() => navigate(ROUTES.SUPERVISOR_DEVICES)} className="cursor-pointer">
-            <KPICard title={t('supervisor.faultyDevices')} value="4" trend="down" trendLabel={t('supervisor.critical')} danger iconPath="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" iconVariant="red" />
+          <div onClick={() => navigate(ROUTES.SUPERVISOR_FAULT_REPORTS)} className="cursor-pointer">
+            <KPICard title="Pending Fault Reports" value={pendingFaults.length} trend="warn" trendLabel="Triage needed" danger iconPath="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" iconVariant="red" />
           </div>
           <div onClick={() => navigate(ROUTES.SUPERVISOR_TEAM)} className="cursor-pointer">
             <KPICard title={t('supervisor.activeTechnicians')} value={teamData.filter(t => t.status !== 'offline').length} trendLabel={t('supervisor.active')} iconPath="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" iconVariant="green" />
@@ -241,6 +255,50 @@ export default function SupervisorDashboard() {
             </div>
           </Panel>
         </div>
+
+        {/* Pending Fault Reports Widget */}
+        <Panel noPadding className="flex flex-col">
+          <PanelHeader
+            title="Pending Fault Reports"
+            subtitle="Recent department requests awaiting triage"
+            action={<button onClick={() => navigate(ROUTES.SUPERVISOR_FAULT_REPORTS)} className="text-[13px] font-semibold text-[#14B8A6] hover:text-[#0D9488]">{t('supervisor.viewAll')}</button>}
+          />
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
+                  <th className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">Report ID</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">Device</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">Department</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">Issue Description</th>
+                  <th className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]">
+                {pendingFaults.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-[var(--text-muted)]">No pending fault reports.</td>
+                  </tr>
+                ) : pendingFaults.map(r => (
+                  <tr key={r.id} className="hover:bg-[var(--bg-hover)] transition-colors">
+                    <td className="p-4 text-[13px] font-medium text-[var(--text-primary)]">FR-{r.id.slice(-4).toUpperCase()}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{r.device?.name}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)]">{r.device?.department?.name}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)] max-w-[280px] truncate" title={r.description}>{r.description}</td>
+                    <td className="p-4 text-right">
+                      <button 
+                        onClick={() => navigate(ROUTES.SUPERVISOR_FAULT_REPORTS)}
+                        className="px-3 py-1.5 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-md text-[11.5px] font-bold transition-colors shadow-lg shadow-teal-500/20"
+                      >
+                        Convert to WO
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
 
         {/* Device Requests Panel */}
         <Panel noPadding className="flex flex-col">

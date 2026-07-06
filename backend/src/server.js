@@ -10,7 +10,10 @@ import authRoutes from './modules/auth/auth.routes.js';
 import usersRoutes from './modules/users/users.routes.js';
 import departmentsRoutes from './modules/departments/departments.routes.js';
 import registrationRoutes from './modules/registrationRequests/registration.routes.js';
+import faultReportsRoutes from './modules/faultReports/faultReports.routes.js';
+import workOrdersRoutes from './modules/workOrders/workOrders.routes.js';
 import devicesRoutes from './modules/devices/devices.routes.js';
+import pmTasksRoutes from './modules/pmTasks/pmTasks.routes.js';
 
 
 // Load validated environment variables
@@ -44,7 +47,9 @@ app.use('/api/users', usersRoutes);
 app.use('/api/departments', departmentsRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/devices', devicesRoutes);
-// app.use('/api/devices', deviceRoutes);
+app.use('/api/fault-reports', faultReportsRoutes);
+app.use('/api/work-orders', workOrdersRoutes);
+app.use('/api/pm-tasks', pmTasksRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

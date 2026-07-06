@@ -5,11 +5,16 @@ import SelectField from '../../components/forms/SelectField'
 import clsx from 'clsx'
 import Panel, { PanelHeader } from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
-import { pmTasks as initialPMTasks } from '../../data/pmTasks'
 import KPICard from '../../components/ui/KPICard'
 import DataTable from '../../components/tables/DataTable'
 import { formatDate } from '../../utils/formatDate'
 import { useTranslation } from 'react-i18next'
+import pmTaskService from '../../api/pmTaskService'
+import deviceService from '../../api/deviceService'
+import * as usersService from '../../api/usersService'
+import workOrderService from '../../api/workOrderService'
+import * as departmentsService from '../../api/departmentsService'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 const TODAY = new Date()
 TODAY.setHours(0, 0, 0, 0)
@@ -22,12 +27,12 @@ function daysUntil(dateStr) {
 
 const PMTypeBadge = ({ type }) => {
   const map = {
-    Routine: 'bg-[rgba(59,114,246,0.12)] text-[#5E8FFF]',
-    Calibration: 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
-    Inspection: 'bg-[rgba(20,184,166,0.12)] text-[#2DD4BF]',
+    ROUTINE: 'bg-[rgba(59,114,246,0.12)] text-[#5E8FFF]',
+    CALIBRATION: 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
+    INSPECTION: 'bg-[rgba(20,184,166,0.12)] text-[#2DD4BF]',
   }
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[type] ?? ''}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[type] || map.ROUTINE}`}>
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
       {type}
     </span>
@@ -35,17 +40,17 @@ const PMTypeBadge = ({ type }) => {
 }
 
 const PM_STATUS_MAP = {
-  Scheduled: 'bg-[rgba(59,114,246,0.12)] text-[#5E8FFF]',
-  Overdue: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-  'In Progress': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-  Completed: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-  Cancelled: 'bg-[rgba(90,106,133,0.2)] text-[#5A6A85]',
+  SCHEDULED: 'bg-[rgba(59,114,246,0.12)] text-[#5E8FFF]',
+  OVERDUE: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+  IN_PROGRESS: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+  COMPLETED: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+  CANCELLED: 'bg-[rgba(90,106,133,0.2)] text-[#5A6A85]',
 }
 
 const PMStatusBadge = ({ status }) => (
-  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${PM_STATUS_MAP[status] ?? ''}`}>
+  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${PM_STATUS_MAP[status] || ''}`}>
     <span className="w-1.5 h-1.5 rounded-full bg-current" />
-    {status}
+    {status.replace('_', ' ')}
   </span>
 )
 
@@ -56,28 +61,6 @@ const DeptTag = ({ dept }) => (
 )
 
 const ROWS_PER_PAGE = 8
-
-const TABS = [
-  { label: 'All', value: '' },
-  { label: 'Scheduled', value: 'Scheduled' },
-  { label: 'Overdue', value: 'Overdue' },
-  { label: 'In Progress', value: 'In Progress' },
-  { label: 'Completed', value: 'Completed' },
-]
-
-const DEPT_OPTS = [
-  ['', 'All'], ['ICU', 'ICU'], ['ER', 'ER'], ['Surgery', 'Surgery'],
-  ['Radiology', 'Radiology'], ['Cardiology', 'Cardiology'], ['Laboratory', 'Laboratory']
-]
-
-const TYPE_OPTS = [
-  ['', 'All'], ['Routine', 'Routine'], ['Calibration', 'Calibration'], ['Inspection', 'Inspection']
-]
-
-const TECH_OPTS = [
-  ['', 'All'], ['J. Smith', 'J. Smith'], ['A. Hassan', 'A. Hassan'],
-  ['M. Youssef', 'M. Youssef'], ['S. Khalid', 'S. Khalid']
-]
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -97,7 +80,11 @@ const getPageNums = (cur, total) => {
 
 export default function PreventiveMaintenance() {
   const { t } = useTranslation()
-  const [tasks, setTasks] = useState(initialPMTasks)
+  const [tasks, setTasks] = useState([])
+  const [devices, setDevices] = useState([])
+  const [techs, setTechs] = useState([])
+  const [departments, setDepartments] = useState([])
+
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [deptFilter, setDeptFilter] = useState('')
@@ -109,25 +96,60 @@ export default function PreventiveMaintenance() {
   const [showModal, setShowModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedPM, setSelectedPM] = useState(null)
+  
+  const [loading, setLoading] = useState(true)
+  const { showToast } = useToastStore()
 
-  const { register, handleSubmit, reset } = useForm()
+  const { register, handleSubmit, reset, watch, setValue } = useForm()
+
+  const fetchDependencies = async () => {
+    try {
+      const [devRes, uRes, dRes] = await Promise.all([
+        deviceService.getDevices({ limit: 100 }),
+        usersService.getUsers({ role: 'TECHNICIAN', limit: 100 }),
+        departmentsService.getDepartments()
+      ]);
+      setDevices(devRes.items || []);
+      setTechs(uRes.items || []);
+      setDepartments(dRes.data || []);
+    } catch (err) {
+      showToast('Failed to load form dependencies', TOAST_COLORS.error);
+    }
+  }
+
+  const fetchPMTasks = async () => {
+    setLoading(true)
+    try {
+      const res = await pmTaskService.getPMTasks()
+      setTasks(res.items || [])
+    } catch (err) {
+      showToast('Failed to load PM Tasks', TOAST_COLORS.error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDependencies()
+    fetchPMTasks()
+  }, [])
 
   const TABS = useMemo(() => [
     { label: t('common.allStatuses'), value: '' },
-    { label: t('pm.scheduled'), value: 'Scheduled' },
-    { label: t('pm.overdue'), value: 'Overdue' },
-    { label: t('pm.inProgress'), value: 'In Progress' },
-    { label: t('pm.completed'), value: 'Completed' },
+    { label: t('pm.scheduled'), value: 'SCHEDULED' },
+    { label: t('pm.overdue'), value: 'OVERDUE' },
+    { label: t('pm.inProgress'), value: 'IN_PROGRESS' },
+    { label: t('pm.completed'), value: 'COMPLETED' },
   ], [t])
 
-  const scheduledCount = tasks.filter(t => t.status === 'Scheduled').length
-  const overdueCount = tasks.filter(t => t.status === 'Overdue').length
+  const scheduledCount = tasks.filter(t => t.status === 'SCHEDULED').length
+  const overdueCount = tasks.filter(t => t.status === 'OVERDUE').length
   const thisMonthCount = tasks.filter(t => {
-    if (t.status !== 'Completed') return false
-    const d = new Date(t.scheduled)
+    if (t.status !== 'COMPLETED') return false
+    const d = new Date(t.completedAt || t.updatedAt)
     return d.getMonth() === TODAY.getMonth() && d.getFullYear() === TODAY.getFullYear()
   }).length
-  const totalDone = tasks.filter(t => t.status === 'Completed').length
+  const totalDone = tasks.filter(t => t.status === 'COMPLETED').length
   const compliance = tasks.length ? Math.round((totalDone / tasks.length) * 100) : 0
 
   const filtered = useMemo(() => {
@@ -135,9 +157,9 @@ export default function PreventiveMaintenance() {
     return tasks.filter(pm => {
       const matchTab = !activeTab || pm.status === activeTab
       const matchType = !typeFilter || pm.type === typeFilter
-      const matchDept = !deptFilter || pm.dept === deptFilter
-      const matchTech = !techFilter || pm.tech === techFilter
-      const matchQ = !q || [pm.id, pm.device, pm.dept].some(v => v.toLowerCase().includes(q))
+      const matchDept = !deptFilter || pm.device?.department?.id === deptFilter
+      const matchTech = !techFilter || pm.assignedToId === techFilter
+      const matchQ = !q || [pm.pmNumber, pm.device?.name, pm.device?.department?.name].some(v => v?.toLowerCase().includes(q))
       return matchTab && matchType && matchDept && matchTech && matchQ
     })
   }, [tasks, search, activeTab, typeFilter, deptFilter, techFilter])
@@ -153,7 +175,7 @@ export default function PreventiveMaintenance() {
   const taskMap = useMemo(() => {
     const map = {}
     tasks.forEach(pm => {
-      const d = new Date(pm.scheduled)
+      const d = new Date(pm.scheduledAt)
       if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
         const day = d.getDate()
         if (!map[day]) map[day] = []
@@ -183,18 +205,18 @@ export default function PreventiveMaintenance() {
 
   const upcomingTasks = useMemo(() => {
     return tasks
-      .filter(pm => ['Scheduled', 'Overdue', 'In Progress'].includes(pm.status))
-      .sort((a, b) => new Date(a.scheduled) - new Date(b.scheduled))
+      .filter(pm => ['SCHEDULED', 'OVERDUE', 'IN_PROGRESS'].includes(pm.status))
+      .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt))
       .slice(0, 8)
   }, [tasks])
 
   const columns = useMemo(() => [
-    { key: 'id', label: t('pm.pmId'), render: val => <span className="font-mono text-[#3B82F6] font-semibold text-xs">{val}</span> },
-    { key: 'device', label: t('devices.deviceName'), primary: true },
-    { key: 'dept', label: t('users.department'), render: val => <DeptTag dept={val} /> },
+    { key: 'pmNumber', label: t('pm.pmId'), render: val => <span className="font-mono text-[#3B82F6] font-semibold text-xs">{val}</span> },
+    { key: 'device.name', label: t('devices.deviceName'), render: (_, row) => row.device?.name || 'Unknown', primary: true },
+    { key: 'device.department', label: t('users.department'), render: (_, row) => <DeptTag dept={row.device?.department?.name || '-'} /> },
     { key: 'type', label: t('pm.pmType'), render: val => <PMTypeBadge type={val} /> },
     {
-      key: 'scheduled', label: t('pm.scheduledDate'), render: (val) => {
+      key: 'scheduledAt', label: t('pm.scheduledDate'), render: (val) => {
         const du = daysUntil(val)
         const duLabel = du === 0
           ? <span className="text-[#FCD34D] text-[0.72rem]">Today</span>
@@ -204,8 +226,8 @@ export default function PreventiveMaintenance() {
         return <div><div>{formatDate(val)}</div><div>{duLabel}</div></div>
       }
     },
-    { key: 'lastPm', label: t('pm.lastPm'), render: val => formatDate(val) },
-    { key: 'tech', label: t('pm.technician') },
+    { key: 'device.lastPmDate', label: t('pm.lastPm'), render: (_, row) => row.device?.lastPmDate ? formatDate(row.device.lastPmDate) : '-' },
+    { key: 'assignedTo', label: t('pm.technician'), render: val => val ? val.name : <span className="text-[var(--text-muted)]">Unassigned</span> },
     { key: 'status', label: t('common.status'), render: val => <PMStatusBadge status={val} /> },
     {
       key: 'id', label: t('users.actions'), render: (val, row) => (
@@ -240,21 +262,38 @@ export default function PreventiveMaintenance() {
     </div>
   )
 
-  const onFormSubmit = (data) => {
-    const nextId = `PM-2026-${String(tasks.length + 52).padStart(4, '0')}`
-    const newPm = {
-      id: nextId,
-      status: 'Scheduled',
-      lastPm: '',
-      ...data
+  const onFormSubmit = async (data) => {
+    try {
+      await pmTaskService.createPMTask(data)
+      showToast('PM Task scheduled successfully!', TOAST_COLORS.success)
+      setShowModal(false)
+      fetchPMTasks()
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to schedule PM Task', TOAST_COLORS.error)
     }
-    setTasks([newPm, ...tasks])
-    setShowModal(false)
-    reset()
   }
 
+  const handleGenerateWO = async () => {
+    if (!selectedPM) return;
+    try {
+      await workOrderService.createWorkOrder({
+        deviceId: selectedPM.deviceId,
+        pmTaskId: selectedPM.id,
+        type: 'PREVENTIVE_MAINTENANCE',
+        priority: 'MEDIUM',
+        description: `Auto-generated from PM Task ${selectedPM.pmNumber}`,
+        assignedToId: selectedPM.assignedToId || undefined
+      });
+      showToast('Work Order generated successfully!', TOAST_COLORS.success);
+      setShowViewModal(false);
+      fetchPMTasks();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to generate Work Order', TOAST_COLORS.error);
+    }
+  };
+
   const openCreateModal = () => {
-    reset({ device: '', dept: '', type: '', scheduled: new Date().toISOString().split('T')[0], tech: '', recurrence: '', notes: '' })
+    reset({ deviceId: '', type: 'ROUTINE', scheduledAt: new Date().toISOString().split('T')[0], assignedToId: '', recurrence: '', notes: '' })
     setShowModal(true)
   }
 
@@ -304,9 +343,9 @@ export default function PreventiveMaintenance() {
                   <div className="flex gap-[2px] flex-wrap justify-center mt-[4px]">
                     {dayTasks.slice(0, 4).map((t, idx) => {
                       let dotColor = '#5E8FFF'
-                      if (t.status === 'Overdue') dotColor = '#F87171'
-                      else if (t.status === 'Completed') dotColor = '#4ADE80'
-                      else if (t.type === 'Calibration') dotColor = '#C084FC'
+                      if (t.status === 'OVERDUE') dotColor = '#F87171'
+                      else if (t.status === 'COMPLETED') dotColor = '#4ADE80'
+                      else if (t.type === 'CALIBRATION') dotColor = '#C084FC'
 
                       return <div key={idx} className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: dotColor }}></div>
                     })}
@@ -347,19 +386,19 @@ export default function PreventiveMaintenance() {
           <div className="flex-1 overflow-y-auto">
             {upcomingTasks.map((t, idx) => {
               let dotColor = '#5E8FFF'
-              if (t.status === 'Overdue') dotColor = '#F87171'
-              else if (t.status === 'In Progress') dotColor = '#FCD34D'
+              if (t.status === 'OVERDUE') dotColor = '#F87171'
+              else if (t.status === 'IN_PROGRESS') dotColor = '#FCD34D'
 
-              const du = daysUntil(t.scheduled)
+              const du = daysUntil(t.scheduledAt)
               const duLabel = du === 0 ? "Today" : du > 0 ? `In ${du} days` : `${Math.abs(du)}d overdue`
               const duColor = du === 0 ? '#FCD34D' : du > 0 ? (du <= 3 ? '#FCD34D' : '#4ADE80') : '#F87171'
 
               return (
-                <div key={idx} className="flex gap-[12px] p-[12px] px-[18px] border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-hover)]">
+                <div key={idx} className="flex gap-[12px] p-[12px] px-[18px] border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-hover)] cursor-pointer" onClick={() => { setSelectedPM(t); setShowViewModal(true) }}>
                   <div className="w-[8px] h-[8px] rounded-full mt-[5px] shrink-0" style={{ backgroundColor: dotColor }}></div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[0.8125rem] font-semibold text-[var(--text-primary)] truncate">{t.device}</div>
-                    <div className="text-[0.75rem] text-[var(--text-muted)] mt-[2px]">{t.dept} · {t.type} · {t.tech}</div>
+                    <div className="text-[0.8125rem] font-semibold text-[var(--text-primary)] truncate">{t.device?.name}</div>
+                    <div className="text-[0.75rem] text-[var(--text-muted)] mt-[2px]">{t.device?.department?.name || '-'} · {t.type}</div>
                   </div>
                   <div className="text-[0.75rem] font-semibold whitespace-nowrap" style={{ color: duColor }}>
                     {duLabel}
@@ -380,13 +419,18 @@ export default function PreventiveMaintenance() {
             className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
         </div>
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
-          {TYPE_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('pm.pmType')}: ${l}` : `${t('pm.pmType')}: All`}</option>)}
+          <option value="">{t('pm.pmType')}: All</option>
+          <option value="ROUTINE">ROUTINE</option>
+          <option value="CALIBRATION">CALIBRATION</option>
+          <option value="INSPECTION">INSPECTION</option>
         </select>
         <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className={selectCls}>
-          {DEPT_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('users.department')}: ${l}` : `${t('users.department')}: All`}</option>)}
+          <option value="">{t('users.department')}: All</option>
+          {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
         <select value={techFilter} onChange={e => setTechFilter(e.target.value)} className={selectCls}>
-          {TECH_OPTS.map(([v, l]) => <option key={v || 'all'} value={v}>{v ? `${t('pm.technician')}: ${l}` : `${t('pm.technician')}: All`}</option>)}
+          <option value="">{t('pm.technician')}: All</option>
+          {techs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
         <div className="w-[1px] h-[20px] bg-[var(--border)]"></div>
         <button type="button" onClick={openCreateModal} className="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors">
@@ -408,24 +452,51 @@ export default function PreventiveMaintenance() {
       </div>
 
       <Panel noPadding>
-        <DataTable columns={columns} data={paginated} emptyMessage={t('common.noResults')} rowClassName={(row) => row.status === 'Overdue' ? 'bg-[rgba(239,68,68,0.04)] hover:bg-[rgba(239,68,68,0.08)]' : ''} />
-        {renderPagination()}
+        {loading ? (
+          <div className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</div>
+        ) : (
+          <>
+            <DataTable columns={columns} data={paginated} emptyMessage={t('common.noResults')} rowClassName={(row) => row.status === 'OVERDUE' ? 'bg-[rgba(239,68,68,0.04)] hover:bg-[rgba(239,68,68,0.08)]' : ''} />
+            {renderPagination()}
+          </>
+        )}
+        
         <Modal
           isOpen={showViewModal && !!selectedPM}
           onClose={() => setShowViewModal(false)}
           title={t('pm.pmDetails')}
           maxWidth="480px"
-          footer={<ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>}
+          footer={
+            <>
+              <ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>
+              {selectedPM?.status === 'SCHEDULED' && !selectedPM?.workOrder && (
+                <ModalPrimaryBtn color="#3B72F6" onClick={handleGenerateWO}>
+                  Generate Work Order
+                </ModalPrimaryBtn>
+              )}
+            </>
+          }
         >
           <div className="grid grid-cols-2 gap-[16px]">
-            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.pmId')}</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM?.id}</div></div>
-            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('devices.deviceName')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM?.device}</div></div>
-            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('users.department')}</div><div className="mt-1">{selectedPM && <DeptTag dept={selectedPM.dept} />}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.pmId')}</div><div className="text-[13px] font-mono text-[#3B82F6] mt-1">{selectedPM?.pmNumber}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('devices.deviceName')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM?.device?.name}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('users.department')}</div><div className="mt-1">{selectedPM && <DeptTag dept={selectedPM.device?.department?.name || '-'} />}</div></div>
             <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.pmType')}</div><div className="mt-1">{selectedPM && <PMTypeBadge type={selectedPM.type} />}</div></div>
-            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.scheduledDate')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM && formatDate(selectedPM.scheduled)}</div></div>
-            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.lastPm')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM && formatDate(selectedPM.lastPm)}</div></div>
-            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.technician')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM?.tech}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.scheduledDate')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM && formatDate(selectedPM.scheduledAt)}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.lastPm')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM?.device?.lastPmDate ? formatDate(selectedPM.device.lastPmDate) : '-'}</div></div>
+            <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('pm.technician')}</div><div className="text-[13px] text-[var(--text-primary)] mt-1">{selectedPM?.assignedTo ? selectedPM.assignedTo.name : 'Unassigned'}</div></div>
             <div><div className="text-[0.75rem] text-[var(--text-muted)] uppercase font-semibold">{t('common.status')}</div><div className="mt-1">{selectedPM && <PMStatusBadge status={selectedPM.status} />}</div></div>
+            {selectedPM?.workOrder && (
+               <div className="col-span-2 mt-2 p-3 bg-[rgba(59,114,246,0.05)] rounded-lg border border-[rgba(59,114,246,0.2)] flex items-center justify-between">
+                 <div>
+                   <div className="text-[11px] font-semibold text-[#5E8FFF] uppercase">Linked Work Order</div>
+                   <div className="text-[13px] font-mono font-medium text-[var(--text-primary)] mt-0.5">{selectedPM.workOrder.workOrderNumber}</div>
+                 </div>
+                 <div className="text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--bg-hover)] text-[var(--text-secondary)]">
+                   {selectedPM.workOrder.status}
+                 </div>
+               </div>
+            )}
           </div>
         </Modal>
 
@@ -444,19 +515,17 @@ export default function PreventiveMaintenance() {
           }
         >
           <form id="pm-form" onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-4">
-            <InputField label={t('devices.deviceName')} name="device" {...register('device', { required: true })} placeholder="e.g. Philips IntelliVue MX800" required />
+            <SelectField label={t('devices.deviceName')} name="deviceId" {...register('deviceId', { required: true })} options={devices.map(d => ({value: d.id, label: `${d.name} (${d.assetCode})`}))} required />
 
             <div className="grid grid-cols-2 gap-[14px]">
-              <SelectField label={t('users.department')} name="dept" {...register('dept', { required: true })} placeholder={t('addDevice.selectDepartment')} options={DEPT_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
-              <SelectField label={t('pm.pmType')} name="type" {...register('type', { required: true })} placeholder="Select Type" options={TYPE_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
+              <SelectField label={t('pm.pmType')} name="type" {...register('type', { required: true })} options={[{value:'ROUTINE',label:'ROUTINE'},{value:'CALIBRATION',label:'CALIBRATION'},{value:'INSPECTION',label:'INSPECTION'}]} required />
+              <InputField type="date" label={t('pm.scheduledDate')} name="scheduledAt" {...register('scheduledAt', { required: true })} required />
             </div>
 
             <div className="grid grid-cols-2 gap-[14px]">
-              <InputField type="date" label={t('pm.scheduledDate')} name="scheduled" {...register('scheduled', { required: true })} required />
-              <SelectField label={t('pm.assignTechnician')} name="tech" {...register('tech', { required: true })} placeholder={t('pm.selectAssignee')} options={TECH_OPTS.slice(1).map(([v, l]) => ({value: v, label: l}))} required />
+              <SelectField label={t('pm.assignTechnician')} name="assignedToId" {...register('assignedToId')} placeholder={t('pm.selectAssignee')} options={techs.map(t => ({value: t.id, label: t.name}))} />
+              <SelectField label={t('pm.recurrence')} name="recurrence" {...register('recurrence')} placeholder="Select Recurrence" options={[{value: '', label: t('pm.oneTime')}, {value: 'MONTHLY', label: t('pm.monthly')}, {value: 'QUARTERLY', label: t('pm.quarterly')}, {value: 'SEMI_ANNUAL', label: t('pm.semiAnnual')}, {value: 'ANNUAL', label: t('pm.annual')}]} />
             </div>
-
-            <SelectField label={t('pm.recurrence')} name="recurrence" {...register('recurrence')} placeholder="Select Recurrence" options={[{value: '', label: t('pm.oneTime')}, {value: 'Monthly', label: t('pm.monthly')}, {value: 'Quarterly', label: t('pm.quarterly')}, {value: 'Semi-Annual', label: t('pm.semiAnnual')}, {value: 'Annual', label: t('pm.annual')}]} />
 
             <InputField type="textarea" label={t('addDevice.notes')} name="notes" {...register('notes')} placeholder="Any special instructions…" />
           </form>

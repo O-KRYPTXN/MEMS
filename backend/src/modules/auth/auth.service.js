@@ -2,12 +2,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import prisma from '../../../prisma/prisma.js';
 
-class AuthError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+import { AppError } from '../../utils/AppError.js';
 
 export const loginUser = async (email, password) => {
   const user = await prisma.user.findUnique({
@@ -20,24 +15,24 @@ export const loginUser = async (email, password) => {
   });
 
   if (!user) {
-    throw new AuthError('Invalid credentials', 401);
+    throw new AppError('Invalid credentials', 401);
   }
 
   if (!user.isActive) {
-    throw new AuthError('Account is deactivated', 403);
+    throw new AppError('Account is deactivated', 403);
   }
 
   if (user.isSuspended) {
-    throw new AuthError('Account is suspended', 403);
+    throw new AppError('Account is suspended', 403);
   }
 
   if (!user.isActivated) {
-    throw new AuthError('Account is not activated. Please check your email.', 403);
+    throw new AppError('Account is not activated. Please check your email.', 403);
   }
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
-    throw new AuthError('Invalid credentials', 401);
+    throw new AppError('Invalid credentials', 401);
   }
 
   return user;
@@ -62,7 +57,7 @@ export const getUserById = async (id) => {
   });
 
   if (!user) {
-    throw new AuthError('User not found', 404);
+    throw new AppError('User not found', 404);
   }
 
   return user;
@@ -93,7 +88,7 @@ export const createRegistrationRequest = async (data) => {
   });
 
   if (existingUser) {
-    throw new AuthError('An account with this email already exists', 400);
+    throw new AppError('An account with this email already exists', 400);
   }
 
   const existingRequest = await prisma.registrationRequest.findUnique({
@@ -101,7 +96,7 @@ export const createRegistrationRequest = async (data) => {
   });
 
   if (existingRequest && existingRequest.status === 'PENDING') {
-    throw new AuthError('A registration request for this email is already pending review', 400);
+    throw new AppError('A registration request for this email is already pending review', 400);
   }
 
   const dbDepartment = await prisma.department.findUnique({
@@ -109,7 +104,7 @@ export const createRegistrationRequest = async (data) => {
   });
 
   if (!dbDepartment && dbRole !== 'ADMIN') {
-    throw new AuthError('Invalid department specified', 400);
+    throw new AppError('Invalid department specified', 400);
   }
 
   const newRequest = await prisma.registrationRequest.create({

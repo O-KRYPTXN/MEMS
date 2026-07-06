@@ -1,12 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
-class DepartmentServiceError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+import { AppError } from '../../utils/AppError.js';
 
 /**
  * Get all departments (supports pagination and fetching all)
@@ -71,7 +66,7 @@ export const getDepartmentById = async (id) => {
   });
 
   if (!department) {
-    throw new DepartmentServiceError('Department not found', 404);
+    throw new AppError('Department not found', 404);
   }
 
   return department;
@@ -90,7 +85,7 @@ export const createDepartment = async (data) => {
   });
 
   if (existing) {
-    throw new DepartmentServiceError('A department with this name or code already exists', 400);
+    throw new AppError('A department with this name or code already exists', 400);
   }
 
   return prisma.department.create({
@@ -104,7 +99,7 @@ export const createDepartment = async (data) => {
 export const updateDepartment = async (id, data) => {
   const department = await prisma.department.findUnique({ where: { id } });
   if (!department) {
-    throw new DepartmentServiceError('Department not found', 404);
+    throw new AppError('Department not found', 404);
   }
 
   if (data.name || data.code) {

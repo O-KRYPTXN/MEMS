@@ -1,26 +1,41 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import { useTranslation } from 'react-i18next'
 import Panel, { PanelHeader } from '../../components/ui/Panel'
-
-const initialRequests = [
-  { id: 'REQ-001', device: 'ICU Ventilator V500', desc: 'Screen flickering', status: 'In Progress', date: '2026-06-25' },
-  { id: 'REQ-002', device: 'Patient Monitor #12', desc: 'Alarm not triggering', status: 'Pending', date: '2026-06-26' },
-  { id: 'REQ-003', device: 'Defibrillator AED-7', desc: 'Battery draining fast', status: 'Pending', date: '2026-06-27' },
-  { id: 'REQ-004', device: 'ECG Monitor Pro', desc: 'Printer not working', status: 'Solved', date: '2026-06-20' },
-  { id: 'REQ-005', device: 'Infusion Pump IP-400', desc: 'Occlusion false alarms', status: 'In Progress', date: '2026-06-24' },
-]
+import faultReportService from '../../api/faultReportService'
+import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 
 export default function DeptDashboard() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [requests] = useState(initialRequests)
+  const { showToast } = useToastStore()
+  
+  const [stats, setStats] = useState({
+    TOTAL: 0,
+    PENDING: 0,
+    IN_PROGRESS: 0,
+    SOLVED: 0
+  })
 
-  const total = requests.length
-  const pending = requests.filter(r => r.status === 'Pending').length
-  const prog = requests.filter(r => r.status === 'In Progress').length
-  const solved = requests.filter(r => r.status === 'Solved').length
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await faultReportService.getFaultReportStats()
+        setStats(res.data)
+      } catch (err) {
+        showToast('Failed to load dashboard statistics', TOAST_COLORS.error)
+      }
+    }
+    fetchStats()
+  }, [showToast])
+
+  const total = stats.TOTAL || 0
+  const pending = stats.PENDING || 0
+  const prog = stats.IN_PROGRESS || 0
+  const solved = stats.SOLVED || 0
+
+
 
   const kpis = [
     { label: t('deptDashboard.totalReports'), value: total, bg: 'bg-[rgba(236,72,153,0.15)]', color: 'text-[#F472B6]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375"/> },

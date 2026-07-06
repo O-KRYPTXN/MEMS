@@ -5,22 +5,18 @@ import { requireRoles } from '../../middleware/authorize.middleware.js';
 
 const router = express.Router();
 
-// All user management routes require the user to be logged in and be an ADMIN
+// All routes require authentication
 router.use(protect);
+
+// Specific routes that allow SUPERVISOR as well
+router.get('/', requireRoles('ADMIN', 'SUPERVISOR'), usersController.getUsers);
+router.get('/:id', requireRoles('ADMIN', 'SUPERVISOR'), usersController.getUser);
+
+// Admin-only routes
 router.use(requireRoles('ADMIN'));
 
-router
-  .route('/')
-  .get(usersController.getUsers)
-  .post(usersController.createUser);
-
-router
-  .route('/:id')
-  .get(usersController.getUser)
-  .patch(usersController.updateUser);
-
-router
-  .route('/:id/status')
-  .patch(usersController.updateUserStatus);
+router.post('/', usersController.createUser);
+router.patch('/:id', usersController.updateUser);
+router.patch('/:id/status', usersController.updateUserStatus);
 
 export default router;

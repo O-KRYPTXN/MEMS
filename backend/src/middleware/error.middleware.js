@@ -4,8 +4,8 @@ import { env } from '../config/env.js';
  * Global error handling middleware
  */
 export const errorHandler = (err, req, res, next) => {
-  // If the status code is 200 (default), but we fell into the error handler, set it to 500
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  // If the error has a statusCode property (like our AppError), use it
+  let statusCode = err.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
   let message = err.message || 'Internal Server Error';
 
   // Handle Prisma Specific Errors (Example: Unique constraint violation)

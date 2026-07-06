@@ -58,6 +58,7 @@ import StoreEmailLog from '../pages/store/EmailLog'
 import Profile from '../pages/shared/Profile'
 import NotFound from '../pages/shared/NotFound'
 import Unauthorized from '../pages/shared/Unauthorized'
+import SharedFaultReports from '../pages/shared/FaultReports'
 import ErrorBoundry from '../components/ui/ErrorBoundry'
 
 const router = createBrowserRouter([
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
       { path: 'inventory', element: <AdminInventory /> },
       { path: 'users', element: <AdminUsers /> },
       { path: 'reports', element: <AdminReports /> },
+      { path: 'fault-reports', element: <SharedFaultReports /> },
       { path: 'profile', element: <Profile /> },
     ],
   },
@@ -114,6 +116,7 @@ const router = createBrowserRouter([
       { path: 'devices', element: <SupervisorDevices /> },
       { path: 'devices/add', element: <SupervisorAddDevice /> },
       { path: 'inventory', element: <SupervisorInventory /> },
+      { path: 'fault-reports', element: <SharedFaultReports /> },
       { path: 'profile', element: <Profile /> },
     ],
   },
