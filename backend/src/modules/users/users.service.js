@@ -4,6 +4,7 @@ import { sendActivationEmail } from '../../services/email.service.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
 import { AppError } from '../../utils/AppError.js';
+import { logAction } from '../auditLogs/auditLogs.service.js';
 
 /**
  * Get all users with pagination and filtering
@@ -98,7 +99,7 @@ export const getUserById = async (id) => {
 /**
  * Create a new user (Admin bypasses registration requests)
  */
-export const createUser = async (data) => {
+export const createUser = async (data, executorId) => {
   let { name, email, role, departmentId } = data;
 
   if (role === 'ADMIN') {
@@ -137,6 +138,14 @@ export const createUser = async (data) => {
   });
 
   await sendActivationEmail(email, token);
+
+  await logAction({
+    userId: executorId,
+    action: 'CREATED',
+    entity: 'User',
+    entityId: newUser.email,
+    newValue: newUser
+  });
 
   return newUser;
 };
@@ -183,7 +192,7 @@ export const updateUser = async (id, data, executorId) => {
     }
   }
 
-  return prisma.user.update({
+  const updated = await prisma.user.update({
     where: { id },
     data: updateData,
     select: {
@@ -195,6 +204,17 @@ export const updateUser = async (id, data, executorId) => {
       isSuspended: true,
     }
   });
+
+  await logAction({
+    userId: executorId,
+    action: 'UPDATED',
+    entity: 'User',
+    entityId: user.email,
+    oldValue: user,
+    newValue: updated
+  });
+
+  return updated;
 };
 
 /**
@@ -221,7 +241,7 @@ export const updateUserStatus = async (id, statusData, executorId) => {
     }
   }
 
-  return prisma.user.update({
+  const updated = await prisma.user.update({
     where: { id },
     data: statusData,
     select: {
@@ -232,4 +252,21 @@ export const updateUserStatus = async (id, statusData, executorId) => {
       isSuspended: true,
     }
   });
+
+  let action = 'STATUS_CHANGED';
+  if (statusData.isSuspended === true) action = 'SUSPENDED';
+  else if (statusData.isSuspended === false) action = 'UNSUSPENDED';
+  else if (statusData.isActive === false) action = 'DEACTIVATED';
+  else if (statusData.isActive === true) action = 'ACTIVATED';
+
+  await logAction({
+    userId: executorId,
+    action,
+    entity: 'User',
+    entityId: user.email,
+    oldValue: { isSuspended: user.isSuspended, isActive: user.isActive },
+    newValue: statusData
+  });
+
+  return updated;
 };

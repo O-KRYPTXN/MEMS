@@ -55,7 +55,7 @@ export const createUser = catchAsync(async (req, res) => {
       return res.status(400).json({ message: formatZodErrors(parsed.error) });
     }
 
-    const newUser = await userService.createUser(parsed.data);
+    const newUser = await userService.createUser(parsed.data, req.user.id);
     res.status(201).json({
       message: 'User created successfully. An activation email has been sent.',
       data: newUser

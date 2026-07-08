@@ -2,6 +2,7 @@ import prisma from '../../../prisma/prisma.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
 import { AppError } from '../../utils/AppError.js';
+import { logAction } from '../auditLogs/auditLogs.service.js';
 
 /**
  * Generate a unique Work Order Number (e.g. WO-2026-0001)
@@ -100,6 +101,16 @@ export const createWorkOrder = async (data, user) => {
         data: { status: rest.type === 'REPAIR' ? 'FAULTY' : 'DECOMMISSIONED' }
       });
     }
+
+    await logAction({
+      userId: user.id,
+      action: 'CREATED',
+      entity: 'WorkOrder',
+      entityId: wo.workOrderNumber,
+      newValue: wo,
+      workOrderId: wo.id,
+      tx
+    });
 
     return wo;
   });
@@ -217,6 +228,29 @@ export const updateWorkOrder = async (id, data, user) => {
             data: { lastPmDate: new Date(), nextPmDate }
           });
         }
+        
+        await logAction({
+          userId: user.id,
+          action: 'STATUS_CHANGED',
+          entity: 'WorkOrder',
+          entityId: wo.workOrderNumber,
+          oldValue: wo,
+          newValue: updated,
+          workOrderId: id,
+          tx
+        });
+
+        if (wo.pmTaskId) {
+          const pmTask = await tx.pMTask.findUnique({ where: { id: wo.pmTaskId } });
+          await logAction({
+            userId: user.id,
+            action: 'COMPLETED',
+            entity: 'PMTask',
+            entityId: pmTask.pmNumber,
+            tx
+          });
+        }
+
         return updated;
       });
     }
@@ -231,10 +265,22 @@ export const updateWorkOrder = async (id, data, user) => {
       updateData.resolvedAt = new Date();
     }
 
-    return prisma.workOrder.update({
+    const updated = await prisma.workOrder.update({
       where: { id },
       data: updateData
     });
+
+    await logAction({
+      userId: user.id,
+      action: 'STATUS_CHANGED',
+      entity: 'WorkOrder',
+      entityId: wo.workOrderNumber,
+      oldValue: wo,
+      newValue: updated,
+      workOrderId: id
+    });
+
+    return updated;
   }
 
   return prisma.$transaction(async (tx) => {
@@ -269,6 +315,17 @@ export const updateWorkOrder = async (id, data, user) => {
         });
       }
     }
+
+    await logAction({
+      userId: user.id,
+      action: data.status === 'DONE' && wo.status !== 'DONE' ? 'COMPLETED' : 'STATUS_CHANGED',
+      entity: 'WorkOrder',
+      entityId: wo.workOrderNumber,
+      oldValue: wo,
+      newValue: updated,
+      workOrderId: id,
+      tx
+    });
 
     return updated;
   });

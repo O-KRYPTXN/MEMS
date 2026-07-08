@@ -2,6 +2,7 @@ import prisma from '../../../prisma/prisma.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
 import { AppError } from '../../utils/AppError.js';
+import { logAction } from '../auditLogs/auditLogs.service.js';
 
 /**
  * Generate a unique Asset Code (e.g. DEV-0001)
@@ -117,7 +118,7 @@ export const getDeviceById = async (id) => {
 /**
  * Create a new device
  */
-export const createDevice = async (data) => {
+export const createDevice = async (data, executorId) => {
   const { serialNumber } = data;
 
   // Check if serial number already exists
@@ -129,7 +130,7 @@ export const createDevice = async (data) => {
   // Generate Asset Code
   const assetCode = await generateAssetCode();
 
-  return prisma.device.create({
+  const device = await prisma.device.create({
     data: {
       ...data,
       assetCode,
@@ -140,12 +141,22 @@ export const createDevice = async (data) => {
       }
     }
   });
+
+  await logAction({
+    userId: executorId,
+    action: 'CREATED',
+    entity: 'Device',
+    entityId: device.assetCode,
+    newValue: device
+  });
+
+  return device;
 };
 
 /**
  * Update device details
  */
-export const updateDevice = async (id, data) => {
+export const updateDevice = async (id, data, executorId) => {
   const device = await prisma.device.findUnique({ where: { id } });
   if (!device) {
     throw new DeviceServiceError('Device not found', 404);
@@ -159,7 +170,7 @@ export const updateDevice = async (id, data) => {
     }
   }
 
-  return prisma.device.update({
+  const updated = await prisma.device.update({
     where: { id },
     data,
     include: {
@@ -168,18 +179,29 @@ export const updateDevice = async (id, data) => {
       }
     }
   });
+
+  await logAction({
+    userId: executorId,
+    action: 'UPDATED',
+    entity: 'Device',
+    entityId: existing.assetCode,
+    oldValue: device,
+    newValue: updated
+  });
+
+  return updated;
 };
 
 /**
  * Update device status
  */
-export const updateDeviceStatus = async (id, status) => {
+export const updateDeviceStatus = async (id, status, executorId) => {
   const device = await prisma.device.findUnique({ where: { id } });
   if (!device) {
     throw new DeviceServiceError('Device not found', 404);
   }
 
-  return prisma.device.update({
+  const updated = await prisma.device.update({
     where: { id },
     data: { status },
     include: {
@@ -188,6 +210,17 @@ export const updateDeviceStatus = async (id, status) => {
       }
     }
   });
+
+  await logAction({
+    userId: executorId,
+    action: status === 'DECOMMISSIONED' ? 'ARCHIVED' : 'STATUS_CHANGED',
+    entity: 'Device',
+    entityId: device.assetCode,
+    oldValue: { status: device.status },
+    newValue: { status }
+  });
+
+  return updated;
 };
 
 /**

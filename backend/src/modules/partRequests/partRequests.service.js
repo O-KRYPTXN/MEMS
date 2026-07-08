@@ -1,5 +1,6 @@
 import prisma from '../../../prisma/prisma.js';
 import { AppError } from '../../utils/AppError.js';
+import { logAction } from '../auditLogs/auditLogs.service.js';
 
 /**
  * Generate a unique request number like "REQ-1001"
@@ -55,6 +56,15 @@ export async function createPartRequest(data) {
       user: { select: { id: true, name: true, role: true } },
       workOrder: { select: { id: true, workOrderNumber: true } }
     }
+  });
+
+  await logAction({
+    userId,
+    action: 'CREATED',
+    entity: 'PartRequest',
+    entityId: partRequest.requestNumber,
+    newValue: partRequest,
+    workOrderId
   });
 
   return partRequest;
@@ -177,7 +187,14 @@ export async function updateRequestStatus(id, data) {
       })
     ]);
     
-    // TODO: Create AuditLog entry for part stock change and request fulfillment
+    await logAction({
+      userId: reviewedById,
+      action: 'FULFILLED',
+      entity: 'PartRequest',
+      entityId: request.requestNumber,
+      oldValue: request,
+      newValue: updatedRequest
+    });
 
     return updatedRequest;
   }
@@ -198,7 +215,14 @@ export async function updateRequestStatus(id, data) {
     }
   });
 
-  // TODO: Create AuditLog entry for request status change
+  await logAction({
+    userId: reviewedById,
+    action: status, // APPROVED or REJECTED
+    entity: 'PartRequest',
+    entityId: request.requestNumber,
+    oldValue: request,
+    newValue: updatedRequest
+  });
 
   return updatedRequest;
 }

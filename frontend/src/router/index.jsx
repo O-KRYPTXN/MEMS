@@ -24,6 +24,7 @@ import AdminPM from '../pages/admin/PreventiveMaintenance'
 import AdminInventory from '../pages/admin/Inventory'
 import AdminUsers from '../pages/admin/Users'
 import AdminReports from '../pages/admin/Reports'
+import AdminAuditLogs from '../pages/admin/AuditLogs'
 import AdminRequests from '../pages/admin/Requests'
 import AdminOrders from '../pages/admin/Orders'
 
@@ -99,6 +100,7 @@ const router = createBrowserRouter([
       { path: 'orders', element: <AdminOrders /> },
       { path: 'users', element: <AdminUsers /> },
       { path: 'reports', element: <AdminReports /> },
+      { path: 'audit-logs', element: <AdminAuditLogs /> },
       { path: 'fault-reports', element: <SharedFaultReports /> },
       { path: 'profile', element: <Profile /> },
     ],

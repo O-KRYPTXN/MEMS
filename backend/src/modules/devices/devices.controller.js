@@ -46,7 +46,7 @@ export const getDeviceById = catchAsync(async (req, res) => {
 });
 
 export const createDevice = catchAsync(async (req, res) => {
-  const device = await deviceService.createDevice(req.body);
+  const device = await deviceService.createDevice(req.body, req.user.id);
 
   res.status(201).json({
     message: 'Device created successfully',
@@ -55,7 +55,7 @@ export const createDevice = catchAsync(async (req, res) => {
 });
 
 export const updateDevice = catchAsync(async (req, res) => {
-  const device = await deviceService.updateDevice(req.params.id, req.body);
+  const device = await deviceService.updateDevice(req.params.id, req.body, req.user.id);
 
   res.status(200).json({
     message: 'Device updated successfully',
@@ -64,7 +64,7 @@ export const updateDevice = catchAsync(async (req, res) => {
 });
 
 export const updateDeviceStatus = catchAsync(async (req, res) => {
-  const device = await deviceService.updateDeviceStatus(req.params.id, req.body.status);
+  const device = await deviceService.updateDeviceStatus(req.params.id, req.body.status, req.user.id);
 
   res.status(200).json({
     message: 'Device status updated successfully',

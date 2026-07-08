@@ -151,6 +151,12 @@ enum ReportFormat {
   CSV
 }
 
+enum ReportGenerationStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
 // ─── DEPARTMENT ─────────────────────────────────────────────
 // Single source of truth for department names.
 // All models reference this table instead of storing raw strings.
@@ -578,6 +584,8 @@ model GeneratedReport {
   title       String
   category    ReportCategory
   format      ReportFormat
+  status      ReportGenerationStatus @default(PENDING)
+  filePath    String?                       // absolute or relative path to the generated file on disk
   sizeBytes   Int?                          // actual byte size — format for display in the API
   period      String?                       // e.g. "Q2 2026", "June 2026"
   generatedAt DateTime       @default(now())

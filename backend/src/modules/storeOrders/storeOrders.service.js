@@ -1,5 +1,6 @@
 import prisma from '../../../prisma/prisma.js';
 import { AppError } from '../../utils/AppError.js';
+import { logAction } from '../auditLogs/auditLogs.service.js';
 
 const generateOrderNumber = () => {
   return `PO-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
@@ -43,6 +44,16 @@ export const createStoreOrder = async (userId, data) => {
       createdBy: true
     }
   });
+
+  await logAction({
+    userId,
+    action: 'CREATED',
+    entity: 'StoreOrder',
+    entityId: order.orderNumber,
+    newValue: order
+  });
+
+  return order;
 };
 
 export const getStoreOrders = async ({ page = 1, limit = 10, status, search }) => {
@@ -164,7 +175,7 @@ export const updateStoreOrderStatus = async (id, { status, rejectionReason }, us
     }
 
     // Update order status
-    return await tx.storeOrder.update({
+    const updatedOrder = await tx.storeOrder.update({
       where: { id },
       data: updateData,
       include: {
@@ -173,5 +184,17 @@ export const updateStoreOrderStatus = async (id, { status, rejectionReason }, us
         reviewedBy: true
       }
     });
+
+    await logAction({
+      userId,
+      action: status === 'DELIVERED' ? 'DELIVERED' : status === 'ORDERED' ? 'APPROVED' : status === 'REJECTED' ? 'REJECTED' : 'STATUS_CHANGED',
+      entity: 'StoreOrder',
+      entityId: order.orderNumber,
+      oldValue: { status: order.status },
+      newValue: { status: updatedOrder.status, rejectionReason: updatedOrder.rejectionReason },
+      tx
+    });
+
+    return updatedOrder;
   });
 };

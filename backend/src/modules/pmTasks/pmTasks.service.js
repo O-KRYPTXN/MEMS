@@ -1,6 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 
 import { AppError } from '../../utils/AppError.js';
+import { logAction } from '../auditLogs/auditLogs.service.js';
 
 export const getPMTasks = async (query = {}) => {
   const { status, type, departmentId, techId, limit } = query;
@@ -88,10 +89,18 @@ export const createPMTask = async (data, creatorId) => {
     }
   });
 
+  await logAction({
+    userId: creatorId,
+    action: 'CREATED',
+    entity: 'PMTask',
+    entityId: task.pmNumber,
+    newValue: task
+  });
+
   return task;
 };
 
-export const updatePMTask = async (id, data) => {
+export const updatePMTask = async (id, data, executorId) => {
   const existing = await getPMTaskById(id);
 
   const updatedTask = await prisma.pMTask.update({
@@ -105,6 +114,15 @@ export const updatePMTask = async (id, data) => {
       assignedTo: { select: { id: true, name: true } },
       workOrder: true
     }
+  });
+
+  await logAction({
+    userId: executorId,
+    action: 'UPDATED',
+    entity: 'PMTask',
+    entityId: existing.pmNumber,
+    oldValue: existing,
+    newValue: updatedTask
   });
 
   return updatedTask;

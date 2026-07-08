@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import prisma from '../../../prisma/prisma.js';
 
 import { AppError } from '../../utils/AppError.js';
+import { logAction } from '../auditLogs/auditLogs.service.js';
 
 export const loginUser = async (email, password) => {
   const user = await prisma.user.findUnique({
@@ -152,6 +153,15 @@ export const activateUser = async (token, password) => {
       activationToken: null,
       activationExpires: null
     }
+  });
+
+  await logAction({
+    userId: user.id,
+    action: 'ACCOUNT_ACTIVATED',
+    entity: 'User',
+    entityId: user.email,
+    oldValue: { isActivated: false },
+    newValue: { isActivated: true }
   });
 
   return { updatedUser, department: user.department };

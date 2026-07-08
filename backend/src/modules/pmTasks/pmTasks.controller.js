@@ -38,7 +38,7 @@ export const createPMTask = catchAsync(async (req, res) => {
 });
 
 export const updatePMTask = catchAsync(async (req, res) => {
-  const task = await pmTaskService.updatePMTask(req.params.id, req.body);
+  const task = await pmTaskService.updatePMTask(req.params.id, req.body, req.user.id);
   res.status(200).json({
     status: 'success',
     data: task
