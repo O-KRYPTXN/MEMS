@@ -1,16 +1,15 @@
 import { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
-import SelectField from '../../components/forms/SelectField'
 import EmptyState from '../../components/ui/EmptyState'
 import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as partRequestsService from '../../api/partRequestsService'
 import { formatDate } from '../../utils/formatDate'
+
 function StatusBadge({ status }) {
   const { t } = useTranslation()
   const labelMap = {
@@ -28,7 +27,7 @@ function StatusBadge({ status }) {
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${colorMap[status] || ''}`}>{labelMap[status] || status}</span>
 }
 
-export default function StoreRequests() {
+export default function SupervisorRequests() {
   const [activeTab, setActiveTab] = useState('Pending')
   const [search, setSearch] = useState('')
   const [deptFilter, setDeptFilter] = useState('')
@@ -37,6 +36,7 @@ export default function StoreRequests() {
   const [showModal, setShowModal] = useState(false)
   const [selectedReq, setSelectedReq] = useState(null)
   const [actionNotes, setActionNotes] = useState('')
+  const [reviewDecision, setReviewDecision] = useState('Approve')
   
   const { t } = useTranslation()
   const { showToast } = useToastStore()
@@ -58,7 +58,6 @@ export default function StoreRequests() {
   const filteredReqs = useMemo(() => {
     const q = search.toLowerCase()
     return requests.filter(r => {
-      // API returns statuses in uppercase: PENDING, APPROVED, FULFILLED, REJECTED
       const mappedStatus = r.status === 'PENDING' ? 'Pending' : r.status === 'APPROVED' ? 'Approved' : r.status === 'FULFILLED' ? 'Fulfilled' : 'Rejected'
       const matchTab = activeTab === 'All' || mappedStatus === activeTab
       const matchQ = !q || r.requestNumber?.toLowerCase().includes(q) || r.part?.name?.toLowerCase().includes(q) || r.user?.name?.toLowerCase().includes(q)
@@ -72,13 +71,14 @@ export default function StoreRequests() {
   const totalPages = Math.ceil(filteredReqs.length / ROWS_PER_PAGE) || 1
   const paginatedReqs = filteredReqs.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE)
 
-  const fulfillMutation = useMutation({
+  const reviewMutation = useMutation({
     mutationFn: partRequestsService.updatePartRequestStatus,
     onSuccess: (data) => {
       queryClient.invalidateQueries(['partRequests'])
       setShowModal(false)
       setActionNotes('')
-      showToast(t('storeRequests.toastFulfilled', '✓ Request {{id}} Fulfilled', { id: data.requestNumber }), TOAST_COLORS.store)
+      setReviewDecision('Approve')
+      showToast(t('storeRequests.toastReviewed', '✓ Request {{id}} {{status}}', { id: data.requestNumber, status: data.status }), TOAST_COLORS.supervisor)
     },
     onError: (err) => {
       showToast(err.response?.data?.message || t('common.errorOccurred', 'An error occurred'), TOAST_COLORS.error)
@@ -89,9 +89,12 @@ export default function StoreRequests() {
     e.preventDefault()
     if (!selectedReq) return
 
-    fulfillMutation.mutate({
+    reviewMutation.mutate({
       id: selectedReq.id,
-      data: { status: 'FULFILLED', notes: actionNotes }
+      data: { 
+        status: reviewDecision === 'Approve' ? 'APPROVED' : 'REJECTED', 
+        notes: actionNotes 
+      }
     })
   }
 
@@ -101,7 +104,7 @@ export default function StoreRequests() {
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
         <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeRequests.pageTitle', 'Part Requests')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeRequests.pageSubtitle', 'Review, approve, and fulfill spare part requests from technicians and departments.')}</p>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('supInventory.pageSubtitle', 'Review, approve, and manage spare part requests.')}</p>
       </div>
 
       <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-1 inline-flex gap-0.5 overflow-x-auto w-full sm:w-auto self-start">
@@ -111,7 +114,7 @@ export default function StoreRequests() {
             onClick={() => setActiveTab(tab)} 
             className={clsx(
               "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
-              activeTab === tab ? "bg-[var(--bg-hover)] text-[#8B5CF6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+              activeTab === tab ? "bg-[var(--bg-hover)] text-[#14B8A6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
             )}
           >
             {tab === 'All' ? t('storeRequests.tabAll', 'All') : t(`storeRequests.status${tab}`, tab)}
@@ -128,13 +131,13 @@ export default function StoreRequests() {
               value={search} 
               onChange={e => setSearch(e.target.value)} 
               placeholder={t('storeRequests.searchPlaceholder', 'Search ID, part name, requester...')}
-              className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
+              className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#14B8A6] transition-colors h-[34px]"
             />
           </div>
           <select 
             value={deptFilter} 
             onChange={e => setDeptFilter(e.target.value)} 
-            className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
+            className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#14B8A6] transition-colors h-[34px]"
           >
             <option value="">{t('storeRequests.allDepts', 'All Departments')}</option>
             <option value="ICU">ICU</option>
@@ -165,15 +168,15 @@ export default function StoreRequests() {
                   <td className="p-4 text-[13px] text-[var(--text-muted)] whitespace-nowrap">{formatDate(r.createdAt)}</td>
                   <td className="p-4"><StatusBadge status={r.status === 'PENDING' ? 'Pending' : r.status === 'APPROVED' ? 'Approved' : r.status === 'FULFILLED' ? 'Fulfilled' : 'Rejected'} /></td>
                   <td className="p-4">
-                    {r.status === 'APPROVED' && (
+                    {r.status === 'PENDING' && (
                       <button 
-                        onClick={() => { setSelectedReq(r); setActionNotes(''); setShowModal(true) }} 
-                        className="px-3 py-1.5 bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] rounded-lg text-[#4ADE80] text-[12px] font-bold hover:bg-[rgba(34,197,94,0.2)] transition-colors"
+                        onClick={() => { setSelectedReq(r); setReviewDecision('Approve'); setActionNotes(''); setShowModal(true) }} 
+                        className="px-3 py-1.5 bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] rounded-lg text-[#14B8A6] text-[12px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors"
                       >
-                        {t('storeRequests.fulfillBtn', 'Fulfill')}
+                        {t('storeRequests.reviewBtn', 'Review')}
                       </button>
                     )}
-                    {(r.status === 'FULFILLED' || r.status === 'REJECTED') && (
+                    {r.status !== 'PENDING' && (
                       r.notes ? <span className="text-xs text-[var(--text-secondary)] italic" title={r.notes}>{t('storeRequests.viewNotes', 'View Notes')}</span> : <span className="text-[var(--text-muted)] pl-4">—</span>
                     )}
                   </td>
@@ -197,7 +200,7 @@ export default function StoreRequests() {
       <Modal
         isOpen={showModal && !!selectedReq}
         onClose={() => setShowModal(false)}
-        title={t('storeRequests.fulfillReqTitle', 'Fulfill Request')}
+        title={t('storeRequests.reviewReqTitle', 'Review Request')}
         maxWidth="480px"
         footer={
           <>
@@ -205,10 +208,10 @@ export default function StoreRequests() {
             <ModalPrimaryBtn 
               type="submit" 
               form="action-form" 
-              color="#10B981"
-              disabled={fulfillMutation.isPending}
+              color={reviewDecision === 'Reject' ? '#EF4444' : '#14B8A6'}
+              disabled={reviewMutation.isPending}
             >
-              {fulfillMutation.isPending ? t('common.loading', 'Loading...') : t('storeRequests.confirmFulfillment', 'Confirm Fulfillment')}
+              {reviewMutation.isPending ? t('common.loading', 'Loading...') : t('storeRequests.submitDecision', 'Submit Decision')}
             </ModalPrimaryBtn>
           </>
         }
@@ -219,20 +222,35 @@ export default function StoreRequests() {
               <span className="text-[var(--text-primary)] font-bold">{selectedReq?.requestNumber}</span>
               <span className="text-[var(--text-secondary)] text-sm">{selectedReq ? formatDate(selectedReq.createdAt) : ''}</span>
             </div>
-            <div className="text-[#D8B4FE] text-sm font-semibold">{selectedReq?.qty}x {selectedReq?.part?.name}</div>
+            <div className="text-[#14B8A6] text-sm font-semibold">{selectedReq?.qty}x {selectedReq?.part?.name}</div>
             <div className="text-[var(--text-muted)] text-xs">{t('storeRequests.requestedBy', 'Requested by')}: <span className="text-[var(--text-primary)]">{selectedReq?.user?.name}</span> ({selectedReq?.user?.department?.name})</div>
           </div>
 
-          <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] rounded-lg p-3.5 flex items-center gap-3 text-sm text-[#D8B4FE]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-            <span>{t('storeRequests.fulfillDisclaimer', 'Marking this as fulfilled will notify the requester that the item is ready for pickup and deduct the quantity from inventory.')}</span>
+          <div>
+            <label className="block text-[12px] text-[var(--text-muted)] font-semibold mb-2">{t('storeRequests.decision', 'Decision')}</label>
+            <div className="flex gap-3">
+              <button 
+                type="button"
+                onClick={() => setReviewDecision('Approve')}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-[rgba(20,184,166,0.12)] border-[#14B8A6] text-[#14B8A6]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#14B8A6]")}
+              >
+                {t('common.approve')}
+              </button>
+              <button 
+                type="button"
+                onClick={() => setReviewDecision('Reject')}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
+              >
+                {t('common.reject')}
+              </button>
+            </div>
           </div>
           <InputField 
             type="textarea"
-            label={t('storeRequests.collectionNotes', 'Collection Notes (Optional)')}
+            label={t('storeRequests.notesOptional', 'Notes (Optional)')}
             value={actionNotes}
             onChange={e => setActionNotes(e.target.value)}
-            placeholder={t('storeRequests.collectionNotesPlaceholder', 'e.g. Please sign the collection log upon arrival...')}
+            placeholder={t('storeRequests.notesPlaceholder', 'Reason for rejection or approval notes...')}
           />
         </form>
       </Modal>

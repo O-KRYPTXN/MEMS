@@ -24,6 +24,8 @@ import AdminPM from '../pages/admin/PreventiveMaintenance'
 import AdminInventory from '../pages/admin/Inventory'
 import AdminUsers from '../pages/admin/Users'
 import AdminReports from '../pages/admin/Reports'
+import AdminRequests from '../pages/admin/Requests'
+import AdminOrders from '../pages/admin/Orders'
 
 // Supervisor pages
 import SupervisorDashboard from '../pages/supervisor/Dashboard'
@@ -32,6 +34,7 @@ import SupervisorWorkOrders from '../pages/supervisor/WorkOrders'
 import SupervisorDevices from '../pages/supervisor/Devices'
 import SupervisorAddDevice from '../pages/supervisor/AddDevice'
 import SupervisorInventory from '../pages/supervisor/Inventory'
+import SupervisorRequests from '../pages/supervisor/Requests'
 
 // Technician pages
 import TechDashboard from '../pages/technician/Dashboard'
@@ -92,6 +95,8 @@ const router = createBrowserRouter([
       { path: 'work-orders', element: <AdminWorkOrders /> },
       { path: 'preventive-maintenance', element: <AdminPM /> },
       { path: 'inventory', element: <AdminInventory /> },
+      { path: 'requests', element: <AdminRequests /> },
+      { path: 'orders', element: <AdminOrders /> },
       { path: 'users', element: <AdminUsers /> },
       { path: 'reports', element: <AdminReports /> },
       { path: 'fault-reports', element: <SharedFaultReports /> },
@@ -116,6 +121,7 @@ const router = createBrowserRouter([
       { path: 'devices', element: <SupervisorDevices /> },
       { path: 'devices/add', element: <SupervisorAddDevice /> },
       { path: 'inventory', element: <SupervisorInventory /> },
+      { path: 'requests', element: <SupervisorRequests /> },
       { path: 'fault-reports', element: <SharedFaultReports /> },
       { path: 'profile', element: <Profile /> },
     ],

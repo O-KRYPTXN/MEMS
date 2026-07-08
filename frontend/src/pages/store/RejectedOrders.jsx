@@ -1,110 +1,58 @@
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
-
-const initialRejected = [
-  { 
-    id: 'PO-9044', supplier: 'MedTech Supply Co.', item: 'Suction Catheters', qty: 100, 
-    orderedAt: '2026-05-20', rejectedAt: '2026-05-22', 
-    status: 'Cancelled', reason: 'Item discontinued by manufacturer.',
-    emailThread: [
-      { from: 'MedTech Supply', date: '2026-05-22 09:15', body: 'We regret to inform you that this item is discontinued.' }
-    ]
-  },
-  { 
-    id: 'PO-9081', supplier: 'Global Medical Parts', item: 'O2 Sensors', qty: 20, 
-    orderedAt: '2026-06-10', rejectedAt: '2026-06-12', 
-    status: 'Pending Review', reason: 'Out of stock until August.',
-    emailThread: [
-      { from: 'Global Medical', date: '2026-06-12 11:30', body: 'Currently out of stock. Backorder available for August.' }
-    ]
-  },
-  { 
-    id: 'PO-9085', supplier: 'Apex Healthcare', item: 'Ventilator Circuit Set', qty: 50, 
-    orderedAt: '2026-06-15', rejectedAt: '2026-06-15', 
-    status: 'Resolved', reason: 'Duplicate order detected.',
-    emailThread: []
-  }
-]
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import * as storeOrdersService from '../../api/storeOrdersService'
+import Panel from '../../components/ui/Panel'
+import { formatDate } from '../../utils/formatDate'
 
 function StatusBadge({ status }) {
   const { t } = useTranslation()
   const map = {
-    'Cancelled': 'bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.25)] text-[#F87171]',
-    'Pending Review': 'bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-[#FCD34D]',
-    'Resolved': 'bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] text-[#4ADE80]'
+    'REJECTED': 'bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.25)] text-[#F87171]'
   }
   const labelMap = {
-    'Cancelled': t('storeRejectedOrders.statusCancelled', 'Cancelled'),
-    'Pending Review': t('storeRejectedOrders.statusPendingReview', 'Pending Review'),
-    'Resolved': t('storeRejectedOrders.statusResolved', 'Resolved')
+    'REJECTED': t('storeRejectedOrders.statusCancelled', 'Rejected')
   }
   return <span className={`px-2.5 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wide whitespace-nowrap ${map[status] || ''}`}>{labelMap[status] || status}</span>
 }
 
-import Panel, { PanelHeader } from '../../components/ui/Panel'
-
 export default function StoreRejectedOrders() {
   const navigate = useNavigate()
-  const [orders, setOrders] = useState(initialRejected)
   const [search, setSearch] = useState('')
   const [supplierFilter, setSupplierFilter] = useState('')
-  const [emailFilter, setEmailFilter] = useState('')
-  const [expandedEmails, setExpandedEmails] = useState({})
   
   const { t } = useTranslation()
   const { showToast } = useToastStore()
 
-  const uniqueSuppliers = useMemo(() => Array.from(new Set(orders.map(o => o.supplier))), [orders])
+  // Fetch only REJECTED orders from backend
+  const { data: ordersData, isLoading } = useQuery({
+    queryKey: ['storeOrders', 'REJECTED'],
+    queryFn: () => storeOrdersService.getStoreOrders({ limit: 500, status: 'REJECTED' })
+  })
+
+  const orders = ordersData?.data || []
+
+  const uniqueSuppliers = useMemo(() => Array.from(new Set(orders.map(o => o.supplierName).filter(Boolean))), [orders])
 
   const filteredOrders = useMemo(() => {
     const q = search.toLowerCase()
     return orders.filter(o => {
-      const matchQ = !q || o.supplier.toLowerCase().includes(q) || o.item.toLowerCase().includes(q) || o.id.toLowerCase().includes(q)
-      const matchSup = !supplierFilter || o.supplier === supplierFilter
-      const matchEmail = !emailFilter || 
-        (emailFilter === 'has_email' ? o.emailThread.length > 0 : o.emailThread.length === 0)
-      return matchQ && matchSup && matchEmail
+      const matchQ = !q || 
+        o.supplierName?.toLowerCase().includes(q) || 
+        o.orderNumber?.toLowerCase().includes(q)
+      const matchSup = !supplierFilter || o.supplierName === supplierFilter
+      return matchQ && matchSup
     })
-  }, [orders, search, supplierFilter, emailFilter])
-
-  const handleDelete = (id) => {
-    setOrders(prev => prev.filter(o => o.id !== id))
-    showToast(t('storeRejectedOrders.toastRemoved', '✓ Rejected order removed from log.'), TOAST_COLORS.store)
-  }
-
-  const toggleEmails = (id) => {
-    setExpandedEmails(prev => ({ ...prev, [id]: !prev[id] }))
-  }
-
-  const kpis = [
-    { label: t('storeRejectedOrders.totalRejected', 'Total Rejected'), value: orders.length, bg: 'bg-[rgba(239,68,68,0.15)] text-[#F87171]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /> },
-    { label: t('storeRejectedOrders.statusPendingReview', 'Pending Review'), value: orders.filter(o => o.status === 'Pending Review').length, bg: 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /> },
-    { label: t('storeRejectedOrders.statusCancelled', 'Cancelled'), value: orders.filter(o => o.status === 'Cancelled').length, bg: 'bg-[rgba(100,116,139,0.15)] text-[#94A3B8]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /> },
-    { label: t('storeRejectedOrders.statusResolved', 'Resolved'), value: orders.filter(o => o.status === 'Resolved').length, bg: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /> }
-  ]
+  }, [orders, search, supplierFilter])
 
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
         <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeRejectedOrders.pageTitle', 'Rejected & Cancelled Orders')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeRejectedOrders.pageSubtitle', 'Review purchase orders that were rejected or cancelled by suppliers.')}</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi, idx) => (
-          <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[12px] p-[18px] flex flex-row gap-[14px] items-center">
-            <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0 ${kpi.bg}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">{kpi.icon}</svg>
-            </div>
-            <div>
-              <div className="text-[1.5rem] font-[800] text-[var(--text-primary)] leading-none">{kpi.value}</div>
-              <div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{kpi.label}</div>
-            </div>
-          </div>
-        ))}
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeRejectedOrders.pageSubtitle', 'Review purchase orders that were rejected by the admin or cancelled by suppliers.')}</p>
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -114,7 +62,7 @@ export default function StoreRejectedOrders() {
             type="text" 
             value={search} 
             onChange={e => setSearch(e.target.value)} 
-            placeholder={t('storeRejectedOrders.searchPlaceholder', 'Search PO, item, supplier...')}
+            placeholder={t('storeRejectedOrders.searchPlaceholder', 'Search PO, supplier...')}
             className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
           />
         </div>
@@ -126,88 +74,54 @@ export default function StoreRejectedOrders() {
           <option value="">{t('storeRejectedOrders.supplierAll', 'Supplier: All')}</option>
           {uniqueSuppliers.map(sup => <option key={sup} value={sup}>{sup}</option>)}
         </select>
-        <select 
-          value={emailFilter} 
-          onChange={e => setEmailFilter(e.target.value)} 
-          className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[36px]"
-        >
-          <option value="">{t('storeRejectedOrders.emailsAll', 'Emails: All')}</option>
-          <option value="has_email">{t('storeRejectedOrders.hasLoggedEmails', 'Has Logged Emails')}</option>
-          <option value="no_email">{t('storeRejectedOrders.noLoggedEmails', 'No Logged Emails')}</option>
-        </select>
       </div>
 
       <div className="flex flex-col gap-4">
-        {filteredOrders.length === 0 ? (
+        {isLoading ? (
+          <Panel className="text-center py-10 text-[var(--text-muted)]">{t('common.loading', 'Loading...')}</Panel>
+        ) : filteredOrders.length === 0 ? (
           <Panel className="text-center py-10 text-[var(--text-muted)]">{t('storeRejectedOrders.noOrdersFound', 'No rejected orders found.')}</Panel>
         ) : (
           filteredOrders.map(o => (
             <Panel key={o.id} noPadding className="border-[rgba(239,68,68,0.25)] flex flex-col shadow-sm">
               <div className="p-4 bg-[var(--bg-card)] border-b border-[var(--border)] flex justify-between items-center flex-wrap gap-2">
-                <span className="text-sm font-bold text-[var(--text-primary)]">{o.id} • {o.supplier}</span>
+                <span className="text-sm font-bold text-[var(--text-primary)]">{o.orderNumber} • {o.supplierName || 'N/A'}</span>
                 <StatusBadge status={o.status} />
               </div>
               <div className="p-5 flex flex-col gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <div className="font-semibold text-[var(--text-primary)]">{o.item}</div>
-                    <div className="text-sm text-[var(--text-muted)] mt-0.5">{t('storeInventory.qty', 'Qty')}: {o.qty}</div>
+                    <div className="font-semibold text-[var(--text-primary)] uppercase tracking-wider text-xs mb-2">Items</div>
+                    <ul className="flex flex-col gap-1 text-sm text-[var(--text-primary)]">
+                      {o.items?.map(item => (
+                        <li key={item.id}>{item.qty}x {item.part?.name}</li>
+                      ))}
+                    </ul>
                   </div>
                   <div className="sm:text-right">
-                    <div className="text-xs text-[var(--text-muted)]">{t('storeRejectedOrders.ordered', 'Ordered')}: {o.orderedAt}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('storeRejectedOrders.rejected', 'Rejected')}: {o.rejectedAt}</div>
+                    <div className="text-xs text-[var(--text-muted)]">{t('storeRejectedOrders.ordered', 'Created')}: {formatDate(o.createdAt)}</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('storeRejectedOrders.rejected', 'Rejected')}: {formatDate(o.reviewedAt)}</div>
                   </div>
                 </div>
 
-                <div className="bg-[rgba(239,68,68,0.08)] border border-red-500/20 text-red-400 text-sm p-3 rounded-lg leading-relaxed">
-                  <span className="font-bold">{t('storeRejectedOrders.reason', 'Reason')}:</span> {o.reason}
-                </div>
-
-                <div>
-                  <button 
-                    onClick={() => toggleEmails(o.id)} 
-                    className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1.5 transition-colors"
-                  >
-                    {t('storeRejectedOrders.supplierEmails', 'Supplier Emails')} ({o.emailThread.length})
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={clsx("w-3.5 h-3.5 transition-transform", expandedEmails[o.id] ? "rotate-180" : "rotate-0")}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
-                  </button>
-                  
-                  {expandedEmails[o.id] && (
-                    <div className="bg-[var(--bg-input)] p-4 rounded-lg mt-2 flex flex-col gap-3">
-                      {o.emailThread.length === 0 ? (
-                        <div className="text-xs text-[var(--text-muted)] italic">{t('storeRejectedOrders.noEmailsLogged', 'No emails logged.')}</div>
-                      ) : (
-                        o.emailThread.map((msg, idx) => (
-                          <div key={idx}>
-                            <div className="text-xs text-purple-300 font-semibold mb-1">{msg.from} • {msg.date}</div>
-                            <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{msg.body}</div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
+                {o.rejectionReason && (
+                  <div className="bg-[rgba(239,68,68,0.08)] border border-red-500/20 text-red-400 text-sm p-3 rounded-lg leading-relaxed">
+                    <span className="font-bold">{t('storeRejectedOrders.reason', 'Admin Rejection Reason')}:</span> {o.rejectionReason}
+                  </div>
+                )}
+                
+                {o.notes && (
+                  <div className="text-sm text-[var(--text-secondary)] bg-[var(--bg-input)] p-3 rounded-lg">
+                    <span className="font-bold text-[var(--text-muted)]">Notes: </span> {o.notes}
+                  </div>
+                )}
               </div>
               <div className="p-4 bg-[var(--bg-card)] border-t border-[var(--border)] flex justify-end gap-3 flex-wrap">
                 <button 
-                  onClick={() => window.location.href = 'mailto:?subject=' + encodeURIComponent(t('storeRejectedOrders.emailSubjectRegarding', 'Regarding {{id}}', { id: o.id }))} 
-                  className="px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-[12px] font-bold hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                >
-                  {t('storeRejectedOrders.contactSupplier', 'Contact Supplier')}
-                </button>
-                <button 
-                  onClick={() => navigate(`/store/orders/create?item=${encodeURIComponent(o.item)}`)} 
+                  onClick={() => navigate(`/store/orders/create`)} 
                   className="px-4 py-2 bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] rounded-lg text-[#D8B4FE] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.2)] transition-colors"
                 >
-                  {t('storeRejectedOrders.reorder', 'Re-order')}
-                </button>
-                <button 
-                  onClick={() => handleDelete(o.id)} 
-                  className="px-4 py-2 bg-transparent border border-[rgba(239,68,68,0.25)] rounded-lg text-[#F87171] text-[12px] font-bold hover:bg-[rgba(239,68,68,0.1)] transition-colors"
-                >
-                  {t('common.remove', 'Remove')}
+                  {t('storeRejectedOrders.reorder', 'Draft New Order')}
                 </button>
               </div>
             </Panel>

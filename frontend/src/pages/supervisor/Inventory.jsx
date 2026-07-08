@@ -7,8 +7,9 @@ import Panel from '../../components/ui/Panel'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as partsService from '../../api/partsService'
+import * as partRequestsService from '../../api/partRequestsService'
 
 const getStatus = (qty, min) => qty === 0 ? 'Out of Stock' : qty <= min ? 'Low Stock' : 'In Stock'
 
@@ -33,14 +34,22 @@ const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
 export default function SupervisorInventory() {
   const { t } = useTranslation()
   const { showToast } = useToastStore()
+  const queryClient = useQueryClient()
+  
   const { data: partsData, isLoading, isError } = useQuery({
     queryKey: ['parts'],
     queryFn: () => partsService.getParts({ limit: 1000 })
   })
 
+  const { data: pendingRequestsData, isError: reqError } = useQuery({
+    queryKey: ['partRequests', 'pending'],
+    queryFn: () => partRequestsService.getPartRequests({ status: 'PENDING', limit: 100 })
+  })
+
   useEffect(() => {
     if (isError) showToast(t('common.toastLoadError', 'Failed to load parts catalog'), TOAST_COLORS.error)
-  }, [isError, showToast, t])
+    if (reqError) showToast(t('common.toastLoadError', 'Failed to load requests'), TOAST_COLORS.error)
+  }, [isError, reqError, showToast, t])
   
   const parts = partsData?.items || []
   const [activeTab, setActiveTab] = useState('all')
@@ -50,7 +59,8 @@ export default function SupervisorInventory() {
   
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [selectedPartId, setSelectedPartId] = useState('')
-  const [pendingRequestsCount, setPendingRequestsCount] = useState(3)
+  
+  const pendingRequestsCount = pendingRequestsData?.meta?.total || 0
 
   const ROWS = 8
 
@@ -84,17 +94,32 @@ export default function SupervisorInventory() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS))
   const paginated = filtered.slice((currentPage - 1) * ROWS, currentPage * ROWS)
 
+  const createRequestMutation = useMutation({
+    mutationFn: partRequestsService.createPartRequest,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['partRequests'])
+      setShowRequestModal(false)
+      showToast(t('supInventory.toastRequestSent', { qty: data.qty }), TOAST_COLORS.supervisor)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || t('common.errorOccurred', 'An error occurred'), TOAST_COLORS.error)
+    }
+  })
+
   const handleRequestPart = (e) => {
     e.preventDefault()
     const formData = new FormData(e.target)
     const partId = formData.get('partId')
-    const qty = formData.get('qty')
+    const qty = parseInt(formData.get('qty'), 10)
+    const notes = formData.get('notes')
     
     if (!partId) return showToast(t('supInventory.toastSelectPart'), TOAST_COLORS.error)
     
-    setPendingRequestsCount(prev => prev + 1)
-    setShowRequestModal(false)
-    showToast(t('supInventory.toastRequestSent', { qty }), TOAST_COLORS.supervisor)
+    createRequestMutation.mutate({
+      partId,
+      qty,
+      notes
+    })
   }
 
   return (
@@ -196,8 +221,8 @@ export default function SupervisorInventory() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowRequestModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="request-form" color="#14B8A6">
-              {t('supInventory.submitRequest')}
+            <ModalPrimaryBtn type="submit" form="request-form" color="#14B8A6" disabled={createRequestMutation.isPending}>
+              {createRequestMutation.isPending ? t('common.loading', 'Loading...') : t('supInventory.submitRequest')}
             </ModalPrimaryBtn>
           </>
         }

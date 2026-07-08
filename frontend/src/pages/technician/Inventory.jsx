@@ -6,12 +6,7 @@ import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Moda
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
 
-const initialRequests = [
-  { id: 'REQ-1092', part: 'O2 Sensor – Nellcor', qty: 2, wo: 'WO-2034', date: '2026-06-27', status: 'Pending' },
-  { id: 'REQ-1090', part: 'ECG Patient Cable 5-Lead', qty: 1, wo: 'WO-2039', date: '2026-06-26', status: 'Approved' },
-  { id: 'REQ-1088', part: 'Defibrillator Pads (Adult)', qty: 5, wo: 'WO-2045', date: '2026-06-25', status: 'Fulfilled' },
-  { id: 'REQ-1085', part: 'Ventilator Circuit Set', qty: 3, wo: 'WO-2022', date: '2026-06-20', status: 'Rejected' }
-]
+
 
 const getStatus = (qty, min) => qty === 0 ? 'Out of Stock' : qty <= min ? 'Low Stock' : 'In Stock'
 
@@ -50,8 +45,10 @@ const StockBadge = ({ status }) => {
 }
 
 import Panel, { PanelHeader } from '../../components/ui/Panel'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as partsService from '../../api/partsService'
+import * as partRequestsService from '../../api/partRequestsService'
+import { formatDate } from '../../utils/formatDate'
 
 const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#F59E0B] transition-colors"
 const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5"
@@ -59,17 +56,25 @@ const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.
 export default function TechnicianInventory() {
   const { t } = useTranslation()
   const { showToast } = useToastStore()
-  const [requests, setRequests] = useState(initialRequests)
-  const { data: partsData, isLoading, isError } = useQuery({
+  const queryClient = useQueryClient()
+  
+  const { data: partsData, isLoading: partsLoading, isError: partsError } = useQuery({
     queryKey: ['parts'],
     queryFn: () => partsService.getParts({ limit: 1000 })
   })
 
+  const { data: requestsData, isLoading: requestsLoading, isError: requestsError } = useQuery({
+    queryKey: ['partRequests'],
+    queryFn: () => partRequestsService.getPartRequests({ limit: 100 })
+  })
+
   useEffect(() => {
-    if (isError) showToast(t('common.toastLoadError', 'Failed to load parts catalog'), TOAST_COLORS.error)
-  }, [isError, showToast, t])
+    if (partsError) showToast(t('common.toastLoadError', 'Failed to load parts catalog'), TOAST_COLORS.error)
+    if (requestsError) showToast(t('common.toastLoadError', 'Failed to load part requests'), TOAST_COLORS.error)
+  }, [partsError, requestsError, showToast, t])
 
   const parts = partsData?.items || []
+  const requests = requestsData?.items || []
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -94,24 +99,31 @@ export default function TechnicianInventory() {
     'Out of Stock': parts.filter(p => getStatus(p.qty, p.minLevel) === 'Out of Stock').length,
   }
 
+  const createRequestMutation = useMutation({
+    mutationFn: partRequestsService.createPartRequest,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['partRequests'])
+      setShowReqModal(false)
+      showToast(t('techInventory.toastRequestSent', { qty: data.qty, name: data.part?.name || selectedPart?.name }), TOAST_COLORS.technician)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || t('common.errorOccurred', 'An error occurred'), TOAST_COLORS.error)
+    }
+  })
+
   const handleRequestSubmit = (e) => {
     e.preventDefault()
     const formData = new FormData(e.target)
-    const qty = formData.get('qty')
-    const woFull = formData.get('wo')
+    const qty = parseInt(formData.get('qty'), 10)
+    // mockWOs value logic, let's keep it but skip actually storing workOrderId since we don't have real IDs in the dropdown. Or leave it optional.
+    const notes = formData.get('notes')
     
-    const newReq = {
-      id: `REQ-${Date.now().toString().slice(-4)}`,
-      part: selectedPart.name,
-      qty: parseInt(qty, 10),
-      wo: woFull.split(' ')[0],
-      date: new Date().toLocaleDateString('en-CA'),
-      status: 'Pending'
-    }
-    
-    setRequests(prev => [newReq, ...prev])
-    setShowReqModal(false)
-    showToast(t('techInventory.toastRequestSent', { qty, name: selectedPart.name }), TOAST_COLORS.technician)
+    createRequestMutation.mutate({
+      partId: selectedPart.id,
+      qty,
+      notes
+      // Not sending workOrderId as the dropdown uses mock string names, not IDs.
+    })
   }
 
   return (
@@ -133,13 +145,13 @@ export default function TechnicianInventory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {requests.map(r => (
+              {requestsLoading ? <tr><td colSpan={5} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr> : requests.length === 0 ? <tr><td colSpan={5} className="p-8 text-center text-[var(--text-muted)]">{t('techInventory.noRequestsFound', 'No requests found.')}</td></tr> : requests.map(r => (
                 <tr key={r.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{r.id}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{r.part}</td>
+                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{r.requestNumber}</td>
+                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{r.part?.name}</td>
                   <td className="p-4 text-[13.5px] font-bold text-[var(--text-primary)]">{r.qty}</td>
-                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{r.date}</td>
-                  <td className="p-4"><RequestStatusBadge status={r.status} /></td>
+                  <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{formatDate(r.createdAt)}</td>
+                  <td className="p-4"><RequestStatusBadge status={r.status === 'PENDING' ? 'Pending' : r.status === 'APPROVED' ? 'Approved' : r.status === 'FULFILLED' ? 'Fulfilled' : 'Rejected'} /></td>
                 </tr>
               ))}
             </tbody>
@@ -182,7 +194,7 @@ export default function TechnicianInventory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {isLoading ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr> : filteredParts.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('techInventory.noPartsFound')}</td></tr> : filteredParts.map(p => {
+              {partsLoading ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr> : filteredParts.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('techInventory.noPartsFound')}</td></tr> : filteredParts.map(p => {
                 const status = getStatus(p.qty, p.minLevel)
                 return (
                 <tr key={p.id} className="hover:bg-[rgba(255,255,255,0.02)]">
@@ -209,8 +221,8 @@ export default function TechnicianInventory() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowReqModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="request-form" color="#F59E0B">
-              {t('techInventory.submitRequest')}
+            <ModalPrimaryBtn type="submit" form="request-form" color="#F59E0B" disabled={createRequestMutation.isPending}>
+              {createRequestMutation.isPending ? t('common.loading', 'Loading...') : t('techInventory.submitRequest')}
             </ModalPrimaryBtn>
           </>
         }

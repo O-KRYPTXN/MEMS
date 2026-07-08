@@ -1,90 +1,168 @@
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import InputField from '../../components/forms/InputField'
+import SelectField from '../../components/forms/SelectField'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
-import Panel, { PanelHeader } from '../../components/ui/Panel'
-
+import Panel from '../../components/ui/Panel'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import * as partsService from '../../api/partsService'
+import * as storeOrdersService from '../../api/storeOrdersService'
 
 export default function StoreCreateOrder() {
-  const [searchParams] = useSearchParams()
-  const [formData, setFormData] = useState({
-    supplier: '',
-    email: '',
-    item: '',
-    qty: 1,
-    date: ''
-  })
-  
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { showToast } = useToastStore()
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    const prefillItem = searchParams.get('item')
-    if (prefillItem) setFormData(prev => ({ ...prev, item: prefillItem }))
-  }, [searchParams])
+  const [formData, setFormData] = useState({
+    supplierName: '',
+    supplierEmail: '',
+    notes: ''
+  })
+
+  const [items, setItems] = useState([{ partId: '', qty: 1, unitPrice: 0 }])
+
+  const { data: partsData } = useQuery({
+    queryKey: ['parts'],
+    queryFn: () => partsService.getParts({ limit: 1000 })
+  })
+
+  const parts = partsData?.items || []
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...items]
+    newItems[index][field] = value
+
+    if (field === 'partId') {
+      const selectedPart = parts.find(p => p.id === value)
+      if (selectedPart) {
+        newItems[index].unitPrice = selectedPart.unitPrice || 0
+      }
+    }
+
+    setItems(newItems)
+  }
+
+  const addItem = () => {
+    setItems([...items, { partId: '', qty: 1, unitPrice: 0 }])
+  }
+
+  const removeItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index)
+    setItems(newItems)
+  }
+
+  const createMutation = useMutation({
+    mutationFn: storeOrdersService.createStoreOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['storeOrders'])
+      showToast(t('storeCreateOrder.toastSubmitted', '✓ Order created successfully.'), TOAST_COLORS.store)
+      navigate('/store/orders')
+    },
+    onError: (error) => {
+      showToast(error.response?.data?.message || t('common.errorOccurred'), TOAST_COLORS.error)
+    }
+  })
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const id = 'PO-' + Math.floor(Math.random() * 9000 + 1000)
-    const subject = encodeURIComponent(t('storeCreateOrder.emailSubject', 'New Purchase Order {{id}} - MEMS Facility', { id }))
-    const body = encodeURIComponent(
-      t('storeCreateOrder.emailGreeting', 'Hello {{supplier}},', { supplier: formData.supplier }) + '\n\n' +
-      t('storeCreateOrder.emailProcessMsg', 'Please process the following order:') + '\n\n' +
-      t('storeCreateOrder.emailOrderId', 'Order ID: {{id}}', { id }) + '\n' +
-      t('storeCreateOrder.emailItem', 'Item: {{item}}', { item: formData.item }) + '\n' +
-      t('storeCreateOrder.emailQty', 'Quantity: {{qty}}', { qty: formData.qty }) + '\n' +
-      t('storeCreateOrder.emailDelivery', 'Expected Delivery: {{date}}', { date: formData.date }) + '\n\n' +
-      t('storeCreateOrder.emailConfirmMsg', 'Please confirm receipt of this order and reply with shipping details.') + '\n\n' +
-      t('storeCreateOrder.emailSignoff', 'Thank you,\nMEMS Storekeeper')
-    )
     
-    window.open(`mailto:${formData.email}?subject=${subject}&body=${body}`, '_blank')
+    // Validation
+    if (items.some(item => !item.partId || item.qty < 1 || item.unitPrice < 0)) {
+      showToast(t('storeCreateOrder.errorItems', 'Please ensure all items have a part selected, positive quantity, and non-negative price.'), TOAST_COLORS.error)
+      return
+    }
 
-    const orders = JSON.parse(localStorage.getItem('mems_custom_orders') || '[]')
-    orders.push({ ...formData, id, status: 'pending' })
-    localStorage.setItem('mems_custom_orders', JSON.stringify(orders))
-
-    showToast(t('storeCreateOrder.toastSubmitted', '✓ Order submitted and email sent to supplier.'), TOAST_COLORS.store)
-    setFormData({ supplier: '', email: '', item: '', qty: 1, date: '' })
+    createMutation.mutate({
+      ...formData,
+      items: items.map(item => ({
+        partId: item.partId,
+        qty: Number(item.qty),
+        unitPrice: Number(item.unitPrice)
+      }))
+    })
   }
 
   return (
     <div className="flex flex-col gap-6 relative pb-10">
       <div>
         <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeCreateOrder.pageTitle', 'Create Purchase Order')}</h1>
-        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeCreateOrder.pageSubtitle', 'Draft a new order for spare parts and automatically email the supplier.')}</p>
+        <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeCreateOrder.pageSubtitle', 'Draft a new order for spare parts.')}</p>
       </div>
 
-      <Panel noPadding className="max-w-3xl shadow-lg">
+      <Panel noPadding className="max-w-4xl shadow-lg">
         <div className="p-5 border-b border-[var(--border)]">
           <h2 className="text-base font-bold text-[var(--text-primary)]">{t('storeCreateOrder.orderDetails', 'Order Details')}</h2>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="p-6 flex flex-col gap-5">
+          <div className="p-6 flex flex-col gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <InputField label={t('storeCreateOrder.supplierName', 'Supplier Name')} name="supplier" value={formData.supplier} onChange={e => setFormData(f => ({ ...f, supplier: e.target.value }))} placeholder="e.g. MedSupply Inc." required />
-              <InputField type="email" label={t('storeCreateOrder.supplierEmail', 'Supplier Email')} name="email" value={formData.email} onChange={e => setFormData(f => ({ ...f, email: e.target.value }))} placeholder="sales@medsupply.com" required />
-              <div className="md:col-span-2">
-                <InputField label={t('storeCreateOrder.itemName', 'Item Name / Part Code')} name="item" value={formData.item} onChange={e => setFormData(f => ({ ...f, item: e.target.value }))} placeholder="e.g. O2 Sensor - Nellcor" required />
-              </div>
-              <InputField type="number" min="1" label={t('storeCreateOrder.quantity', 'Quantity')} name="qty" value={formData.qty} onChange={e => setFormData(f => ({ ...f, qty: e.target.value }))} required />
-              <InputField type="date" label={t('storeCreateOrder.expectedDelivery', 'Expected Delivery Date')} name="date" value={formData.date} onChange={e => setFormData(f => ({ ...f, date: e.target.value }))} required />
+              <InputField label={t('storeCreateOrder.supplierName', 'Supplier Name')} value={formData.supplierName} onChange={e => setFormData(f => ({ ...f, supplierName: e.target.value }))} placeholder="e.g. MedSupply Inc." required />
+              <InputField type="email" label={t('storeCreateOrder.supplierEmail', 'Supplier Email (Optional)')} value={formData.supplierEmail} onChange={e => setFormData(f => ({ ...f, supplierEmail: e.target.value }))} placeholder="sales@medsupply.com" />
             </div>
 
-            <div className="bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.2)] rounded-lg p-3.5 flex items-center gap-3 text-sm text-[#D8B4FE]">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-              <span>{t('storeCreateOrder.disclaimer', 'Submitting this form will generate a PO number and open your default email client with a pre-formatted message.')}</span>
+            <div className="border border-[var(--border)] rounded-lg overflow-hidden">
+              <div className="bg-[var(--bg-table-header)] px-4 py-3 border-b border-[var(--border)] flex justify-between items-center">
+                <h3 className="text-sm font-bold text-[var(--text-primary)]">{t('storeCreateOrder.orderItems', 'Order Items')}</h3>
+                <button type="button" onClick={addItem} className="text-[12px] font-bold text-[#8B5CF6] hover:text-[#7C3AED]">+ {t('storeCreateOrder.addItem', 'Add Item')}</button>
+              </div>
+              <div className="p-4 flex flex-col gap-4">
+                {items.map((item, index) => (
+                  <div key={index} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-[var(--bg-input)] p-3 rounded-lg border border-[var(--border)]">
+                    <div className="flex-1 w-full">
+                      <SelectField
+                        label={t('storeCreateOrder.part', 'Select Part')}
+                        value={item.partId}
+                        onChange={(e) => handleItemChange(index, 'partId', e.target.value)}
+                        options={parts.map(p => ({
+                          value: p.id,
+                          label: `${p.name} (${p.partCode}) - Stock: ${p.qty}`
+                        }))}
+                        required
+                      />
+                    </div>
+                    <div className="w-full md:w-24">
+                      <InputField
+                        type="number"
+                        min="1"
+                        label={t('storeCreateOrder.qty', 'Qty')}
+                        value={item.qty}
+                        onChange={(e) => handleItemChange(index, 'qty', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="w-full md:w-32">
+                      <InputField
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        label={t('storeCreateOrder.unitPrice', 'Unit Price ($)')}
+                        value={item.unitPrice}
+                        onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
+                        required
+                      />
+                    </div>
+                    {items.length > 1 && (
+                      <button type="button" onClick={() => removeItem(index)} className="mt-6 md:mt-0 p-2 text-[var(--text-muted)] hover:text-red-500 transition-colors">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
+
+            <InputField type="textarea" label={t('storeCreateOrder.notes', 'Notes')} value={formData.notes} onChange={e => setFormData(f => ({ ...f, notes: e.target.value }))} placeholder="Any additional instructions..." />
           </div>
 
           <div className="p-5 border-t border-[var(--border)] flex justify-end gap-3 bg-[var(--bg-card)]">
-            <button type="button" onClick={() => setFormData({ supplier: '', email: '', item: '', qty: 1, date: '' })} className="px-4 py-2 bg-transparent border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-[13px] font-bold hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+            <button type="button" onClick={() => navigate('/store/orders')} className="px-4 py-2 bg-transparent border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-[13px] font-bold hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               {t('common.cancel')}
             </button>
-            <button type="submit" className="px-5 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg text-[13px] font-bold transition-colors">
-              {t('storeCreateOrder.submitBtn', 'Submit & Send Email')}
+            <button type="submit" disabled={createMutation.isPending} className="px-5 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] disabled:opacity-50 text-white rounded-lg text-[13px] font-bold transition-colors">
+              {createMutation.isPending ? t('common.loading') : t('storeCreateOrder.submitBtn', 'Create Order')}
             </button>
           </div>
         </form>

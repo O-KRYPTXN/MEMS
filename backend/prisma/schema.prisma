@@ -407,6 +407,7 @@ model StoreOrder {
   rejectionReason String?          // populated when admin rejects
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  reviewedAt      DateTime?
 
   // ── FK: Storekeeper who created it ─────────────────────
   createdById String

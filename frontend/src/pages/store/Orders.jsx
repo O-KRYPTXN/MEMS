@@ -1,81 +1,81 @@
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import clsx from 'clsx'
-import InputField from '../../components/forms/InputField'
-import SelectField from '../../components/forms/SelectField'
 import Panel from '../../components/ui/Panel'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
-
-const initialOrders = [
-  { id: 'PO-9101', supplier: 'MedTech Supply Co.', item: 'Suction Catheters', qty: 100, date: '2026-05-26', status: 'pending' },
-  { id: 'PO-9102', supplier: 'Global Medical Parts', item: 'O2 Sensors', qty: 20, date: '2026-05-28', status: 'ordered' },
-  { id: 'PO-9103', supplier: 'Apex Healthcare', item: 'Ventilator Circuit Set', qty: 50, date: '2026-06-01', status: 'delivered' }
-]
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import * as storeOrdersService from '../../api/storeOrdersService'
+import { formatDate } from '../../utils/formatDate'
 
 function OrderStatusBadge({ status }) {
   const { t } = useTranslation()
   const map = {
-    'pending': 'bg-[rgba(100,116,139,0.12)] text-[#94A3B8]',
-    'ordered': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'delivered': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]'
+    'PENDING': 'bg-[rgba(100,116,139,0.12)] text-[#94A3B8]',
+    'ORDERED': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+    'DELIVERED': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+    'REJECTED': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]'
   }
   const labelMap = {
-    'pending': t('storeOrders.statusPending', 'Pending Response'),
-    'ordered': t('storeOrders.statusOrdered', 'Ordered'),
-    'delivered': t('storeOrders.statusDelivered', 'Delivered')
+    'PENDING': t('storeOrders.statusPending', 'Pending Review'),
+    'ORDERED': t('storeOrders.statusOrdered', 'Ordered'),
+    'DELIVERED': t('storeOrders.statusDelivered', 'Delivered'),
+    'REJECTED': t('storeOrders.statusRejected', 'Rejected')
   }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${map[status] || ''}`}>{labelMap[status]}</span>
 }
 
-const inputCls = "w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#8B5CF6] transition-colors"
-const labelCls = "block text-[12px] text-[var(--text-muted)] font-semibold mb-1.5"
-
 export default function StoreOrders() {
   const navigate = useNavigate()
-  const [orders, setOrders] = useState(initialOrders)
   const [activeTab, setActiveTab] = useState('active')
-  const [showResponseModal, setShowResponseModal] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
-  const [outcome, setOutcome] = useState(null)
+  const [expandedRows, setExpandedRows] = useState({})
   
   const { t } = useTranslation()
   const { showToast } = useToastStore()
+  const queryClient = useQueryClient()
+
+  const { data: ordersData, isLoading } = useQuery({
+    queryKey: ['storeOrders'],
+    queryFn: () => storeOrdersService.getStoreOrders({ limit: 500 })
+  })
+
+  const orders = ordersData?.data || []
 
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {
-      if (activeTab === 'active') return o.status === 'pending' || o.status === 'ordered'
-      if (activeTab === 'received') return o.status === 'delivered'
+      if (activeTab === 'active') return o.status === 'PENDING' || o.status === 'ORDERED'
+      if (activeTab === 'received') return o.status === 'DELIVERED'
       return false
     })
   }, [orders, activeTab])
 
-  const activeCount = orders.filter(o => o.status === 'pending' || o.status === 'ordered').length
+  const activeCount = orders.filter(o => o.status === 'PENDING' || o.status === 'ORDERED').length
 
-  const handleReceive = (id) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'delivered' } : o))
-    showToast(t('storeOrders.toastReceived', '✓ {{id}} received. Inventory stock incremented.', { id }), TOAST_COLORS.store)
+  const toggleRow = (id) => {
+    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
-  const handleLogResponse = (e) => {
+  const receiveMutation = useMutation({
+    mutationFn: storeOrdersService.updateStoreOrderStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['storeOrders'])
+      queryClient.invalidateQueries(['parts']) // Invalidate parts to sync inventory
+      setShowConfirmModal(false)
+      showToast(t('storeOrders.toastReceived', '✓ Order {{id}} received. Inventory stock incremented.', { id: selectedOrder?.orderNumber }), TOAST_COLORS.store)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || t('common.errorOccurred'), TOAST_COLORS.error)
+    }
+  })
+
+  const handleReceive = (e) => {
     e.preventDefault()
-    if (!outcome) {
-      alert(t('storeOrders.alertSelectOutcome', 'Please select a response outcome.'))
-      return
-    }
-
-    if (outcome === 'exists') {
-      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: 'ordered' } : o))
-      showToast(t('storeOrders.toastOrdered', '📧 Reply received! Status updated to Ordered.'), TOAST_COLORS.store)
-    } else {
-      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: 'rejected' } : o))
-      showToast(t('storeOrders.toastCancelled', '❌ Item unavailable. Order cancelled.'), TOAST_COLORS.error)
-    }
-
-    setShowResponseModal(false)
-    setOutcome(null)
+    if (!selectedOrder) return
+    receiveMutation.mutate({ id: selectedOrder.id, data: { status: 'DELIVERED' } })
   }
 
   return (
@@ -126,42 +126,69 @@ export default function StoreOrders() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-[var(--bg-table-header)] border-b border-[var(--border)]">
-                {[t('storeOrders.poNumber', 'PO #'), t('storeOrders.supplier', 'Supplier'), t('storeOrders.items', 'Items'), t('storeOrders.expectedDelivery', 'Expected Delivery'), t('common.status', 'Status'), t('common.actions', 'Actions')].map(h => (
+                <th className="w-10"></th>
+                {[t('storeOrders.poNumber', 'PO #'), t('storeOrders.supplier', 'Supplier'), t('storeOrders.itemsCount', 'Items'), t('storeOrders.date', 'Date'), t('common.status', 'Status'), t('common.actions', 'Actions')].map(h => (
                   <th key={h} className="p-4 text-[0.75rem] font-bold text-[var(--text-table-header)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {filteredOrders.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">{t('storeOrders.noOrdersFound', 'No orders found.')}</td></tr> : filteredOrders.map(o => (
-                <tr key={o.id} className="hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{o.id}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{o.supplier}</td>
-                  <td className="p-4 text-[13px] text-[var(--text-primary)] font-semibold">{o.item} ({o.qty})</td>
-                  <td className="p-4 text-[13px] text-[var(--text-muted)] whitespace-nowrap">{o.date}</td>
-                  <td className="p-4"><OrderStatusBadge status={o.status} /></td>
-                  <td className="p-4">
-                    {o.status === 'pending' && (
-                      <button 
-                        onClick={() => { setSelectedOrder(o); setOutcome(null); setShowResponseModal(true) }} 
-                        className="px-3 py-1.5 bg-transparent border border-[rgba(139,92,246,0.35)] rounded-lg text-[#C4B5FD] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.1)] transition-colors flex items-center gap-1.5"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-                        {t('storeOrders.responseBtn', 'Response')}
-                      </button>
-                    )}
-                    {o.status === 'ordered' && (
-                      <button 
-                        onClick={() => handleReceive(o.id)} 
-                        className="px-3 py-1.5 bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] rounded-lg text-[#A78BFA] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.2)] transition-colors"
-                      >
-                        {t('storeOrders.markReceivedBtn', 'Mark Received')}
-                      </button>
-                    )}
-                    {o.status === 'delivered' && (
-                      <span className="text-[var(--text-muted)] pl-4">—</span>
-                    )}
-                  </td>
-                </tr>
+              {isLoading ? (
+                <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr>
+              ) : filteredOrders.length === 0 ? (
+                <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('storeOrders.noOrdersFound', 'No orders found.')}</td></tr>
+              ) : filteredOrders.map(o => (
+                <React.Fragment key={o.id}>
+                  <tr className="hover:bg-[rgba(255,255,255,0.02)]">
+                    <td className="p-4 cursor-pointer" onClick={() => toggleRow(o.id)}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={`w-4 h-4 text-[var(--text-muted)] transition-transform ${expandedRows[o.id] ? 'rotate-90' : ''}`}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </td>
+                    <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{o.orderNumber}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{o.supplierName || 'N/A'}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-primary)] font-semibold">{o.items.length} {t('storeOrders.items', 'items')}</td>
+                    <td className="p-4 text-[13px] text-[var(--text-muted)] whitespace-nowrap">{formatDate(o.createdAt)}</td>
+                    <td className="p-4"><OrderStatusBadge status={o.status} /></td>
+                    <td className="p-4">
+                      {o.status === 'ORDERED' && (
+                        <button 
+                          onClick={() => { setSelectedOrder(o); setShowConfirmModal(true); }} 
+                          className="px-3 py-1.5 bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] rounded-lg text-[#A78BFA] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.2)] transition-colors"
+                        >
+                          {t('storeOrders.markReceivedBtn', 'Mark Received')}
+                        </button>
+                      )}
+                      {o.status === 'PENDING' && (
+                        <span className="text-[12px] text-[var(--text-muted)] italic">Awaiting Approval</span>
+                      )}
+                      {o.status === 'DELIVERED' && (
+                        <span className="text-[var(--text-muted)] pl-4">—</span>
+                      )}
+                    </td>
+                  </tr>
+                  {expandedRows[o.id] && (
+                    <tr className="bg-[rgba(255,255,255,0.01)] border-b border-[var(--border)]">
+                      <td></td>
+                      <td colSpan={6} className="p-4 pt-2">
+                        <div className="bg-[var(--bg-input)] rounded-lg border border-[var(--border)] p-3">
+                          <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Order Items</h4>
+                          <ul className="flex flex-col gap-2">
+                            {o.items.map(item => (
+                              <li key={item.id} className="flex justify-between text-sm">
+                                <span className="text-[var(--text-primary)] font-medium">{item.qty}x {item.part?.name} <span className="text-[var(--text-muted)]">({item.part?.partCode})</span></span>
+                                <span className="text-[var(--text-secondary)]">${Number(item.unitPrice).toFixed(2)} / ea</span>
+                              </li>
+                            ))}
+                          </ul>
+                          {o.notes && (
+                            <div className="mt-3 pt-3 border-t border-[var(--border)] text-sm text-[var(--text-muted)]">
+                              <span className="font-semibold">{t('storeOrders.notes', 'Notes')}:</span> {o.notes}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
@@ -169,53 +196,32 @@ export default function StoreOrders() {
       </Panel>
 
       <Modal
-        isOpen={showResponseModal && !!selectedOrder}
-        onClose={() => setShowResponseModal(false)}
-        title={t('storeOrders.logResponseTitle', 'Log Supplier Response Email')}
-        maxWidth="500px"
+        isOpen={showConfirmModal && !!selectedOrder}
+        onClose={() => setShowConfirmModal(false)}
+        title={t('storeOrders.confirmDeliveryTitle', 'Confirm Delivery')}
+        maxWidth="400px"
         footer={
           <>
-            <ModalCancelBtn onClick={() => setShowResponseModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="log-response-form" color="#8B5CF6">
-              {t('storeOrders.saveLogBtn', 'Save Log')}
+            <ModalCancelBtn onClick={() => setShowConfirmModal(false)}>{t('common.cancel')}</ModalCancelBtn>
+            <ModalPrimaryBtn type="button" onClick={handleReceive} disabled={receiveMutation.isPending} color="#8B5CF6">
+              {receiveMutation.isPending ? t('common.loading') : t('storeOrders.confirmBtn', 'Confirm & Update Stock')}
             </ModalPrimaryBtn>
           </>
         }
       >
-        <div className="-mx-[22px] -mt-[22px] mb-4 px-[22px] py-3 bg-[rgba(139,92,246,0.07)] border-b border-[#8B5CF6]/20 text-[var(--text-secondary)] text-xs font-semibold">
-          {t('storeOrders.order', 'Order')}: <span className="text-[var(--text-primary)]">{selectedOrder?.id}</span> • {t('storeOrders.supplier', 'Supplier')}: <span className="text-[var(--text-primary)]">{selectedOrder?.supplier}</span>
+        <div className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
+          {t('storeOrders.confirmDeliveryMsg', 'Are you sure you want to mark order {{id}} as delivered? This will automatically increment the inventory stock for all items in this order.', { id: selectedOrder?.orderNumber })}
         </div>
-
-        <form id="log-response-form" onSubmit={handleLogResponse} className="flex flex-col gap-[14px]">
-          <div className="grid grid-cols-2 gap-4">
-            <InputField label={t('storeOrders.senderName', 'Sender Name')} placeholder="e.g. John Doe" required />
-            <InputField type="email" label={t('storeOrders.senderEmail', 'Sender Email')} placeholder="e.g. rep@supplier.com" required />
-            <InputField type="datetime-local" label={t('storeOrders.dateTime', 'Date/Time')} required />
-            <InputField label={t('storeOrders.subjectLine', 'Subject Line')} placeholder="Re: PO-9101..." required />
-          </div>
-
-          <div>
-            <label className={labelCls}>{t('storeOrders.responseOutcome', 'Response Outcome')}</label>
-            <div className="flex gap-3">
-              <button 
-                type="button" 
-                onClick={() => setOutcome('exists')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'exists' ? "bg-[rgba(74,222,128,0.12)] border-[#4ADE80] text-[#4ADE80]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#4ADE80]")}
-              >
-                ✓ {t('storeOrders.exists', 'Exists')}
-              </button>
-              <button 
-                type="button" 
-                onClick={() => setOutcome('not_exists')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", outcome === 'not_exists' ? "bg-[rgba(248,113,113,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
-              >
-                ✕ {t('storeOrders.notExists', 'Not Exists')}
-              </button>
-            </div>
-          </div>
-
-          <InputField type="textarea" label={t('storeOrders.emailContent', 'Email Content / Notes')} placeholder={t('storeOrders.emailContentPlaceholder', 'Paste email body or notes here...')} required />
-        </form>
+        <div className="mt-4 p-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg">
+          <ul className="text-sm flex flex-col gap-1.5">
+            {selectedOrder?.items?.map(item => (
+              <li key={item.id} className="text-[var(--text-primary)] font-medium flex justify-between">
+                <span>{item.part?.name}</span>
+                <span className="text-[#4ADE80] font-bold">+{item.qty}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </Modal>
     </div>
   )
