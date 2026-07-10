@@ -1,6 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 import { AppError } from '../../utils/AppError.js';
 import { logAction } from '../auditLogs/auditLogs.service.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 const generateOrderNumber = () => {
   return `PO-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
@@ -22,7 +23,7 @@ export const createStoreOrder = async (userId, data) => {
   }
 
   // Create store order with items
-  return await prisma.storeOrder.create({
+  const order = await prisma.storeOrder.create({
     data: {
       orderNumber: generateOrderNumber(),
       supplierName,
@@ -51,6 +52,14 @@ export const createStoreOrder = async (userId, data) => {
     entity: 'StoreOrder',
     entityId: order.orderNumber,
     newValue: order
+  });
+
+  await createAlert({
+    type: 'INFO',
+    title: 'New Store Order Created',
+    subtitle: `${order.orderNumber} is awaiting approval`,
+    targetRoles: ['ADMIN'],
+    storeOrderId: order.id
   });
 
   return order;
@@ -194,6 +203,32 @@ export const updateStoreOrderStatus = async (id, { status, rejectionReason }, us
       newValue: { status: updatedOrder.status, rejectionReason: updatedOrder.rejectionReason },
       tx
     });
+
+    if (status === 'ORDERED') {
+      await createAlert({
+        type: 'SUCCESS',
+        title: 'Store Order Approved',
+        subtitle: `${order.orderNumber} has been approved and ordered`,
+        userId: updatedOrder.createdById, // Notify Storekeeper who created it
+        storeOrderId: updatedOrder.id
+      }, tx);
+    } else if (status === 'REJECTED') {
+      await createAlert({
+        type: 'WARNING',
+        title: 'Store Order Rejected',
+        subtitle: `${order.orderNumber} was rejected: ${updatedOrder.rejectionReason}`,
+        userId: updatedOrder.createdById,
+        storeOrderId: updatedOrder.id
+      }, tx);
+    } else if (status === 'DELIVERED') {
+      await createAlert({
+        type: 'INFO',
+        title: 'Store Order Delivered',
+        subtitle: `${order.orderNumber} has been delivered. Inventory updated.`,
+        userId: updatedOrder.createdById,
+        storeOrderId: updatedOrder.id
+      }, tx);
+    }
 
     return updatedOrder;
   });

@@ -1,5 +1,6 @@
 import prisma from '../../../prisma/prisma.js';
 import { AppError } from '../../utils/AppError.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 export const getParts = async (query = {}) => {
   const { page = 1, limit = 10, category, search, isLowStock } = query;
@@ -93,6 +94,24 @@ export const updatePart = async (id, data) => {
     where: { id },
     data
   });
+
+  if (part.qty < part.minLevel && existing.qty >= existing.minLevel) {
+    await createAlert({
+      type: 'WARNING',
+      title: 'Low Stock Alert',
+      subtitle: `${part.name} (${part.partCode}) has dropped below the minimum stock level (${part.minLevel}). Current: ${part.qty}`,
+      targetRoles: ['STORE'],
+      partId: part.id
+    });
+  } else if (part.qty >= part.minLevel && existing.qty < existing.minLevel) {
+    await createAlert({
+      type: 'SUCCESS',
+      title: 'Stock Replenished',
+      subtitle: `${part.name} (${part.partCode}) is now back above minimum levels. Current: ${part.qty}`,
+      targetRoles: ['STORE'],
+      partId: part.id
+    });
+  }
 
   return part;
 };

@@ -4,6 +4,7 @@ import prisma from '../../../prisma/prisma.js';
 
 import { AppError } from '../../utils/AppError.js';
 import { logAction } from '../auditLogs/auditLogs.service.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 export const loginUser = async (email, password) => {
   const user = await prisma.user.findUnique({
@@ -118,6 +119,13 @@ export const createRegistrationRequest = async (data) => {
     },
   });
 
+  await createAlert({
+    type: 'INFO',
+    title: 'New Registration Request',
+    subtitle: `${newRequest.name} requested access as ${newRequest.role}`,
+    targetRoles: ['ADMIN'],
+  });
+
   return newRequest;
 };
 
@@ -162,6 +170,13 @@ export const activateUser = async (token, password) => {
     entityId: user.email,
     oldValue: { isActivated: false },
     newValue: { isActivated: true }
+  });
+
+  await createAlert({
+    type: 'SUCCESS',
+    title: 'Account Activated',
+    subtitle: `${updatedUser.name} has completed registration`,
+    targetRoles: ['ADMIN'],
   });
 
   return { updatedUser, department: user.department };

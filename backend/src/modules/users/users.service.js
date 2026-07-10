@@ -5,6 +5,7 @@ import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
 import { AppError } from '../../utils/AppError.js';
 import { logAction } from '../auditLogs/auditLogs.service.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 /**
  * Get all users with pagination and filtering
@@ -214,6 +215,24 @@ export const updateUser = async (id, data, executorId) => {
     newValue: updated
   });
 
+  if (user.role !== updated.role) {
+    await createAlert({
+      type: 'WARNING',
+      title: 'Role Changed',
+      subtitle: `Your role has been updated to ${updated.role}.`,
+      userId: updated.id,
+    });
+  }
+
+  if (user.departmentId !== updateData.departmentId) {
+    await createAlert({
+      type: 'INFO',
+      title: 'Department Assignment Changed',
+      subtitle: 'Your department assignment has been updated.',
+      userId: updated.id,
+    });
+  }
+
   return updated;
 };
 
@@ -267,6 +286,22 @@ export const updateUserStatus = async (id, statusData, executorId) => {
     oldValue: { isSuspended: user.isSuspended, isActive: user.isActive },
     newValue: statusData
   });
+
+  if (statusData.isSuspended === true && !user.isSuspended) {
+    await createAlert({
+      type: 'CRITICAL',
+      title: 'Account Suspended',
+      subtitle: 'Your account has been suspended by an administrator.',
+      userId: updated.id,
+    });
+  } else if (statusData.isSuspended === false && user.isSuspended) {
+    await createAlert({
+      type: 'SUCCESS',
+      title: 'Account Reactivated',
+      subtitle: 'Your account suspension has been lifted.',
+      userId: updated.id,
+    });
+  }
 
   return updated;
 };

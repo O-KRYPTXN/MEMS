@@ -2,6 +2,7 @@ import prisma from '../../../prisma/prisma.js';
 
 import { AppError } from '../../utils/AppError.js';
 import { logAction } from '../auditLogs/auditLogs.service.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 export const getPMTasks = async (query = {}) => {
   const { status, type, departmentId, techId, limit } = query;
@@ -97,6 +98,16 @@ export const createPMTask = async (data, creatorId) => {
     newValue: task
   });
 
+  if (task.assignedToId) {
+    await createAlert({
+      type: 'INFO',
+      title: 'New PM Task Assigned',
+      subtitle: `You have been assigned ${task.pmNumber}`,
+      userId: task.assignedToId,
+      pmTaskId: task.id
+    });
+  }
+
   return task;
 };
 
@@ -124,6 +135,36 @@ export const updatePMTask = async (id, data, executorId) => {
     oldValue: existing,
     newValue: updatedTask
   });
+
+  if (data.assignedToId && data.assignedToId !== existing.assignedToId) {
+    await createAlert({
+      type: 'INFO',
+      title: 'PM Task Reassigned',
+      subtitle: `${existing.pmNumber} has been assigned to you`,
+      userId: data.assignedToId,
+      pmTaskId: updatedTask.id
+    });
+  }
+
+  if (data.status === 'OVERDUE' && existing.status !== 'OVERDUE') {
+    await createAlert({
+      type: 'WARNING',
+      title: 'PM Task Overdue',
+      subtitle: `${existing.pmNumber} is now overdue`,
+      targetRoles: ['SUPERVISOR'],
+      pmTaskId: updatedTask.id
+    });
+  }
+
+  if (data.status === 'COMPLETED' && existing.status !== 'COMPLETED') {
+    await createAlert({
+      type: 'SUCCESS',
+      title: 'PM Task Completed',
+      subtitle: `${existing.pmNumber} was completed`,
+      targetRoles: ['SUPERVISOR'],
+      pmTaskId: updatedTask.id
+    });
+  }
 
   return updatedTask;
 };

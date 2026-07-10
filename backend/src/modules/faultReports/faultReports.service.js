@@ -1,7 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
-
 import { AppError } from '../../utils/AppError.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 export const createFaultReport = async (data, userId) => {
   const { deviceId, description, urgency } = data;
@@ -23,7 +23,7 @@ export const createFaultReport = async (data, userId) => {
   }
 
   // Create the fault report
-  return prisma.faultReport.create({
+  const report = await prisma.faultReport.create({
     data: {
       deviceId,
       description,
@@ -35,6 +35,16 @@ export const createFaultReport = async (data, userId) => {
       device: true
     }
   });
+
+  await createAlert({
+    type: 'WARNING',
+    title: 'New Fault Report',
+    subtitle: `${report.device.name} requires attention`,
+    targetRoles: ['SUPERVISOR'],
+    faultReportId: report.id
+  });
+
+  return report;
 };
 
 export const getFaultReports = async (page, limit, filters, user) => {
@@ -115,8 +125,20 @@ export const updateFaultReport = async (id, data) => {
     throw new AppError('Fault report not found', 404);
   }
 
-  return prisma.faultReport.update({
+  const updated = await prisma.faultReport.update({
     where: { id },
     data
   });
+
+  if (data.status === 'SOLVED' && report.status !== 'SOLVED') {
+    await createAlert({
+      type: 'SUCCESS',
+      title: 'Fault Report Resolved',
+      subtitle: `Your fault report for device #${report.deviceId} has been resolved`,
+      userId: report.submittedById,
+      faultReportId: report.id
+    });
+  }
+
+  return updated;
 };

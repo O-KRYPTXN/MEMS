@@ -19,6 +19,7 @@ import partRequestsRoutes from './modules/partRequests/partRequests.routes.js';
 import storeOrdersRoutes from './modules/storeOrders/storeOrders.routes.js';
 import reportsRoutes from './modules/reports/reports.routes.js';
 import auditLogsRoutes from './modules/auditLogs/auditLogs.routes.js';
+import alertsRoutes from './modules/alerts/alerts.routes.js';
 
 
 // Load validated environment variables
@@ -60,6 +61,7 @@ app.use('/api/part-requests', partRequestsRoutes);
 app.use('/api/store-orders', storeOrdersRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/audit-logs', auditLogsRoutes);
+app.use('/api/alerts', alertsRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

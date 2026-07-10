@@ -1,6 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 import { AppError } from '../../utils/AppError.js';
 import { logAction } from '../auditLogs/auditLogs.service.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 /**
  * Generate a unique request number like "REQ-1001"
@@ -65,6 +66,14 @@ export async function createPartRequest(data) {
     entityId: partRequest.requestNumber,
     newValue: partRequest,
     workOrderId
+  });
+
+  await createAlert({
+    type: 'INFO',
+    title: 'New Part Request',
+    subtitle: `${partRequest.requestNumber} requires approval`,
+    targetRoles: ['STORE', 'SUPERVISOR'],
+    partRequestId: partRequest.id
   });
 
   return partRequest;
@@ -164,7 +173,7 @@ export async function updateRequestStatus(id, data) {
     }
 
     // Run update in transaction
-    const [updatedRequest] = await prisma.$transaction([
+    const [updatedRequest, updatedPart] = await prisma.$transaction([
       prisma.partRequest.update({
         where: { id },
         data: {
@@ -196,6 +205,24 @@ export async function updateRequestStatus(id, data) {
       newValue: updatedRequest
     });
 
+    await createAlert({
+      type: 'SUCCESS',
+      title: 'Part Request Fulfilled',
+      subtitle: `${request.requestNumber} has been fulfilled by the store`,
+      userId: updatedRequest.userId,
+      partRequestId: updatedRequest.id
+    });
+
+    if (updatedPart.qty < updatedPart.minLevel) {
+      await createAlert({
+        type: 'WARNING',
+        title: 'Low Stock Alert',
+        subtitle: `${updatedPart.name} (${updatedPart.partCode}) has dropped below the minimum stock level (${updatedPart.minLevel}). Current: ${updatedPart.qty}`,
+        targetRoles: ['STORE'],
+        partId: updatedPart.id
+      });
+    }
+
     return updatedRequest;
   }
 
@@ -223,6 +250,25 @@ export async function updateRequestStatus(id, data) {
     oldValue: request,
     newValue: updatedRequest
   });
+
+  if (status === 'APPROVED') {
+    await createAlert({
+      type: 'INFO',
+      title: 'Part Request Approved',
+      subtitle: `${request.requestNumber} has been approved`,
+      userIds: [updatedRequest.userId],
+      targetRoles: ['STORE'],
+      partRequestId: updatedRequest.id
+    });
+  } else if (status === 'REJECTED') {
+    await createAlert({
+      type: 'WARNING',
+      title: 'Part Request Rejected',
+      subtitle: `${request.requestNumber} has been rejected`,
+      userId: updatedRequest.userId,
+      partRequestId: updatedRequest.id
+    });
+  }
 
   return updatedRequest;
 }

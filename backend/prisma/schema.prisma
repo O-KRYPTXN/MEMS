@@ -219,7 +219,7 @@ model User {
 
   sentEmailLogs EmailLog[]
 
-  alerts Alert[]
+  userAlerts UserAlert[]
 
   auditLogs AuditLog[]
 
@@ -508,22 +508,39 @@ model Alert {
   type      AlertType
   title     String
   subtitle  String?
-  isRead    Boolean   @default(false)
-  createdAt DateTime  @default(now())          // derive relative time in the API layer
+  createdAt DateTime  @default(now())
 
   // Optional contextual links
-  workOrderId String?
-  deviceId    String?
-  partId      String?
+  workOrderId   String?
+  deviceId      String?
+  partId        String?
+  pmTaskId      String?
+  faultReportId String?
+  partRequestId String?
+  storeOrderId  String?
 
-  // Targeting: specific user or role broadcast
-  targetRole Role?
-  userId     String?
-  user       User?  @relation(fields: [userId], references: [id])
+  userAlerts  UserAlert[]
 
-  @@index([userId])
-  @@index([targetRole])
   @@index([createdAt])
+}
+
+// ─── USER ALERT (Pivot) ─────────────────────────────────────
+// Represents the delivery of an alert to a specific user.
+
+model UserAlert {
+  id        String   @id @default(cuid())
+  userId    String
+  alertId   String
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alert     Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, alertId])
+  @@index([userId, isRead])
+  @@index([alertId])
 }
 
 // ─── AUDIT LOG ──────────────────────────────────────────────

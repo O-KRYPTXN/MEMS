@@ -3,6 +3,7 @@ import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
 import { AppError } from '../../utils/AppError.js';
 import { logAction } from '../auditLogs/auditLogs.service.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 /**
  * Generate a unique Work Order Number (e.g. WO-2026-0001)
@@ -111,6 +112,26 @@ export const createWorkOrder = async (data, user) => {
       workOrderId: wo.id,
       tx
     });
+
+    if (assignedToId) {
+      await createAlert({
+        type: 'INFO',
+        title: 'New Work Order Assigned',
+        subtitle: `You have been assigned ${wo.workOrderNumber}`,
+        userId: assignedToId,
+        workOrderId: wo.id
+      }, tx);
+    }
+
+    if (rest.priority === 'HIGH' || rest.priority === 'CRITICAL') {
+      await createAlert({
+        type: rest.priority === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
+        title: `${rest.priority} Priority Work Order`,
+        subtitle: `${wo.workOrderNumber} was created with ${rest.priority} priority`,
+        targetRoles: ['SUPERVISOR', 'ADMIN'],
+        workOrderId: wo.id
+      }, tx);
+    }
 
     return wo;
   });
@@ -280,6 +301,16 @@ export const updateWorkOrder = async (id, data, user) => {
       workOrderId: id
     });
 
+    if (status === 'PENDING_APPROVAL' && wo.status !== 'PENDING_APPROVAL') {
+      await createAlert({
+        type: 'INFO',
+        title: 'Work Order Pending Approval',
+        subtitle: `${wo.workOrderNumber} is pending your review`,
+        targetRoles: ['SUPERVISOR'],
+        workOrderId: wo.id
+      });
+    }
+
     return updated;
   }
 
@@ -326,6 +357,50 @@ export const updateWorkOrder = async (id, data, user) => {
       workOrderId: id,
       tx
     });
+
+    // Handle re-assignment
+    if (data.assignedToId && data.assignedToId !== wo.assignedToId) {
+      await createAlert({
+        type: 'INFO',
+        title: 'Work Order Reassigned',
+        subtitle: `${wo.workOrderNumber} has been assigned to you`,
+        userId: data.assignedToId,
+        workOrderId: wo.id
+      }, tx);
+    }
+
+    // Handle high/critical priority change
+    if (data.priority && data.priority !== wo.priority && (data.priority === 'HIGH' || data.priority === 'CRITICAL')) {
+      await createAlert({
+        type: data.priority === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
+        title: `${data.priority} Priority Work Order`,
+        subtitle: `${wo.workOrderNumber} priority was raised to ${data.priority}`,
+        targetRoles: ['SUPERVISOR', 'ADMIN'],
+        workOrderId: wo.id
+      }, tx);
+    }
+
+    // Handle completion
+    if (data.status === 'DONE' && wo.status !== 'DONE' && updated.assignedToId) {
+      await createAlert({
+        type: 'SUCCESS',
+        title: 'Work Order Approved',
+        subtitle: `${wo.workOrderNumber} has been marked as Done`,
+        userId: updated.assignedToId,
+        workOrderId: wo.id
+      }, tx);
+    }
+
+    // Handle cancellation
+    if (data.status === 'CANCELLED' && wo.status !== 'CANCELLED' && updated.assignedToId) {
+      await createAlert({
+        type: 'WARNING',
+        title: 'Work Order Cancelled',
+        subtitle: `${wo.workOrderNumber} has been cancelled`,
+        userId: updated.assignedToId,
+        workOrderId: wo.id
+      }, tx);
+    }
 
     return updated;
   });

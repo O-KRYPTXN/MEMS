@@ -15,6 +15,7 @@ import { inventory } from '../../data/inventory'
 import { alerts as alertsData } from '../../data/alerts'
 import { ROUTES } from '../../constants/routes'
 import { useTranslation } from 'react-i18next'
+import { translateAlert } from '../../utils/translateAlert'
 
 const statusKeyMap = {
   open: 'open',
@@ -174,10 +175,13 @@ const Dashboard = () => {
           {alertsCleared ? (
             <p className="py-8 text-center text-[0.8125rem] text-[var(--text-muted)]">{t('dashboard.allCaughtUp')}</p>
           ) : (
-            alertsData.map((a, i) => (
-              <AlertItem key={a.id} type={a.type} title={a.title} subtitle={a.subtitle} time={a.time}
-                icon={ALERT_ICONS[a.type]} isLast={i === alertsData.length - 1} />
-            ))
+            alertsData.map((a, i) => {
+              const { title, subtitle } = translateAlert(a, t);
+              return (
+                <AlertItem key={a.id} type={a.type} title={title} subtitle={subtitle} time={a.time}
+                  icon={ALERT_ICONS[a.type]} isLast={i === alertsData.length - 1} />
+              )
+            })
           )}
         </Panel>
       </div>

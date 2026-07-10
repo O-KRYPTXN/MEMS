@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import * as auditLogsService from '../../api/auditLogsService'
 import DataTable from '../../components/tables/DataTable'
 import { formatDate } from '../../utils/formatDate'
-// No heroicons import
+import { useDebounce } from '../../hooks/useDebounce'
 
 const formatAction = (action) => {
   return action.replace(/_/g, ' ')
@@ -13,12 +13,25 @@ const AuditLogs = () => {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({})
+  const debouncedSearch = useDebounce(search, 400)
+  const [entityFilter, setEntityFilter] = useState('')
+  const [actionFilter, setActionFilter] = useState('')
   const [selectedLog, setSelectedLog] = useState(null)
 
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, entityFilter, actionFilter])
+
   const { data, isLoading } = useQuery({
-    queryKey: ['auditLogs', page, limit, search, filters],
-    queryFn: () => auditLogsService.getAuditLogs({ page, limit, search, ...filters }),
+    queryKey: ['auditLogs', page, limit, debouncedSearch, entityFilter, actionFilter],
+    queryFn: () => auditLogsService.getAuditLogs({ 
+      page, 
+      limit, 
+      search: debouncedSearch, 
+      entity: entityFilter, 
+      action: actionFilter 
+    }),
     keepPreviousData: true
   })
 
@@ -91,22 +104,63 @@ const AuditLogs = () => {
         </p>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={data?.data || []}
-        isLoading={isLoading}
-        searchPlaceholder="Search logs..."
-        searchValue={search}
-        onSearchChange={setSearch}
-        pagination={{
-          page,
-          limit,
-          total: data?.meta?.total || 0,
-          totalPages: data?.meta?.totalPages || 1,
-          onPageChange: setPage,
-          onLimitChange: setLimit
-        }}
-      />
+      <div className="flex flex-wrap items-center gap-[12px]">
+        <div className="flex items-center gap-2 w-[240px] h-[36px] px-3 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px] text-[var(--text-muted)] shrink-0">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
+          </svg>
+          <input 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+            placeholder="Search action, entity, user..."
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[0.8125rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" 
+          />
+        </div>
+        <select 
+          value={entityFilter} 
+          onChange={e => setEntityFilter(e.target.value)} 
+          className="h-[36px] px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem] outline-none"
+        >
+          <option value="">Entity: All</option>
+          <option value="WorkOrder">WorkOrder</option>
+          <option value="PMTask">PMTask</option>
+          <option value="PartRequest">PartRequest</option>
+          <option value="StoreOrder">StoreOrder</option>
+          <option value="Device">Device</option>
+          <option value="User">User</option>
+        </select>
+        <select 
+          value={actionFilter} 
+          onChange={e => setActionFilter(e.target.value)} 
+          className="h-[36px] px-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-[0.8125rem] outline-none"
+        >
+          <option value="">Action: All</option>
+          <option value="CREATED">Created</option>
+          <option value="UPDATED">Updated</option>
+          <option value="STATUS_CHANGED">Status Changed</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="FULFILLED">Fulfilled</option>
+          <option value="DELIVERED">Delivered</option>
+        </select>
+      </div>
+
+      <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={data?.data || []}
+          isLoading={isLoading}
+          pagination={{
+            page,
+            limit,
+            total: data?.meta?.total || 0,
+            totalPages: data?.meta?.totalPages || 1,
+            onPageChange: setPage,
+            onLimitChange: setLimit
+          }}
+        />
+      </div>
 
       {/* Details Modal */}
       {selectedLog && (

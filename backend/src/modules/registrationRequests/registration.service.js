@@ -3,6 +3,7 @@ import prisma from '../../../prisma/prisma.js';
 import { sendActivationEmail, sendRejectionEmail } from '../../services/email.service.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 import { AppError } from '../../utils/AppError.js';
+import { createAlert } from '../alerts/alerts.service.js';
 
 /**
  * Get paginated registration requests
@@ -92,6 +93,13 @@ export const approveRegistration = async (id) => {
     });
 
     await sendActivationEmail(newUser.email, rawToken);
+
+    await createAlert({
+        type: 'SUCCESS',
+        title: 'Registration Approved',
+        subtitle: 'Your account has been approved. Please activate it.',
+        userId: newUser.id
+    });
 
     return newUser;
 };

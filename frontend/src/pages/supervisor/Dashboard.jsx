@@ -235,8 +235,8 @@ export default function SupervisorDashboard() {
                   <AlertItem 
                     key={i} 
                     type={alert.type} 
-                    title={alert.title} 
-                    message={alert.sub} 
+                    title={t(alert.title, alert.title)} 
+                    subtitle={t(alert.sub, alert.sub)} 
                     time={alert.time}
                     iconOverride={
                       alert.type === 'info' ? (
