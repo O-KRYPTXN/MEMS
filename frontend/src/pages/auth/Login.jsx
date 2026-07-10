@@ -181,7 +181,7 @@ export default function Login() {
 
         {/* Demo Credentials Box */}
         <div className="mt-8 bg-[#131823] border border-[#1F2A40] rounded-lg p-3 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-[#3B82F6]"></div>
+          <div className="absolute top-0 start-0 w-1 h-full bg-[#3B82F6]"></div>
           <div className="text-[10px] text-[#5A6A85] font-bold uppercase tracking-wider mb-2 pl-2">Demo Credentials</div>
           <div className="text-[11px] text-[#94A3B8] font-mono leading-relaxed pl-2">
             admin@mems.hospital / asdfasdf<br/>

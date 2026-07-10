@@ -163,7 +163,7 @@ export default function TechnicianInventory() {
         {[{id:'all', label:t('techInventory.allStatus')}, {id:'In Stock', label:t('common.statusInStock', 'In Stock')}, {id:'Low Stock', label:t('common.statusLowStock', 'Low Stock')}, {id:'Out of Stock', label:t('common.statusOutStock', 'Out of Stock')}].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
-            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
+            <span className={clsx("ms-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
           </button>
         ))}
       </div>

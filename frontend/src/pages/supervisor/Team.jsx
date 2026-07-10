@@ -166,7 +166,7 @@ export default function SupervisorTeam() {
               <button onClick={() => handleRemoveTech(tItem.id)} className="absolute top-3 right-3 text-[var(--text-muted)] hover:text-[#F87171] transition-colors p-1" title={t('supTeam.removeFromView')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
               <div className="relative">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-[15px] font-bold" style={{ backgroundColor: tItem.color }}>{tItem.initials}</div>
-                <StatusDot status={tItem.status} className="w-3.5 h-3.5 absolute bottom-0 right-0 border-2 border-[var(--bg-panel)]" />
+                <StatusDot status={tItem.status} className="w-3.5 h-3.5 absolute bottom-0 end-0 border-2 border-[var(--bg-panel)]" />
               </div>
               <div className="flex-1 min-w-0 pr-5">
                 <div className="text-[0.95rem] font-bold text-[var(--text-primary)] truncate">{tItem.name}</div>

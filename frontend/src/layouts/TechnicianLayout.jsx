@@ -43,7 +43,7 @@ const TechSidebar = () => {
   }
 
   return (
-    <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-r border-[var(--border)]">
+    <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-e border-[var(--border)]">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-[var(--border)]">
         <div className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0" style={{ background: 'linear-gradient(135deg, #F59E0B, #F97316)' }}>
           <Icon d="M12 3v18M3 12h18" className="w-5 h-5 text-white" />
@@ -74,7 +74,7 @@ const TechSidebar = () => {
           <NavLink to={ROUTES.TECH_WORK_ORDERS} className={navLinkClass}>
             <Icon d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375" />
             {t('nav.workOrders')}
-            <span className="ml-auto flex items-center justify-center rounded-full bg-[rgba(245,158,11,0.15)] text-[#FCD34D] text-[0.65rem] font-bold px-[7px] py-[1px]">5</span>
+            <span className="ms-auto flex items-center justify-center rounded-full bg-[rgba(245,158,11,0.15)] text-[#FCD34D] text-[0.65rem] font-bold px-[7px] py-[1px]">5</span>
           </NavLink>
           <NavLink to={ROUTES.TECH_DEVICES} className={navLinkClass}>
             <Icon d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3" />
@@ -168,10 +168,10 @@ const TechnicianLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-body)]">
-      <div className="hidden md:block fixed top-0 left-0 h-screen z-30">
+      <div className="hidden md:block fixed top-0 start-0 h-screen z-30">
         <TechSidebar />
       </div>
-      <main className="flex-1 flex flex-col min-h-screen ml-0 md:ml-[240px] bg-[var(--bg-body)]">
+      <main className="flex-1 flex flex-col min-h-screen ms-0 md:ms-[240px] bg-[var(--bg-body)]">
         <TechTopbar title={pageTitle} />
         <div className="flex-1 flex flex-col gap-6 p-7">
           <Outlet />

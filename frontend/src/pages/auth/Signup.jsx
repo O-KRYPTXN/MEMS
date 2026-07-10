@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useAuthStore } from '../../store/authStore';
 
 const DEPARTMENTS = [
-  'ICU', 'ER', 'Surgery', 'Radiology', 'Cardiology', 
+  'ICU', 'ER', 'Surgery', 'Radiology', 'Cardiology',
   'Laboratory', 'General Ward', 'Central Storeroom', 'Administration'
 ];
 
@@ -12,7 +12,7 @@ const ROLES = [
   { id: 'Supervisor', label: 'Supervisor', icon: '🏥' },
   { id: 'Technician', label: 'Technician', icon: '🔧' },
   { id: 'Storekeeper', label: 'Storekeeper', icon: '📦' },
-  { id: 'Administrator', label: 'Administrator', icon: '⚙️' }
+  { id: 'Department Supervisor', label: 'Department Supervisor', icon: '🩺' }
 ];
 
 export default function Signup() {
@@ -72,10 +72,10 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep2()) return;
-    
+
     setError(null);
     const result = await signup(formData);
-    
+
     if (result.success) {
       setStep('success');
     }
@@ -170,7 +170,7 @@ export default function Signup() {
               <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputCls} placeholder="+1 (555) 000-0000" />
             </div>
             <button onClick={handleNextStep1} className="w-full h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2">
-              Next — Select Role 
+              Next — Select Role
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
             </button>
           </div>
@@ -182,13 +182,13 @@ export default function Signup() {
             <label className={labelCls}>Requested Role</label>
             <div className="grid grid-cols-2 gap-3 mb-5">
               {ROLES.map(role => (
-                <div 
+                <div
                   key={role.id}
                   onClick={() => { setFormData(prev => ({ ...prev, role: role.id })); setError(null); }}
                   className={clsx(
                     "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200",
-                    formData.role === role.id 
-                      ? "border-[#3B82F6] bg-[rgba(59,114,246,0.1)] shadow-[0_0_0_1px_rgba(59,114,246,0.5)]" 
+                    formData.role === role.id
+                      ? "border-[#3B82F6] bg-[rgba(59,114,246,0.1)] shadow-[0_0_0_1px_rgba(59,114,246,0.5)]"
                       : "border-[#1F2A40] bg-transparent hover:border-[#3B82F6] hover:bg-[rgba(59,114,246,0.06)]"
                   )}
                 >

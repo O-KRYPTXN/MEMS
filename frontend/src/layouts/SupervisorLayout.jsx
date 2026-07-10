@@ -44,7 +44,7 @@ const SupervisorSidebar = () => {
   }
 
   return (
-    <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-r border-[var(--border)]">
+    <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-e border-[var(--border)]">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-[var(--border)]">
         <div className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0" style={{ background: 'linear-gradient(135deg, #14B8A6, #0EA5E9)' }}>
           <Icon d="M12 3v18M3 12h18" className="w-5 h-5 text-white" />
@@ -75,7 +75,7 @@ const SupervisorSidebar = () => {
           <NavLink to={ROUTES.SUPERVISOR_WORK_ORDERS} className={navLinkClass}>
             <Icon d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375" />
             {t('nav.workOrders')}
-            <span className="ml-auto flex items-center justify-center rounded-full bg-[rgba(239,68,68,0.15)] text-[#F87171] text-[0.65rem] font-bold px-[7px] py-[1px]">3</span>
+            <span className="ms-auto flex items-center justify-center rounded-full bg-[rgba(239,68,68,0.15)] text-[#F87171] text-[0.65rem] font-bold px-[7px] py-[1px]">3</span>
           </NavLink>
           <NavLink to={ROUTES.SUPERVISOR_FAULT_REPORTS} className={navLinkClass}>
             <Icon d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -184,11 +184,11 @@ const SupervisorLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-body)]">
-      <div className="hidden md:block fixed top-0 left-0 h-screen z-30">
+      <div className="hidden md:block fixed top-0 start-0 h-screen z-30">
         <SupervisorSidebar />
       </div>
 
-      <main className="flex-1 flex flex-col min-h-screen ml-0 md:ml-[240px] bg-[var(--bg-body)]">
+      <main className="flex-1 flex flex-col min-h-screen ms-0 md:ms-[240px] bg-[var(--bg-body)]">
         <SupervisorTopbar title={pageTitle} />
         <div className="flex-1 flex flex-col gap-6 p-7">
           <Outlet />

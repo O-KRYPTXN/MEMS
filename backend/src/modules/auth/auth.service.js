@@ -85,6 +85,10 @@ export const getUserForMiddleware = async (id) => {
 export const createRegistrationRequest = async (data) => {
   const { firstName, lastName, email, dbRole, department } = data;
 
+  if (dbRole === 'ADMIN') {
+    throw new AppError('Signups for administrator roles are forbidden', 403);
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });

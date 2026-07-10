@@ -343,7 +343,7 @@ export default function SupervisorDashboard() {
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ backgroundColor: tech.color }}>
                       {tech.initials}
                     </div>
-                    <div className={clsx("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg-panel)]", tech.status === 'online' ? 'bg-[#4ADE80]' : tech.status === 'busy' ? 'bg-[#FCD34D]' : 'bg-[var(--text-muted)]')}></div>
+                    <div className={clsx("absolute bottom-0 end-0 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg-panel)]", tech.status === 'online' ? 'bg-[#4ADE80]' : tech.status === 'busy' ? 'bg-[#FCD34D]' : 'bg-[var(--text-muted)]')}></div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-medium text-[var(--text-primary)] truncate">{tech.name}</div>

@@ -932,7 +932,7 @@
     "quantity": "Quantity",
     "expectedDelivery": "Expected Delivery Date",
     "disclaimer": "Submitting this form will generate a PO number and open your default email client with a pre-formatted message.",
-    "submitBtn": "Submit & Send Email"
+    "submitBtn": "Create Order"
   },
   "storeRejectedOrders": {
     "statusCancelled": "Cancelled",

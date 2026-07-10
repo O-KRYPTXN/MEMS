@@ -59,7 +59,7 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="flex flex-col w-[240px] h-full shrink-0 bg-[var(--bg-sidebar)] border-r border-[var(--border)]">
+    <aside className="flex flex-col w-[240px] h-full shrink-0 bg-[var(--bg-sidebar)] border-e border-[var(--border)]">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-[var(--border)]">
         <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#3B72F6] shrink-0">
           <Icon d="M12 3v18M3 12h18" className="w-5 h-5 text-white" />

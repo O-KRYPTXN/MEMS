@@ -95,7 +95,7 @@ const NotificationCenter = ({ onClose }) => {
   const alerts = data?.data || [];
 
   return (
-    <div className="absolute top-[calc(100%+8px)] right-0 w-[380px] bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl shadow-xl overflow-hidden flex flex-col z-50">
+    <div className="absolute top-[calc(100%+8px)] end-0 w-[380px] bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl shadow-xl overflow-hidden flex flex-col z-50">
       <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
         <h3 className="font-semibold text-[var(--text-primary)]">{t('nav.notifications')}</h3>
         {alerts.some(a => !a.isRead) && (
@@ -133,7 +133,7 @@ const NotificationCenter = ({ onClose }) => {
                   )}
                 >
                   {!alert.isRead && (
-                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#3B72F6]" />
+                    <div className="absolute start-0 top-0 bottom-0 w-[3px] bg-[#3B72F6]" />
                   )}
                   <AlertItem 
                     type={TYPE_MAP[alert.type] || 'info'}

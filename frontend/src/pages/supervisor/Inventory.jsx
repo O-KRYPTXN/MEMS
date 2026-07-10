@@ -152,7 +152,7 @@ export default function SupervisorInventory() {
         {[{id:'all', label:t('supInventory.allParts')}, {id:'In Stock', label:t('supInventory.inStock')}, {id:'Low Stock', label:t('supInventory.lowStock')}, {id:'Out of Stock', label:t('supInventory.outOfStock')}].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[var(--bg-panel)] text-[#14B8A6]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
-            <span className={clsx("ml-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(20,184,166,0.15)] text-[#14B8A6]" : "bg-[var(--bg-panel)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
+            <span className={clsx("ms-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(20,184,166,0.15)] text-[#14B8A6]" : "bg-[var(--bg-panel)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
           </button>
         ))}
       </div>
