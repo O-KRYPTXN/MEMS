@@ -83,8 +83,8 @@ export default function Reports() {
   const { showToast } = useToastStore()
 
   const { data: dashboard, isLoading: isDashLoading } = useQuery({
-    queryKey: ['reportsDashboard'],
-    queryFn: reportsService.getDashboardMetrics
+    queryKey: ['reportsAnalytics'],
+    queryFn: reportsService.getAnalyticsMetrics
   });
 
   const { data: reportsData, isLoading: isReportsLoading } = useQuery({
@@ -202,7 +202,7 @@ export default function Reports() {
   const kpis = dashboard?.kpis || { totalDevices: 0, criticalAlerts: 0, woCompletionRate: '0%', recordsTracked: 0 };
   const complianceData = dashboard?.complianceData || [];
   const faultData = dashboard?.faultData || [];
-  const costData = dashboard?.costData || [];
+  const categoryData = dashboard?.categoryData || [];
   const sparePartsData = dashboard?.sparePartsData || [];
 
   return (
@@ -276,17 +276,17 @@ export default function Reports() {
           </Panel>
 
           <Panel padding="p-5" className="lg:col-span-2 flex flex-col">
-            <div className="text-[0.875rem] font-bold text-[var(--text-primary)] mb-4">{t('reports.maintenanceCost', 'Maintenance Costs')}</div>
+            <div className="text-[0.875rem] font-bold text-[var(--text-primary)] mb-4">{t('reports.wosByCategory', 'Work Orders by Device Category')}</div>
             <div className="flex-1 min-h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={costData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <BarChart data={categoryData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${v}`} />
+                  <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip cursor={{ fill: 'var(--border)', opacity: 0.4 }} content={<CustomTooltip />} />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', color: 'var(--text-secondary)' }} />
-                  <Bar dataKey="parts" name="Parts Cost" stackId="a" fill="#3B72F6" radius={[0, 0, 4, 4]} />
-                  <Bar dataKey="labour" name="Labour Cost" stackId="a" fill="var(--text-secondary)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="completed" name="Completed WOs" stackId="a" fill="#10B981" radius={[0, 0, 4, 4]} />
+                  <Bar dataKey="open" name="Open WOs" stackId="a" fill="#3B72F6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

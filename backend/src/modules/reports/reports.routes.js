@@ -18,6 +18,11 @@ router.get(
 );
 
 router.get(
+  '/analytics',
+  reportsController.getAnalyticsHandler
+);
+
+router.get(
   '/',
   validateRequest(reportsValidation.getReportsQuery, 'query'),
   reportsController.getReportsHandler

@@ -9,21 +9,190 @@ export const getDashboardMetrics = async () => {
   // 1. KPIs
   const totalDevices = await prisma.device.count();
   
-  const unreadAlerts = await prisma.alert.count({
-    where: { type: 'CRITICAL', isRead: false }
+  const openWOs = await prisma.workOrder.count({ where: { status: { not: 'DONE' } } });
+  
+  const totalPMs = await prisma.pMTask.count();
+  const completedPMs = await prisma.pMTask.count({ where: { status: 'COMPLETED' } });
+  const pmCompliance = totalPMs > 0 ? Math.round((completedPMs / totalPMs) * 100) : 100;
+  
+  const activeFaults = await prisma.faultReport.count({ where: { status: { not: 'SOLVED' } } });
+  const faultRate = totalDevices > 0 ? ((activeFaults / totalDevices) * 100).toFixed(1) : 0;
+
+  // 2. Fault Trend (Rolling 30 days)
+  const faultTrendMap = {};
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    faultTrendMap[d.toISOString().split('T')[0]] = 0;
+  }
+  
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const recentFaults = await prisma.faultReport.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true }
   });
   
-  const allWos = await prisma.workOrder.count();
-  const completedWos = await prisma.workOrder.count({ where: { status: 'DONE' } });
-  const woCompletionRate = allWos > 0 ? Math.round((completedWos / allWos) * 100) : 0;
+  recentFaults.forEach(f => {
+    const dateStr = f.createdAt.toISOString().split('T')[0];
+    if (faultTrendMap[dateStr] !== undefined) {
+      faultTrendMap[dateStr]++;
+    }
+  });
   
-  const recordsTracked = await prisma.device.count() + await prisma.workOrder.count() + await prisma.pMTask.count() + await prisma.faultReport.count();
+  const faultTrend = Object.keys(faultTrendMap).map(dateStr => {
+    return { day: new Date(dateStr).getDate(), faults: faultTrendMap[dateStr] };
+  });
 
-  // 2. Compliance Trend (Mocked past 12 months for now, since generating a proper time-series in Prisma without raw queries is tricky and data might be sparse)
-  // To avoid complexity, we'll return a static shape or simple aggregation if data exists.
-  // Actually, let's fetch all PM tasks for the last 12 months and group by month in memory.
+  // 3. Recent Urgent Work Orders
+  const recentUrgentWOsDb = await prisma.workOrder.findMany({
+    where: { 
+      status: { notIn: ['DONE', 'CANCELLED'] },
+      priority: { in: ['HIGH', 'CRITICAL'] }
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 5,
+    include: {
+      device: { 
+        include: { 
+          department: { select: { name: true } } 
+        } 
+      }
+    }
+  });
+  
+  const recentUrgentWOs = recentUrgentWOsDb.map(wo => ({
+    id: wo.workOrderNumber,
+    device: wo.device?.name || 'Unknown',
+    department: wo.device?.department?.name || 'Unknown',
+    priority: wo.priority,
+    status: wo.status,
+  }));
+
+  // 4. Technician Workloads
+  const technicians = await prisma.user.findMany({
+    where: { role: 'TECHNICIAN', isActive: true },
+    select: {
+      name: true,
+      _count: {
+        select: {
+          assignedWorkOrders: {
+            where: { status: { notIn: ['DONE', 'CANCELLED'] } }
+          }
+        }
+      }
+    }
+  });
+  
+  const techWorkloads = technicians.map(t => ({
+    name: t.name,
+    count: t._count.assignedWorkOrders
+  }));
+
+  // 5. Inventory Status (Low Inventory)
+  const allParts = await prisma.part.findMany({
+    select: { name: true, qty: true, minLevel: true }
+  });
+  
+  const lowInventory = allParts
+    .filter(p => p.qty <= p.minLevel)
+    .sort((a, b) => {
+      const pctA = a.minLevel > 0 ? a.qty / a.minLevel : 0;
+      const pctB = b.minLevel > 0 ? b.qty / b.minLevel : 0;
+      return pctA - pctB;
+    })
+    .map(p => ({ name: p.name, stock: p.qty, minLevel: p.minLevel }));
+
+  // 6. Devices by Department
+  const devicesByDeptDb = await prisma.device.groupBy({
+    by: ['departmentId'],
+    _count: { id: true },
+    where: { status: 'OPERATIONAL' }
+  });
+  
+  const allDepartments = await prisma.department.findMany({
+    select: { id: true, name: true }
+  });
+  
+  const deptNameMap = {};
+  allDepartments.forEach(d => { deptNameMap[d.id] = d.name });
+  
+  const COLORS = ['#3B72F6', '#F59E0B', '#22C55E', '#A855F7', '#EF4444', '#94A3B8'];
+  
+  const devDeptCountMap = {};
+  devicesByDeptDb.forEach(d => {
+    const name = d.departmentId && deptNameMap[d.departmentId] ? deptNameMap[d.departmentId] : 'Other';
+    devDeptCountMap[name] = (devDeptCountMap[name] || 0) + d._count.id;
+  });
+  
+  const devicesByDept = Object.keys(devDeptCountMap).map((name, i) => ({
+    name,
+    count: devDeptCountMap[name],
+    pct: 0,
+    color: COLORS[i % COLORS.length]
+  })).sort((a, b) => b.count - a.count);
+  
+  const totalActiveDevices = devicesByDept.reduce((acc, curr) => acc + curr.count, 0);
+  devicesByDept.forEach(d => {
+    d.pct = totalActiveDevices > 0 ? Math.round((d.count / totalActiveDevices) * 100) : 0;
+  });
+
+  // 7. Work Orders by Department (Active)
+  const activeWOs = await prisma.workOrder.findMany({
+    where: { status: { notIn: ['DONE', 'CANCELLED'] } },
+    select: { device: { select: { departmentId: true } } }
+  });
+  
+  const woDeptCountMap = {};
+  activeWOs.forEach(wo => {
+    const dId = wo.device?.departmentId;
+    const name = dId && deptNameMap[dId] ? deptNameMap[dId] : 'Other';
+    woDeptCountMap[name] = (woDeptCountMap[name] || 0) + 1;
+  });
+
+  const workOrdersByDept = Object.keys(woDeptCountMap).map((name, i) => ({
+    name,
+    value: woDeptCountMap[name],
+    color: COLORS[i % COLORS.length]
+  })).sort((a, b) => b.value - a.value);
+
+  return {
+    kpis: {
+      totalDevices,
+      faultRate: `${faultRate}%`,
+      openWorkOrders: openWOs,
+      pmCompliance: `${pmCompliance}%`
+    },
+    faultTrend,
+    recentUrgentWOs,
+    techWorkloads,
+    lowInventory,
+    devicesByDept,
+    workOrdersByDept
+  };
+};
+
+// --- Analytics Page Metrics ---
+export const getAnalyticsMetrics = async (userId) => {
+  // 1. KPIs
+  const totalDevices = await prisma.device.count();
+  const totalWOs = await prisma.workOrder.count();
+  const completedWOs = await prisma.workOrder.count({ where: { status: 'DONE' } });
+  const totalPMs = await prisma.pMTask.count();
+  const totalParts = await prisma.part.count();
+  
+  const recordsTracked = totalDevices + totalWOs + totalPMs + totalParts;
+  const woCompletionRate = totalWOs > 0 ? Math.round((completedWOs / totalWOs) * 100) : 0;
+  
+  const criticalAlerts = await prisma.userAlert.count({
+    where: { userId, isRead: false, alert: { type: 'CRITICAL' } }
+  });
+
+  // 2. PM Compliance Trend (12 Months)
   const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  oneYearAgo.setMonth(oneYearAgo.getMonth() - 11);
+  oneYearAgo.setDate(1); 
   
   const recentPMs = await prisma.pMTask.findMany({
     where: { scheduledAt: { gte: oneYearAgo } },
@@ -33,7 +202,6 @@ export const getDashboardMetrics = async () => {
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const complianceMap = {};
   
-  // Initialize last 12 months
   for (let i = 11; i >= 0; i--) {
     const d = new Date();
     d.setMonth(d.getMonth() - i);
@@ -51,66 +219,85 @@ export const getDashboardMetrics = async () => {
 
   const complianceData = Object.keys(complianceMap).map(name => {
     const { total, completed } = complianceMap[name];
-    const value = total > 0 ? Math.round((completed / total) * 100) : 100; // default 100 if no tasks
+    const value = total > 0 ? Math.round((completed / total) * 100) : 100;
     return { name, value };
   });
 
-  // 3. Fault Summary (by Department)
+  // 3. Fault Analysis by Department
   const faults = await prisma.faultReport.findMany({
-    include: { device: { include: { department: true } } }
-  });
-
-  const faultMap = {};
-  faults.forEach(f => {
-    const depName = f.device?.department?.name || 'Other';
-    faultMap[depName] = (faultMap[depName] || 0) + 1;
+    select: { device: { select: { departmentId: true } } }
   });
   
-  const faultData = Object.keys(faultMap).map(name => ({ name, value: faultMap[name] }));
+  const allDepartments = await prisma.department.findMany({ select: { id: true, name: true } });
+  const deptNameMap = {};
+  allDepartments.forEach(d => { deptNameMap[d.id] = d.name });
+  
+  const faultMap = {};
+  allDepartments.forEach(d => { faultMap[d.name] = 0; });
+  faultMap['Other'] = 0;
 
-  // 4. Maintenance Cost
-  const completedWosWithCosts = await prisma.workOrder.findMany({
-    where: { status: 'DONE' },
-    include: { device: true }
+  faults.forEach(f => {
+    const dId = f.device?.departmentId;
+    const name = dId && deptNameMap[dId] ? deptNameMap[dId] : 'Other';
+    if (faultMap[name] !== undefined) {
+      faultMap[name]++;
+    }
   });
+  
+  const faultData = Object.keys(faultMap)
+    .map(name => ({ name, value: faultMap[name] }))
+    .filter(d => d.value > 0 || d.name !== 'Other');
 
-  const costMap = {};
-  completedWosWithCosts.forEach(wo => {
-    const cat = wo.device?.category || 'General';
-    if (!costMap[cat]) costMap[cat] = { parts: 0, labour: 0 };
-    costMap[cat].parts += (wo.partsCost || 0);
-    costMap[cat].labour += (wo.laborCost || 0);
+  // 4. Work Orders by Device Category (Replaces Cost)
+  const wosByCategoryDb = await prisma.workOrder.findMany({
+    select: { status: true, device: { select: { category: true } } }
   });
-
-  const costData = Object.keys(costMap).map(name => ({
+  
+  const woCatMap = {};
+  wosByCategoryDb.forEach(wo => {
+    const cat = wo.device?.category || 'Uncategorized';
+    if (!woCatMap[cat]) woCatMap[cat] = { open: 0, completed: 0 };
+    if (wo.status === 'DONE' || wo.status === 'CANCELLED') woCatMap[cat].completed++;
+    else woCatMap[cat].open++;
+  });
+  
+  const categoryData = Object.keys(woCatMap).map(name => ({
     name,
-    parts: costMap[name].parts,
-    labour: costMap[name].labour
+    open: woCatMap[name].open,
+    completed: woCatMap[name].completed
   }));
 
-  // 5. Spare Parts Consumption
-  const parts = await prisma.part.findMany({
-    orderBy: { qty: 'asc' },
-    take: 5
+  // 5. Spare Parts (Top 5 lowest stock)
+  const allParts = await prisma.part.findMany({
+    select: { name: true, qty: true, minLevel: true }
   });
-
-  const sparePartsData = parts.map((p, i) => ({
-    name: p.name,
-    count: p.qty,
-    max: p.maxLevel || 100,
-    color: ['#F87171', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'][i % 5]
-  }));
+  
+  const COLORS2 = ['#F87171', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'];
+  const sparePartsData = allParts
+    .filter(p => p.qty <= p.minLevel)
+    .sort((a, b) => {
+      const pctA = a.minLevel > 0 ? a.qty / a.minLevel : 0;
+      const pctB = b.minLevel > 0 ? b.qty / b.minLevel : 0;
+      return pctA - pctB;
+    })
+    .slice(0, 5)
+    .map((p, i) => ({ 
+      name: p.name, 
+      count: p.qty, 
+      max: p.minLevel,
+      color: COLORS2[i % COLORS2.length]
+    }));
 
   return {
     kpis: {
-      totalDevices,
-      criticalAlerts: unreadAlerts,
+      recordsTracked,
       woCompletionRate: `${woCompletionRate}%`,
-      recordsTracked
+      totalDevices,
+      criticalAlerts
     },
     complianceData,
     faultData,
-    costData,
+    categoryData,
     sparePartsData
   };
 };

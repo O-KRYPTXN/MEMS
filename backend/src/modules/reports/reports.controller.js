@@ -9,6 +9,15 @@ export const getDashboardHandler = catchAsync(async (req, res) => {
   });
 });
 
+export const getAnalyticsHandler = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const data = await reportsService.getAnalyticsMetrics(userId);
+  res.status(200).json({
+    success: true,
+    data
+  });
+});
+
 export const getReportsHandler = catchAsync(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;

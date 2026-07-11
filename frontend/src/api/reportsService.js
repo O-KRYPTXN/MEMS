@@ -5,6 +5,11 @@ export const getDashboardMetrics = async () => {
   return data.data;
 };
 
+export const getAnalyticsMetrics = async () => {
+  const { data } = await api.get('/reports/analytics');
+  return data.data;
+};
+
 export const getReports = async (params = {}) => {
   const { data } = await api.get('/reports', { params });
   return data;

@@ -10,18 +10,19 @@ import StatusBadge from '../../components/ui/StatusBadge'
 import DataTable from '../../components/tables/DataTable'
 import AlertItem from '../../components/ui/AlertItem'
 import ProgressBar from '../../components/ui/ProgressBar'
-import { workOrders } from '../../data/workOrders'
-import { inventory } from '../../data/inventory'
-import { alerts as alertsData } from '../../data/alerts'
 import { ROUTES } from '../../constants/routes'
 import { useTranslation } from 'react-i18next'
 import { translateAlert } from '../../utils/translateAlert'
+import { useQuery } from '@tanstack/react-query'
+import { getDashboardMetrics } from '../../api/reportsService'
+import { getAlerts } from '../../api/alertsService'
 
 const statusKeyMap = {
-  open: 'open',
-  progress: 'inProgress',
-  waiting: 'waitingParts',
-  done: 'done',
+  PENDING: 'open',
+  IN_PROGRESS: 'inProgress',
+  WAITING_PARTS: 'waitingParts',
+  DONE: 'done',
+  CANCELLED: 'cancelled',
 }
 
 const ICON_DEVICE = 'M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3'
@@ -59,42 +60,25 @@ const Dashboard = () => {
   const { t } = useTranslation()
   const [alertsCleared, setAlertsCleared] = useState(false)
 
-  const openWOCount = workOrders.filter((w) => w.status !== 'done').length
-  const urgentCount = workOrders.filter((w) => w.priority === 'high' && w.status !== 'done').length
+  const { data: metrics, isLoading } = useQuery({
+    queryKey: ['dashboardMetrics'],
+    queryFn: getDashboardMetrics,
+  })
 
-  const faultData = useMemo(
-    () => [2, 1, 3, 4, 2, 5, 3, 6, 4, 3, 2, 4, 5, 7, 6, 8, 5, 4, 6, 5, 7, 9, 6, 8, 7, 5, 6, 4, 7, 5].map((v, i) => {
-      const d = new Date()
-      d.setDate(d.getDate() - (29 - i))
-      return { day: d.getDate(), faults: v }
-    }),
-    []
-  )
-
-  const deptData = useMemo(() => [
-    { name: 'ICU', value: workOrders.filter((w) => w.department === 'ICU').length, color: '#3B72F6' },
-    { name: 'ER', value: workOrders.filter((w) => w.department === 'ER').length, color: '#F59E0B' },
-    { name: 'Surgery', value: workOrders.filter((w) => w.department === 'Surgery').length, color: '#22C55E' },
-    { name: 'Other', value: workOrders.filter((w) => !['ICU', 'ER', 'Surgery'].includes(w.department)).length, color: '#A855F7' },
-  ], [])
-
-  const totalWOs = workOrders.length
-  const recentWOs = useMemo(
-    () => workOrders.filter((w) => w.status !== 'done').sort((a, b) => {
-      const order = { high: 1, medium: 2, low: 3 }
-      return order[a.priority] - order[b.priority]
-    }).slice(0, 5),
-    []
-  )
-
-  const lowInventory = useMemo(() => inventory.filter((i) => i.stock <= i.minLevel), [])
+  const { data: alertsRes } = useQuery({
+    queryKey: ['alerts'],
+    queryFn: () => getAlerts({ limit: 5 }),
+    refetchInterval: 30000
+  })
+  
+  const alertsData = alertsRes?.data || [];
 
   const woColumns = [
     { key: 'id', label: t('dashboard.woNumber'), primary: true },
     { key: 'device', label: t('dashboard.device') },
     { key: 'department', label: t('dashboard.department') },
-    { key: 'priority', label: t('common.priority'), render: (val) => <StatusBadge variant={val} label={t(`priority.${val}`)} /> },
-    { key: 'status', label: t('common.status'), render: (val) => <StatusBadge variant={val} label={t(`status.${statusKeyMap[val]}`)} /> },
+    { key: 'priority', label: t('common.priority'), render: (val) => <StatusBadge variant={val.toLowerCase()} label={t(`priority.${val.toLowerCase()}`)} /> },
+    { key: 'status', label: t('common.status'), render: (val) => <StatusBadge variant={val} label={t(`status.${statusKeyMap[val] || val.toLowerCase()}`)} /> },
   ]
 
   const invColumns = [
@@ -105,11 +89,11 @@ const Dashboard = () => {
     { key: 'minLevel', label: t('dashboard.min') },
   ]
 
-  const technicians = ['J. Smith', 'A. Hassan', 'M. Youssef', 'S. Khalid']
-  const techColors = ['#EF4444', '#F59E0B', '#3B72F6', '#22C55E']
-  const openWOList = workOrders.filter((w) => w.status !== 'done')
-  const techCounts = technicians.map((t) => openWOList.filter((w) => w.technician === t).length)
-  const maxTechCount = Math.max(...techCounts, 1)
+  const totalWOs = metrics?.workOrdersByDept?.reduce((acc, curr) => acc + curr.value, 0) || 0;
+  
+  const techWorkloads = metrics?.techWorkloads || [];
+  const maxTechCount = techWorkloads.length > 0 ? Math.max(...techWorkloads.map(t => t.count), 1) : 1;
+  const techColors = ['#EF4444', '#F59E0B', '#3B72F6', '#22C55E', '#A855F7', '#14B8A6', '#EC4899'];
 
   return (
     <div className="flex flex-col gap-6">
@@ -133,10 +117,16 @@ const Dashboard = () => {
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <KPICard title={t('dashboard.totalDevices')} value="2,418" iconPath={ICON_DEVICE} iconVariant="blue" trend={{ type: 'up', text: '4.2%' }} />
-        <KPICard title={t('dashboard.faultRate')} value="1.8%" iconPath={ICON_WARN} iconVariant="red" danger trend={{ type: 'down', text: '+2' }} />
-        <KPICard title={t('dashboard.openWorkOrders')} value={openWOCount} iconPath={ICON_WO} iconVariant="orange" trend={{ type: 'warn', text: `${urgentCount} ${t('dashboard.urgent')}` }} />
-        <KPICard title={t('dashboard.pmCompliance')} value="94%" iconPath={ICON_BOX} iconVariant="green" trend={{ type: 'warn', text: 'Warning' }} />
+        {isLoading ? (
+          <div className="col-span-4 p-8 text-center text-[var(--text-muted)] text-sm">{t('common.loading')}</div>
+        ) : (
+          <>
+            <KPICard title={t('dashboard.totalDevices')} value={metrics?.kpis?.totalDevices || 0} iconPath={ICON_DEVICE} iconVariant="blue" trend={{ type: 'up', text: 'Active' }} />
+            <KPICard title={t('dashboard.faultRate')} value={metrics?.kpis?.faultRate || '0%'} iconPath={ICON_WARN} iconVariant="red" danger trend={{ type: 'warn', text: 'Avg' }} />
+            <KPICard title={t('dashboard.openWorkOrders')} value={metrics?.kpis?.openWorkOrders || 0} iconPath={ICON_WO} iconVariant="orange" trend={{ type: 'warn', text: 'Active' }} />
+            <KPICard title={t('dashboard.pmCompliance')} value={metrics?.kpis?.pmCompliance || '0%'} iconPath={ICON_BOX} iconVariant="green" trend={{ type: 'up', text: 'Target: >80%' }} />
+          </>
+        )}
       </div>
 
       {/* Charts Row */}
@@ -145,18 +135,26 @@ const Dashboard = () => {
           <PanelHeader title={t('dashboard.faultTrendTitle')} subtitle={t('dashboard.faultTrendSubtitle')}
             action={<button type="button" className={linkBtn}>{t('dashboard.viewReport')}</button>} />
           <div className="p-5">
-            <FaultTrendLineChart data={faultData} />
+            {metrics?.faultTrend?.length > 0 ? (
+              <FaultTrendLineChart data={metrics.faultTrend} />
+            ) : (
+              <p className="py-10 text-center text-sm text-[var(--text-muted)]">No fault reports during the last 30 days.</p>
+            )}
           </div>
         </Panel>
 
         <Panel noPadding>
           <PanelHeader title={t('dashboard.woByDeptTitle')} subtitle={t('dashboard.woByDeptSubtitle')} />
           <div className="py-5">
-            <StatusDonutChart
-              data={deptData.map(d => ({ ...d, displayValue: totalWOs ? Math.round((d.value / totalWOs) * 100) + '%' : '0%' }))}
-              centerLabel={totalWOs}
-              centerSubLabel={t('dashboard.totalWOs')}
-            />
+            {metrics?.workOrdersByDept?.length > 0 ? (
+              <StatusDonutChart
+                data={metrics.workOrdersByDept.map(d => ({ ...d, displayValue: totalWOs ? Math.round((d.value / totalWOs) * 100) + '%' : '0%' }))}
+                centerLabel={totalWOs}
+                centerSubLabel={t('dashboard.totalWOs')}
+              />
+            ) : (
+              <p className="py-10 text-center text-sm text-[var(--text-muted)]">No active work orders.</p>
+            )}
           </div>
         </Panel>
       </div>
@@ -166,20 +164,24 @@ const Dashboard = () => {
         <Panel noPadding>
           <PanelHeader title={t('dashboard.recentUrgentTitle')} subtitle={t('dashboard.recentUrgentSubtitle')}
             action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_WORK_ORDERS)}>{t('dashboard.viewAll')}</button>} />
-          <DataTable columns={woColumns} data={recentWOs} />
+          {metrics?.recentUrgentWOs?.length > 0 ? (
+            <DataTable columns={woColumns} data={metrics.recentUrgentWOs} />
+          ) : (
+            <p className="py-8 text-center text-sm text-[var(--text-muted)]">No urgent work orders.</p>
+          )}
         </Panel>
 
         <Panel noPadding>
           <PanelHeader title={t('dashboard.systemAlertsTitle')} subtitle={t('dashboard.systemAlertsSubtitle')}
-            action={<button type="button" className={linkBtn} onClick={() => setAlertsCleared(true)}>{t('dashboard.markAllRead')}</button>} />
-          {alertsCleared ? (
+            action={<button type="button" className={linkBtn} onClick={() => navigate('/admin/notifications')}>{t('dashboard.viewAll')}</button>} />
+          {alertsCleared || alertsData.length === 0 ? (
             <p className="py-8 text-center text-[0.8125rem] text-[var(--text-muted)]">{t('dashboard.allCaughtUp')}</p>
           ) : (
             alertsData.map((a, i) => {
               const { title, subtitle } = translateAlert(a, t);
               return (
-                <AlertItem key={a.id} type={a.type} title={title} subtitle={subtitle} time={a.time}
-                  icon={ALERT_ICONS[a.type]} isLast={i === alertsData.length - 1} />
+                <AlertItem key={a.id} type={a.type.toLowerCase()} title={title} subtitle={subtitle} time={new Date(a.createdAt).toISOString()}
+                  icon={ALERT_ICONS[a.type.toLowerCase()] || ALERT_ICONS.info} isLast={i === alertsData.length - 1} />
               )
             })
           )}
@@ -190,24 +192,36 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <Panel noPadding>
           <PanelHeader title={t('dashboard.technicianWorkloadTitle')} subtitle={t('dashboard.technicianWorkloadSubtitle')} />
-          <div className="py-2 px-5">
-            {technicians.map((tech, i) => (
-              <ProgressBar key={tech} label={tech} value={`${techCounts[i]} ${techCounts[i] === 1 ? t('dashboard.task') : t('dashboard.tasks')}`}
-                percentage={Math.round((techCounts[i] / maxTechCount) * 100)} color={techColors[i]} />
-            ))}
+          <div className="py-4 px-5 flex flex-col gap-3 max-h-[300px] overflow-y-auto">
+            {techWorkloads.length > 0 ? (
+              techWorkloads.map((tech, i) => (
+                <ProgressBar key={tech.name} label={tech.name} value={`${tech.count} ${tech.count === 1 ? t('dashboard.task') : t('dashboard.tasks')}`}
+                  percentage={Math.round((tech.count / maxTechCount) * 100)} color={techColors[i % techColors.length]} />
+              ))
+            ) : (
+              <p className="py-8 text-center text-sm text-[var(--text-muted)]">No active technician assignments.</p>
+            )}
           </div>
         </Panel>
 
         <Panel noPadding>
           <PanelHeader title={t('dashboard.inventoryStatusTitle')} subtitle={t('dashboard.inventoryStatusSubtitle')}
             action={<button type="button" className={linkBtn} onClick={() => navigate(ROUTES.ADMIN_INVENTORY)}>{t('dashboard.viewAll')}</button>} />
-          <DataTable columns={invColumns} data={lowInventory} />
+          {metrics?.lowInventory?.length > 0 ? (
+            <DataTable columns={invColumns} data={metrics.lowInventory} />
+          ) : (
+            <p className="py-8 text-center text-sm text-[var(--text-muted)]">No low-stock inventory.</p>
+          )}
         </Panel>
 
         <Panel noPadding>
           <PanelHeader title={t('dashboard.devicesByDeptTitle')} subtitle={t('dashboard.devicesByDeptSubtitle')} />
           <div>
-            <DevicesByDeptBarChart data={DEPT_DEVICES} />
+            {metrics?.devicesByDept?.length > 0 ? (
+              <DevicesByDeptBarChart data={metrics.devicesByDept} />
+            ) : (
+              <p className="py-14 text-center text-sm text-[var(--text-muted)]">No active devices.</p>
+            )}
           </div>
         </Panel>
       </div>

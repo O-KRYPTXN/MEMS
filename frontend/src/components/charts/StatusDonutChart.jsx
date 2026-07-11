@@ -17,13 +17,13 @@ export default function StatusDonutChart({
             <Pie data={data} dataKey="value" nameKey="name" innerRadius={innerRadius} outerRadius={outerRadius} paddingAngle={2} stroke="none">
               {data.map(d => <Cell key={d.name} fill={d.color} />)}
             </Pie>
-            <Tooltip contentStyle={{ background: '#1F2A40', border: '1px solid #2A3450' }} itemStyle={{ color: '#94A3B8' }} />
+            <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--text-secondary)' }} />
           </PieChart>
         </ResponsiveContainer>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="text-2xl font-extrabold text-[#E2E8F0]">{centerLabel}</div>
-          <div className="text-xs text-[#5A6A85] font-semibold uppercase tracking-wider">{centerSubLabel}</div>
+          <div className="text-2xl font-extrabold text-[var(--text-primary)]">{centerLabel}</div>
+          <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wider">{centerSubLabel}</div>
         </div>
       </div>
 
@@ -33,9 +33,9 @@ export default function StatusDonutChart({
             <div key={d.name} className="flex justify-between items-center text-[0.8125rem]">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
-                <span className="text-[#94A3B8]">{d.name}</span>
+                <span className="text-[var(--text-secondary)]">{d.name}</span>
               </div>
-              <span className="font-bold text-[#E2E8F0]">{d.displayValue ?? d.value}</span>
+              <span className="font-bold text-[var(--text-primary)]">{d.displayValue ?? d.value}</span>
             </div>
           ))}
         </div>
