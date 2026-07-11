@@ -55,7 +55,7 @@ const TechSidebar = () => {
       </div>
 
       <div className="mx-5 my-2.5 text-center mt-3">
-        <div className="inline-block px-3 py-1.5 rounded-lg bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-[#FCD34D] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
+        <div className="inline-block px-3 py-1.5 rounded-lg bg-yellow-700/10 border border-yellow-700/30 dark:border-[rgba(245,158,11,0.25)] text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
           BIOMEDICAL TECH
         </div>
       </div>
@@ -138,7 +138,7 @@ const TechTopbar = ({ title }) => {
   return (
     <header className="sticky top-0 z-40 flex items-center gap-4 h-[60px] px-7 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
       <h1 className="text-base font-bold text-[var(--text-primary)]">{title}</h1>
-      <span className="px-[10px] py-[4px] rounded-full bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-[#FCD34D] text-[0.72rem] font-bold">Morning Shift (07:00-15:00)</span>
+      <span className="px-[10px] py-[4px] rounded-full bg-yellow-700/10 border border-yellow-700/30 dark:border-[rgba(245,158,11,0.25)] text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D] text-[0.72rem] font-bold">Morning Shift (07:00-15:00)</span>
       <div className="flex-1" />
       <ThemeToggle />
       <LanguageSwitcher />

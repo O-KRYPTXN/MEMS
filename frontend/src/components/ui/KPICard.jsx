@@ -8,9 +8,9 @@ const ICON_VARIANTS = {
 }
 
 const TREND_VARIANTS = {
-  up: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-  down: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-  warn: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+  up: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+  down: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
+  warn: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
 }
 
 const TREND_ARROWS = {

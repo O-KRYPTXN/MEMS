@@ -53,7 +53,7 @@ const DeptSidebar = () => {
       </div>
 
       <div className="mx-5 my-2.5 text-center mt-3">
-        <div className="inline-block px-3 py-1.5 rounded-lg bg-[rgba(236,72,153,0.12)] border border-[rgba(236,72,153,0.25)] text-[#F472B6] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
+        <div className="inline-block px-3 py-1.5 rounded-lg bg-pink-700/10 border border-[rgba(236,72,153,0.25)] text-pink-800 dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
           DEPT SUPERVISOR
         </div>
       </div>

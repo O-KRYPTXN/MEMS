@@ -950,7 +950,7 @@
     "noOrdersFound": "لم يتم العثور على طلبات مرفوضة.",
     "ordered": "تم الطلب",
     "rejected": "تم الرفض",
-    "reason": "السبب",
+    "reason": "رد المورد",
     "supplierEmails": "رسائل المورد",
     "noEmailsLogged": "لا توجد رسائل مسجلة.",
     "emailSubjectRegarding": "بخصوص {{id}}",

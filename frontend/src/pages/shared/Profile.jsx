@@ -101,7 +101,7 @@ export default function Profile() {
               onClick={() => setActiveTab(t.id)}
               className={clsx(
                 "flex items-center gap-3 px-4 py-3 text-sm rounded-lg cursor-pointer transition-colors text-left",
-                activeTab === t.id ? "bg-[rgba(59,114,246,0.12)] text-[#5E8FFF] font-semibold" : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+                activeTab === t.id ? "bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#5E8FFF] font-semibold" : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               )}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d={t.icon} /></svg>

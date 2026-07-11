@@ -60,7 +60,7 @@ export const updateStoreOrderStatusHandler = async (req, res, next) => {
     
     const updatedOrder = await storeOrdersService.updateStoreOrderStatus(
       req.params.id, 
-      req.body, 
+      { ...req.body }, 
       userId, 
       userRole
     );
@@ -68,6 +68,28 @@ export const updateStoreOrderStatusHandler = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: `Store order marked as ${updatedOrder.status} successfully`,
+      data: updatedOrder
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateSupplierResponseHandler = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+    
+    const updatedOrder = await storeOrdersService.updateSupplierResponse(
+      req.params.id, 
+      req.body.supplierResponse, 
+      userId, 
+      userRole
+    );
+    
+    res.status(200).json({
+      success: true,
+      message: 'Supplier response updated successfully',
       data: updatedOrder
     });
   } catch (error) {

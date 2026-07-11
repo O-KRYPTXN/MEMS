@@ -24,7 +24,7 @@ import alertsRoutes from './modules/alerts/alerts.routes.js';
 
 // Load validated environment variables
 import { env } from './config/env.js';
-import { initSocket } from './services/socket.service.js';
+import { initSocket } from './socket/socket.server.js';
 
 const app = express();
 const httpServer = http.createServer(app);

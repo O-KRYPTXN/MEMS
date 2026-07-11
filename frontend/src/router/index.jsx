@@ -56,7 +56,6 @@ import StoreRequests from '../pages/store/Requests'
 import StoreOrders from '../pages/store/Orders'
 import StoreCreateOrder from '../pages/store/CreateOrder'
 import StoreRejected from '../pages/store/RejectedOrders'
-import StoreEmailLog from '../pages/store/EmailLog'
 
 // Shared pages
 import Profile from '../pages/shared/Profile'
@@ -183,7 +182,6 @@ const router = createBrowserRouter([
       { path: 'orders', element: <StoreOrders /> },
       { path: 'orders/create', element: <StoreCreateOrder /> },
       { path: 'orders/rejected', element: <StoreRejected /> },
-      { path: 'email-log', element: <StoreEmailLog /> },
       { path: 'profile', element: <Profile /> },
     ],
   },

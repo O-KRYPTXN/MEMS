@@ -21,10 +21,10 @@ const formatDate = (dateStr) => {
 const DeviceStatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'OPERATIONAL': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'FAULTY': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-    'MAINTENANCE': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'DECOMMISSIONED': 'bg-[rgba(100,116,139,0.12)] text-[#94A3B8]',
+    'OPERATIONAL': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'FAULTY': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
+    'MAINTENANCE': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'DECOMMISSIONED': 'bg-slate-700/10 text-slate-800 dark:bg-[rgba(100,116,139,0.12)] dark:text-[#94A3B8]',
   }
   return (
     <span className={clsx("inline-flex items-center px-2 py-0.5 rounded-full text-[0.7rem] font-bold", map[status])}>
@@ -164,7 +164,7 @@ export default function TechDevices() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowFaultModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <button type="submit" form="fault-form" className="px-4 py-2 bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.25)] text-[#F87171] hover:bg-[rgba(239,68,68,0.2)] rounded-lg text-[13px] font-bold transition-colors">{t('common.submitFault')}</button>
+            <button type="submit" form="fault-form" className="px-4 py-2 bg-red-700/10 border border-red-700/30 dark:border-[rgba(239,68,68,0.25)] text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171] hover:bg-[rgba(239,68,68,0.2)] rounded-lg text-[13px] font-bold transition-colors">{t('common.submitFault')}</button>
           </>
         }
       >

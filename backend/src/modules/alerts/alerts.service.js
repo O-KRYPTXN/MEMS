@@ -1,5 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 import { AppError } from '../../utils/AppError.js';
+import { emitToUser, emitToRooms } from '../../socket/socket.service.js';
+import { SOCKET_EVENTS } from '../../socket/socket.events.js';
 
 /**
  * Internal helper to create an alert and distribute it to target users.
@@ -76,6 +78,18 @@ export const createAlert = async (data, tx = prisma) => {
       userAlerts: true
     }
   });
+
+  // Emit real-time socket events
+  // Combining user rooms and role rooms in a single emit call prevents duplicate deliveries
+  // if a user is in both targeted rooms.
+  const targetRooms = [
+    ...Array.from(uniqueUserIds).map(id => `user_${id}`),
+    ...rolesToQuery.map(role => `role_${role}`)
+  ];
+  
+  if (targetRooms.length > 0) {
+    emitToRooms(targetRooms, SOCKET_EVENTS.NOTIFICATION_NEW, alert);
+  }
 
   return alert;
 };
@@ -171,13 +185,16 @@ export const markAsRead = async (userId, alertId) => {
     return userAlert;
   }
 
-  return prisma.userAlert.update({
+  const updated = await prisma.userAlert.update({
     where: { id: userAlert.id },
     data: {
       isRead: true,
       readAt: new Date()
     }
   });
+
+  emitToUser(userId, SOCKET_EVENTS.NOTIFICATION_READ, { alertId });
+  return updated;
 };
 
 /**
@@ -195,5 +212,6 @@ export const markAllAsRead = async (userId) => {
     }
   });
 
+  emitToUser(userId, SOCKET_EVENTS.NOTIFICATION_READ_ALL, {});
   return result.count;
 };

@@ -12,10 +12,10 @@ import { formatDate } from '../../utils/formatDate'
 function OrderStatusBadge({ status }) {
   const { t } = useTranslation()
   const map = {
-    'PENDING': 'bg-[rgba(100,116,139,0.12)] text-[#94A3B8]',
-    'ORDERED': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'DELIVERED': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'REJECTED': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]'
+    'PENDING': 'bg-slate-700/10 text-slate-800 dark:bg-[rgba(100,116,139,0.12)] dark:text-[#94A3B8]',
+    'ORDERED': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'DELIVERED': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'REJECTED': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
   }
   const labelMap = {
     'PENDING': t('storeOrders.statusPending', 'Pending Review'),
@@ -34,6 +34,8 @@ export default function AdminOrders() {
   
   const [decision, setDecision] = useState('ORDERED')
   const [rejectionReason, setRejectionReason] = useState('')
+  const [supplierResponse, setSupplierResponse] = useState('')
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
   
   const { t } = useTranslation()
   const { showToast } = useToastStore()
@@ -65,6 +67,18 @@ export default function AdminOrders() {
       queryClient.invalidateQueries(['storeOrders'])
       setShowReviewModal(false)
       showToast(t('storeOrders.toastReviewed', '✓ Order {{id}} marked as {{status}}.', { id: data.orderNumber, status: data.status }), TOAST_COLORS.admin)
+    },
+    onError: (err) => {
+      showToast(err.response?.data?.message || t('common.errorOccurred'), TOAST_COLORS.error)
+    }
+  })
+
+  const updateResponseMutation = useMutation({
+    mutationFn: storeOrdersService.updateSupplierResponse,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['storeOrders'])
+      setShowUpdateModal(false)
+      showToast(t('storeOrders.toastResponseUpdated', '✓ Supplier response updated for {{id}}.', { id: data.orderNumber }), TOAST_COLORS.admin)
     },
     onError: (err) => {
       showToast(err.response?.data?.message || t('common.errorOccurred'), TOAST_COLORS.error)
@@ -112,7 +126,7 @@ export default function AdminOrders() {
             {tab === 'PENDING' && pendingCount > 0 && (
               <span className={clsx(
                 "ml-2 px-1.5 py-0.5 rounded-full text-[0.65rem] font-bold", 
-                activeTab === tab ? "bg-[rgba(59,114,246,0.12)] text-[#3B72F6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
+                activeTab === tab ? "bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#3B72F6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
               )}>
                 {pendingCount}
               </span>
@@ -157,13 +171,22 @@ export default function AdminOrders() {
                             setRejectionReason('');
                             setShowReviewModal(true); 
                           }} 
-                          className="px-3 py-1.5 bg-[rgba(59,114,246,0.12)] border border-[rgba(59,114,246,0.25)] rounded-lg text-[#3B72F6] text-[12px] font-bold hover:bg-[rgba(59,114,246,0.2)] transition-colors"
+                          className="px-3 py-1.5 bg-blue-700/10 border border-blue-700/30 dark:border-[rgba(59,114,246,0.25)] rounded-lg text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#3B72F6] text-[12px] font-bold hover:bg-[rgba(59,114,246,0.2)] transition-colors"
                         >
                           {t('common.review', 'Review')}
                         </button>
                       )}
-                      {o.status !== 'PENDING' && (
-                        <span className="text-[var(--text-muted)] pl-4">—</span>
+                      {(o.status === 'ORDERED' || o.status === 'DELIVERED') && (
+                        <button 
+                          onClick={() => { 
+                            setSelectedOrder(o); 
+                            setSupplierResponse(o.supplierResponse || '');
+                            setShowUpdateModal(true); 
+                          }} 
+                          className="px-3 py-1.5 bg-[rgba(100,116,139,0.12)] border border-slate-700/30 dark:border-[rgba(100,116,139,0.25)] rounded-lg text-[var(--text-secondary)] text-[12px] font-bold hover:bg-[rgba(100,116,139,0.2)] transition-colors"
+                        >
+                          {t('storeOrders.updateResponseBtn', 'Update Response')}
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -184,6 +207,11 @@ export default function AdminOrders() {
                           {o.notes && (
                             <div className="mt-3 pt-3 border-t border-[var(--border)] text-sm text-[var(--text-muted)]">
                               <span className="font-semibold">{t('storeOrders.notes', 'Notes')}:</span> {o.notes}
+                            </div>
+                          )}
+                          {o.supplierResponse && (
+                            <div className="mt-3 pt-3 border-t border-[var(--border)] text-sm text-[var(--text-primary)]">
+                              <span className="font-semibold">{t('storeOrders.supplierResponse', 'Supplier Response')}:</span> {o.supplierResponse}
                             </div>
                           )}
                           {o.status === 'REJECTED' && o.rejectionReason && (
@@ -248,14 +276,14 @@ export default function AdminOrders() {
               <button 
                 type="button"
                 onClick={() => setDecision('ORDERED')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", decision === 'ORDERED' ? "bg-[rgba(59,114,246,0.12)] border-[#3B72F6] text-[#3B72F6]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#3B72F6]")}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", decision === 'ORDERED' ? "bg-blue-700/10 border-[#3B72F6] text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#3B72F6]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#3B72F6]")}
               >
                 {t('common.approve', 'Approve')}
               </button>
               <button 
                 type="button"
                 onClick={() => setDecision('REJECTED')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", decision === 'REJECTED' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", decision === 'REJECTED' ? "bg-red-700/10 border-[#F87171] text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
               >
                 {t('common.reject', 'Reject')}
               </button>
@@ -273,6 +301,45 @@ export default function AdminOrders() {
             />
           )}
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={showUpdateModal && !!selectedOrder}
+        onClose={() => setShowUpdateModal(false)}
+        title={t('storeOrders.updateResponseTitle', 'Update Supplier Response')}
+        maxWidth="500px"
+        footer={
+          <>
+            <ModalCancelBtn onClick={() => setShowUpdateModal(false)}>{t('common.cancel')}</ModalCancelBtn>
+            <ModalPrimaryBtn 
+              type="button" 
+              onClick={() => {
+                if (!selectedOrder) return;
+                updateResponseMutation.mutate({
+                  id: selectedOrder.id,
+                  data: { supplierResponse }
+                });
+              }} 
+              color="#3B72F6"
+              disabled={updateResponseMutation.isPending}
+            >
+              {updateResponseMutation.isPending ? t('common.loading') : t('common.save', 'Save')}
+            </ModalPrimaryBtn>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
+            Update the latest communication or response from the supplier regarding order <span className="font-bold text-[var(--text-primary)]">{selectedOrder?.orderNumber}</span>.
+          </p>
+          <InputField 
+            type="textarea"
+            label={t('storeOrders.supplierResponse', 'Supplier Response')}
+            value={supplierResponse}
+            onChange={e => setSupplierResponse(e.target.value)}
+            placeholder="Record the latest response..."
+          />
+        </div>
       </Modal>
     </div>
   )

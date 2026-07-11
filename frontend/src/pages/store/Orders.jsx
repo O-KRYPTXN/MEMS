@@ -13,10 +13,10 @@ import { formatDate } from '../../utils/formatDate'
 function OrderStatusBadge({ status }) {
   const { t } = useTranslation()
   const map = {
-    'PENDING': 'bg-[rgba(100,116,139,0.12)] text-[#94A3B8]',
-    'ORDERED': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'DELIVERED': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'REJECTED': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]'
+    'PENDING': 'bg-slate-700/10 text-slate-800 dark:bg-[rgba(100,116,139,0.12)] dark:text-[#94A3B8]',
+    'ORDERED': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'DELIVERED': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'REJECTED': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
   }
   const labelMap = {
     'PENDING': t('storeOrders.statusPending', 'Pending Review'),
@@ -152,7 +152,7 @@ export default function StoreOrders() {
                       {o.status === 'ORDERED' && (
                         <button 
                           onClick={() => { setSelectedOrder(o); setShowConfirmModal(true); }} 
-                          className="px-3 py-1.5 bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] rounded-lg text-[#A78BFA] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.2)] transition-colors"
+                          className="px-3 py-1.5 bg-purple-700/10 border border-purple-700/30 dark:border-[rgba(139,92,246,0.25)] rounded-lg text-purple-800 dark:bg-[rgba(139,92,246,0.12)] dark:text-[#A78BFA] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.2)] transition-colors"
                         >
                           {t('storeOrders.markReceivedBtn', 'Mark Received')}
                         </button>
@@ -182,6 +182,11 @@ export default function StoreOrders() {
                           {o.notes && (
                             <div className="mt-3 pt-3 border-t border-[var(--border)] text-sm text-[var(--text-muted)]">
                               <span className="font-semibold">{t('storeOrders.notes', 'Notes')}:</span> {o.notes}
+                            </div>
+                          )}
+                          {o.supplierResponse && (
+                            <div className="mt-3 pt-3 border-t border-[var(--border)] text-sm text-[var(--text-primary)]">
+                              <span className="font-semibold">{t('storeOrders.supplierResponse', 'Supplier Response')}:</span> {o.supplierResponse}
                             </div>
                           )}
                         </div>

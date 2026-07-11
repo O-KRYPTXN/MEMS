@@ -27,11 +27,11 @@ const quickReports = [
 
 function FormatBadge({ format }) {
   const map = {
-    PDF: 'bg-[rgba(239,68,68,0.12)] text-[#F87171] border-[rgba(239,68,68,0.25)]',
-    EXCEL: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80] border-[rgba(34,197,94,0.25)]',
-    CSV: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D] border-[rgba(245,158,11,0.25)]',
+    PDF: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171] border-red-700/30 dark:border-[rgba(239,68,68,0.25)]',
+    EXCEL: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80] border-green-700/30 dark:border-[rgba(34,197,94,0.25)]',
+    CSV: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D] border-yellow-700/30 dark:border-[rgba(245,158,11,0.25)]',
   }
-  const cls = map[format] || 'bg-[rgba(148,163,184,0.12)] text-[#94A3B8] border-[rgba(148,163,184,0.25)]'
+  const cls = map[format] || 'bg-slate-700/10 text-slate-800 dark:bg-[rgba(148,163,184,0.12)] dark:text-[#94A3B8] border-[rgba(148,163,184,0.25)]'
   return <span className={`inline-block px-2 py-[1px] rounded-[4px] text-[10px] uppercase font-bold tracking-wide border ${cls}`}>{format}</span>
 }
 

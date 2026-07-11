@@ -18,10 +18,10 @@ const formatDate = (dateString) => {
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'PENDING': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'IN_PROGRESS': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
-    'SOLVED': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'REJECTED': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+    'PENDING': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'IN_PROGRESS': 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,130,246,0.12)] dark:text-[#60A5FA]',
+    'SOLVED': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'REJECTED': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
   }
   const labelMap = {
     'PENDING': t('deptRequests.statusPending', 'Pending'),
@@ -129,7 +129,7 @@ export default function DeptRequests() {
             {tab.label}
             <span className={clsx(
               "ml-2 px-1.5 py-0.5 rounded-full text-[0.65rem] font-bold", 
-              activeTab === tab.id ? "bg-[rgba(236,72,153,0.12)] text-[#F472B6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
+              activeTab === tab.id ? "bg-pink-700/10 text-pink-800 dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
             )}>
               {tab.count}
             </span>

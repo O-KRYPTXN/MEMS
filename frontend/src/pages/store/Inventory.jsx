@@ -20,9 +20,9 @@ function StockBadge({ status }) {
     'Out of Stock': t('storeInventory.statusOutOfStock', 'Out of Stock')
   }
   const colorMap = {
-    'In Stock': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'Low Stock': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Out of Stock': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]'
+    'In Stock': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'Low Stock': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'Out of Stock': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
   }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${colorMap[status] || ''}`}>{labelMap[status] || status}</span>
 }

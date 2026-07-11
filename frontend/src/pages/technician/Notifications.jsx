@@ -38,7 +38,7 @@ export default function TechnicianNotifications() {
         ) : (
           unreadNotifications.map(n => (
             <Panel key={n.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:border-[rgba(34,197,94,0.3)] transition-colors">
-              <div className="w-12 h-12 rounded-full bg-[rgba(34,197,94,0.12)] text-[#4ADE80] flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-full bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80] flex items-center justify-center shrink-0">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
               </div>
               
@@ -53,7 +53,7 @@ export default function TechnicianNotifications() {
 
               <button 
                 onClick={() => handleAcknowledge(n.id)} 
-                className="bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] text-[#4ADE80] px-4 py-2 rounded-lg text-[0.8rem] font-bold hover:bg-[rgba(34,197,94,0.2)] transition-colors shrink-0 w-full sm:w-auto"
+                className="bg-green-700/10 border border-green-700/30 dark:border-[rgba(34,197,94,0.25)] text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80] px-4 py-2 rounded-lg text-[0.8rem] font-bold hover:bg-[rgba(34,197,94,0.2)] transition-colors shrink-0 w-full sm:w-auto"
               >
                 {t('techNotifications.acknowledge')}
               </button>

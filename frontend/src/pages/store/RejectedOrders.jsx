@@ -11,7 +11,7 @@ import { formatDate } from '../../utils/formatDate'
 function StatusBadge({ status }) {
   const { t } = useTranslation()
   const map = {
-    'REJECTED': 'bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.25)] text-[#F87171]'
+    'REJECTED': 'bg-red-700/10 border border-red-700/30 dark:border-[rgba(239,68,68,0.25)] text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
   }
   const labelMap = {
     'REJECTED': t('storeRejectedOrders.statusCancelled', 'Rejected')
@@ -83,7 +83,7 @@ export default function StoreRejectedOrders() {
           <Panel className="text-center py-10 text-[var(--text-muted)]">{t('storeRejectedOrders.noOrdersFound', 'No rejected orders found.')}</Panel>
         ) : (
           filteredOrders.map(o => (
-            <Panel key={o.id} noPadding className="border-[rgba(239,68,68,0.25)] flex flex-col shadow-sm">
+            <Panel key={o.id} noPadding className="border-red-700/30 dark:border-[rgba(239,68,68,0.25)] flex flex-col shadow-sm">
               <div className="p-4 bg-[var(--bg-card)] border-b border-[var(--border)] flex justify-between items-center flex-wrap gap-2">
                 <span className="text-sm font-bold text-[var(--text-primary)]">{o.orderNumber} • {o.supplierName || 'N/A'}</span>
                 <StatusBadge status={o.status} />
@@ -106,7 +106,7 @@ export default function StoreRejectedOrders() {
 
                 {o.rejectionReason && (
                   <div className="bg-[rgba(239,68,68,0.08)] border border-red-500/20 text-red-400 text-sm p-3 rounded-lg leading-relaxed">
-                    <span className="font-bold">{t('storeRejectedOrders.reason', 'Admin Rejection Reason')}:</span> {o.rejectionReason}
+                    <span className="font-bold">{t('storeRejectedOrders.reason', 'Supplier Response')}:</span> {o.rejectionReason}
                   </div>
                 )}
                 
@@ -119,7 +119,7 @@ export default function StoreRejectedOrders() {
               <div className="p-4 bg-[var(--bg-card)] border-t border-[var(--border)] flex justify-end gap-3 flex-wrap">
                 <button 
                   onClick={() => navigate(`/store/orders/create`)} 
-                  className="px-4 py-2 bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] rounded-lg text-[#D8B4FE] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.2)] transition-colors"
+                  className="px-4 py-2 bg-purple-700/10 border border-purple-700/30 dark:border-[rgba(139,92,246,0.25)] rounded-lg text-purple-800 dark:bg-[rgba(139,92,246,0.12)] dark:text-[#D8B4FE] text-[12px] font-bold hover:bg-[rgba(139,92,246,0.2)] transition-colors"
                 >
                   {t('storeRejectedOrders.reorder', 'Draft New Order')}
                 </button>

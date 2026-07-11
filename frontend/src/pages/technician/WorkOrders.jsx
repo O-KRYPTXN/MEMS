@@ -18,11 +18,11 @@ const formatDate = (dateString) => {
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'IN_PROGRESS': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'WAITING_PARTS': 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
-    'OPEN': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
-    'PENDING_APPROVAL': 'bg-[rgba(20,184,166,0.12)] text-[#14B8A6]',
-    'DONE': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+    'IN_PROGRESS': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'WAITING_PARTS': 'bg-purple-700/10 text-purple-800 dark:bg-[rgba(168,85,247,0.12)] dark:text-[#C084FC]',
+    'OPEN': 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,130,246,0.12)] dark:text-[#60A5FA]',
+    'PENDING_APPROVAL': 'bg-teal-700/10 text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6]',
+    'DONE': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
   }
   const labelMap = {
     'IN_PROGRESS': t('common.statusInProgress', 'In Progress'),
@@ -36,7 +36,7 @@ const StatusBadge = ({ status }) => {
 
 const PriorityBadge = ({ priority }) => {
   const { t } = useTranslation()
-  const map = { HIGH: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]', MEDIUM: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]', LOW: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]', CRITICAL: 'bg-[rgba(220,38,38,0.12)] text-[#DC2626]' }
+  const map = { HIGH: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]', MEDIUM: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]', LOW: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]', CRITICAL: 'bg-red-800/10 text-red-900 dark:bg-[rgba(220,38,38,0.12)] dark:text-[#DC2626]' }
   const labelMap = {
     'HIGH': t('common.priorityHigh', 'High'),
     'MEDIUM': t('common.priorityMedium', 'Medium'),
@@ -49,9 +49,9 @@ const PriorityBadge = ({ priority }) => {
 const TypeBadge = ({ type }) => {
   const { t } = useTranslation()
   const map = {
-    'REPAIR': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-    'PREVENTIVE_MAINTENANCE': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'DECOMMISSION': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
+    'REPAIR': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
+    'PREVENTIVE_MAINTENANCE': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'DECOMMISSION': 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,130,246,0.12)] dark:text-[#60A5FA]',
   }
   const labelMap = {
     'REPAIR': t('common.typeRepair', 'Repair'),
@@ -148,7 +148,7 @@ export default function TechnicianWorkOrders() {
 
       <div className="flex gap-[2px] bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-1 w-fit overflow-x-auto max-w-full">
         {[{id:'all', label:t('techWorkOrders.tabAll')}, {id:'IN_PROGRESS', label:t('techWorkOrders.tabInProgress')}, {id:'WAITING_PARTS', label:t('techWorkOrders.tabPendingParts')}, {id:'PENDING_APPROVAL', label:t('supWorkOrders.pendingApproval', 'Pending Approval')}, {id:'DONE', label:t('techWorkOrders.tabCompleted')}].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
             <span className={clsx("ms-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id] || 0}</span>
           </button>
@@ -196,7 +196,7 @@ export default function TechnicianWorkOrders() {
                   <td className="p-4 text-[12px] text-[var(--text-muted)] whitespace-nowrap">{w.dueDate ? formatDate(w.dueDate) : '—'}</td>
                   <td className="p-4">
                     <div className="flex gap-2">
-                      <button onClick={() => handleOpenUpdate(w)} className="bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-[#FCD34D] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(245,158,11,0.2)] transition-colors">{t('techWorkOrders.update')}</button>
+                      <button onClick={() => handleOpenUpdate(w)} className="bg-yellow-700/10 border border-yellow-700/30 dark:border-[rgba(245,158,11,0.25)] text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(245,158,11,0.2)] transition-colors">{t('techWorkOrders.update')}</button>
                       <button onClick={() => { setSelectedWO(w); setShowViewModal(true) }} className="w-[28px] h-[28px] rounded flex items-center justify-center border border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
                     </div>
                   </td>

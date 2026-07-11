@@ -199,7 +199,7 @@ export default function SupervisorDashboard() {
                         <StatusBadge variant={wo.type === 'Repair' ? 'high' : 'medium'} label={wo.type === 'Repair' ? t('supervisor.repair', 'Repair') : t('supervisor.pm', 'PM')} />
                       </td>
                       <td className="p-4">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[rgba(20,184,166,0.12)] text-[#14B8A6]">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-700/10 text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6]">
                           <span className="w-1.5 h-1.5 rounded-full bg-current" />
                           {t('supervisor.pendingYourApproval')}
                         </span>
@@ -207,7 +207,7 @@ export default function SupervisorDashboard() {
                       <td className="p-4 text-right">
                         <button 
                           onClick={() => { setActiveApproval(wo); setShowApproveModal(true) }}
-                          className="px-3 py-1.5 bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] rounded-md text-[11.5px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors"
+                          className="px-3 py-1.5 bg-teal-700/10 border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6] rounded-md text-[11.5px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors"
                         >
                           {t('common.approve')}
                         </button>
@@ -240,7 +240,7 @@ export default function SupervisorDashboard() {
                     time={alert.time}
                     iconOverride={
                       alert.type === 'info' ? (
-                        <div className="w-8 h-8 rounded-full bg-[rgba(20,184,166,0.12)] text-[#14B8A6] flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-teal-700/10 text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6] flex items-center justify-center shrink-0">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">{icons.info}</svg>
                         </div>
                       ) : (

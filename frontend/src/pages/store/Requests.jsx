@@ -20,10 +20,10 @@ function StatusBadge({ status }) {
     'Rejected': t('storeRequests.statusRejected', 'Rejected')
   }
   const colorMap = {
-    'Pending': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Approved': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
-    'Fulfilled': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'Rejected': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]'
+    'Pending': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'Approved': 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,130,246,0.12)] dark:text-[#60A5FA]',
+    'Fulfilled': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'Rejected': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
   }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${colorMap[status] || ''}`}>{labelMap[status] || status}</span>
 }
@@ -168,7 +168,7 @@ export default function StoreRequests() {
                     {r.status === 'APPROVED' && (
                       <button 
                         onClick={() => { setSelectedReq(r); setActionNotes(''); setShowModal(true) }} 
-                        className="px-3 py-1.5 bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] rounded-lg text-[#4ADE80] text-[12px] font-bold hover:bg-[rgba(34,197,94,0.2)] transition-colors"
+                        className="px-3 py-1.5 bg-green-700/10 border border-green-700/30 dark:border-[rgba(34,197,94,0.25)] rounded-lg text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80] text-[12px] font-bold hover:bg-[rgba(34,197,94,0.2)] transition-colors"
                       >
                         {t('storeRequests.fulfillBtn', 'Fulfill')}
                       </button>

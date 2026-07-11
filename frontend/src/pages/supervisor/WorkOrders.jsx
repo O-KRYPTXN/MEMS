@@ -19,9 +19,9 @@ const formatDate = (dateString) => {
 const TypeBadge = ({ type }) => {
   const { t } = useTranslation()
   const map = {
-    'REPAIR': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-    'PREVENTIVE_MAINTENANCE': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'DECOMMISSION': 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
+    'REPAIR': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
+    'PREVENTIVE_MAINTENANCE': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'DECOMMISSION': 'bg-purple-700/10 text-purple-800 dark:bg-[rgba(168,85,247,0.12)] dark:text-[#C084FC]',
   }
   const labelMap = {
     'REPAIR': t('supervisor.repair', 'Repair'),
@@ -34,12 +34,12 @@ const TypeBadge = ({ type }) => {
 const WOStatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'OPEN': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-    'IN_PROGRESS': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'PENDING_APPROVAL': 'bg-[rgba(20,184,166,0.12)] text-[#14B8A6]',
-    'WAITING_PARTS': 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
-    'DONE': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'CANCELLED': 'bg-[rgba(156,163,175,0.12)] text-[#9CA3AF]'
+    'OPEN': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
+    'IN_PROGRESS': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'PENDING_APPROVAL': 'bg-teal-700/10 text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6]',
+    'WAITING_PARTS': 'bg-purple-700/10 text-purple-800 dark:bg-[rgba(168,85,247,0.12)] dark:text-[#C084FC]',
+    'DONE': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'CANCELLED': 'bg-gray-700/10 text-gray-800 dark:bg-[rgba(156,163,175,0.12)] dark:text-[#9CA3AF]'
   }
   const labelMap = {
     'OPEN': t('supWorkOrders.unassigned', 'Open'),
@@ -54,7 +54,7 @@ const WOStatusBadge = ({ status }) => {
 
 const PriorityBadge = ({ priority }) => {
   const { t } = useTranslation()
-  const map = { HIGH: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]', MEDIUM: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]', LOW: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]', CRITICAL: 'bg-[rgba(220,38,38,0.12)] text-[#DC2626]' }
+  const map = { HIGH: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]', MEDIUM: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]', LOW: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]', CRITICAL: 'bg-red-800/10 text-red-900 dark:bg-[rgba(220,38,38,0.12)] dark:text-[#DC2626]' }
   const labelMap = { HIGH: t('priority.high'), MEDIUM: t('priority.medium'), LOW: t('priority.low'), CRITICAL: 'Critical' }
   return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[priority] ?? ''}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{labelMap[priority]}</span>
 }
@@ -250,8 +250,8 @@ export default function WorkOrders() {
                   <td className={clsx("p-4 text-[13px]", !w.assignedToId ? 'text-[#F87171]' : 'text-[var(--text-secondary)]')}>{w.assignedTo?.name || 'Unassigned'}</td>
                   <td className="p-4"><WOStatusBadge status={w.status} /></td>
                   <td className="p-4 flex gap-1.5">
-                    {w.status === 'OPEN' && <button onClick={() => { setAssignTargetId(w.id); setShowAssignModal(true) }} className="bg-[rgba(59,114,246,0.12)] border border-[rgba(59,114,246,0.25)] text-[#5E8FFF] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(59,114,246,0.2)]">{t('common.assign')}</button>}
-                    {w.status === 'PENDING_APPROVAL' && <button onClick={() => { setActiveApproval(w); setShowApproveModal(true) }} className="bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(20,184,166,0.2)]">{t('common.approve')}</button>}
+                    {w.status === 'OPEN' && <button onClick={() => { setAssignTargetId(w.id); setShowAssignModal(true) }} className="bg-blue-700/10 border border-blue-700/30 dark:border-[rgba(59,114,246,0.25)] text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#5E8FFF] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(59,114,246,0.2)]">{t('common.assign')}</button>}
+                    {w.status === 'PENDING_APPROVAL' && <button onClick={() => { setActiveApproval(w); setShowApproveModal(true) }} className="bg-teal-700/10 border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6] rounded-md px-[10px] py-[4px] text-[0.72rem] font-bold hover:bg-[rgba(20,184,166,0.2)]">{t('common.approve')}</button>}
                     {(w.status !== 'OPEN') && <button onClick={() => { setViewWO(w); setShowViewModal(true) }} className="w-[30px] h-[30px] rounded flex items-center justify-center border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>}
                   </td>
                 </tr>

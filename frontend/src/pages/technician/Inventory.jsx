@@ -15,10 +15,10 @@ const mockWOs = ['WO-2039 (ECG Monitor)', 'WO-2036 (Patient Monitor)', 'WO-2034 
 const RequestStatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'Pending': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Approved': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
-    'Fulfilled': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'Rejected': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+    'Pending': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'Approved': 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,130,246,0.12)] dark:text-[#60A5FA]',
+    'Fulfilled': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'Rejected': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
   }
   const labelMap = {
     'Pending': t('common.statusPending', 'Pending'),
@@ -32,9 +32,9 @@ const RequestStatusBadge = ({ status }) => {
 const StockBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'In Stock': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'Low Stock': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Out of Stock': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+    'In Stock': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'Low Stock': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'Out of Stock': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
   }
   const labelMap = {
     'In Stock': t('common.statusInStock', 'In Stock'),
@@ -161,7 +161,7 @@ export default function TechnicianInventory() {
 
       <div className="flex gap-[2px] bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-1 w-fit overflow-x-auto">
         {[{id:'all', label:t('techInventory.allStatus')}, {id:'In Stock', label:t('common.statusInStock', 'In Stock')}, {id:'Low Stock', label:t('common.statusLowStock', 'Low Stock')}, {id:'Out of Stock', label:t('common.statusOutStock', 'Out of Stock')}].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
             <span className={clsx("ms-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
           </button>

@@ -105,7 +105,7 @@ export default function TechnicianDashboard() {
                     <span className="text-[var(--text-muted)] text-[0.78rem]">{task.dept} {t('techDashboard.dept')}</span>
                   </div>
                 </div>
-                <button onClick={() => { setActiveWO(task); setUpdateStatus('In Progress'); setNotes(''); setShowModal(true) }} className="bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-[#FCD34D] px-3.5 py-1.5 rounded-lg text-[0.75rem] font-bold hover:bg-[rgba(245,158,11,0.2)] transition-colors shrink-0">{t('techDashboard.quickUpdate')}</button>
+                <button onClick={() => { setActiveWO(task); setUpdateStatus('In Progress'); setNotes(''); setShowModal(true) }} className="bg-yellow-700/10 border border-yellow-700/30 dark:border-[rgba(245,158,11,0.25)] text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D] px-3.5 py-1.5 rounded-lg text-[0.75rem] font-bold hover:bg-[rgba(245,158,11,0.2)] transition-colors shrink-0">{t('techDashboard.quickUpdate')}</button>
               </div>
             ))
           )}

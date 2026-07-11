@@ -19,3 +19,8 @@ export const updateStoreOrderStatus = async ({ id, data }) => {
   const response = await api.patch(`/store-orders/${id}/status`, data)
   return response.data.data
 }
+
+export const updateSupplierResponse = async ({ id, data }) => {
+  const response = await api.patch(`/store-orders/${id}/supplier-response`, data)
+  return response.data.data
+}

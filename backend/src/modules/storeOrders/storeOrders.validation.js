@@ -17,3 +17,7 @@ export const updateStoreOrderStatusSchema = z.object({
   status: z.enum(['ORDERED', 'DELIVERED', 'REJECTED']),
   rejectionReason: z.string().optional()
 });
+
+export const updateSupplierResponseSchema = z.object({
+  supplierResponse: z.string()
+});

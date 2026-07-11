@@ -950,7 +950,7 @@
     "noOrdersFound": "No rejected orders found.",
     "ordered": "Ordered",
     "rejected": "Rejected",
-    "reason": "Reason",
+    "reason": "Supplier Response",
     "supplierEmails": "Supplier Emails",
     "noEmailsLogged": "No emails logged.",
     "emailSubjectRegarding": "Regarding {{id}}",

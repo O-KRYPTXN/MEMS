@@ -84,7 +84,7 @@ export default function StoreDashboard() {
                     <div className="text-xs text-[var(--text-muted)]">{r.id} — {r.date}</div>
                     <div className="text-sm font-bold text-[var(--text-primary)] mt-1 truncate">{r.qty}x {r.itemName}</div>
                   </div>
-                  <button onClick={() => { setSelectedReq(r); setShowFulfillModal(true) }} className="bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] text-[#D8B4FE] hover:bg-[rgba(139,92,246,0.2)] px-4 py-1.5 rounded-md text-[0.8rem] font-bold transition-colors shrink-0">
+                  <button onClick={() => { setSelectedReq(r); setShowFulfillModal(true) }} className="bg-purple-700/10 border border-purple-700/30 dark:border-[rgba(139,92,246,0.25)] text-purple-800 dark:bg-[rgba(139,92,246,0.12)] dark:text-[#D8B4FE] hover:bg-[rgba(139,92,246,0.2)] px-4 py-1.5 rounded-md text-[0.8rem] font-bold transition-colors shrink-0">
                     {t('storeDashboard.fulfillBtn', 'Fulfill')}
                   </button>
                 </div>
@@ -105,7 +105,7 @@ export default function StoreDashboard() {
                     <div className="text-sm font-semibold text-[var(--text-primary)] truncate">{i.name}</div>
                     <div className="text-xs text-[var(--text-muted)] mt-0.5">{i.id} • {t('dashboard.min')}: {i.min}</div>
                   </div>
-                  <div className={clsx("px-2.5 py-1 rounded-md text-xs font-bold shrink-0 whitespace-nowrap", i.qty === 0 ? "bg-[rgba(239,68,68,0.12)] text-[#F87171]" : "bg-[rgba(245,158,11,0.12)] text-[#FCD34D]")}>
+                  <div className={clsx("px-2.5 py-1 rounded-md text-xs font-bold shrink-0 whitespace-nowrap", i.qty === 0 ? "bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]" : "bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]")}>
                     {t('storeInventory.qty', 'Qty')}: {i.qty}
                   </div>
                 </div>

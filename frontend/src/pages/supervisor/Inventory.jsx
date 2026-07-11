@@ -16,9 +16,9 @@ const getStatus = (qty, min) => qty === 0 ? 'Out of Stock' : qty <= min ? 'Low S
 const StockBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'In Stock': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'Low Stock': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Out of Stock': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+    'In Stock': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'Low Stock': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'Out of Stock': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
   }
   const labelMap = {
     'In Stock': t('supInventory.inStock'),
@@ -136,9 +136,9 @@ export default function SupervisorInventory() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: t('supInventory.totalItems'), value: kpis.total, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />, colorClass: 'bg-[rgba(20,184,166,0.12)] text-[#14B8A6]' },
-          { label: t('supInventory.lowStockAlerts'), value: kpis.lowStock, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />, colorClass: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]' },
-          { label: t('supInventory.outOfStock'), value: kpis.outOfStock, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />, colorClass: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]' },
+          { label: t('supInventory.totalItems'), value: kpis.total, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />, colorClass: 'bg-teal-700/10 text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6]' },
+          { label: t('supInventory.lowStockAlerts'), value: kpis.lowStock, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />, colorClass: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]' },
+          { label: t('supInventory.outOfStock'), value: kpis.outOfStock, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />, colorClass: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]' },
           { label: t('supInventory.pendingRequests'), value: pendingRequestsCount, icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />, colorClass: 'bg-[rgba(14,165,233,0.12)] text-[#0EA5E9]' },
         ].map((kpi, idx) => (
           <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5 flex items-center gap-4">
@@ -195,7 +195,7 @@ export default function SupervisorInventory() {
                   <td className="p-4 text-[13px] text-[var(--text-muted)]">{p.minLevel}</td>
                   <td className="p-4"><StockBadge status={status} /></td>
                   <td className="p-4">
-                    <button onClick={() => { setSelectedPartId(p.id); setShowRequestModal(true) }} className="bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors">{t('supInventory.requestRestock')}</button>
+                    <button onClick={() => { setSelectedPartId(p.id); setShowRequestModal(true) }} className="bg-teal-700/10 border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6] px-2.5 py-1 rounded-md text-[11px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors">{t('supInventory.requestRestock')}</button>
                   </td>
                 </tr>
               )})}

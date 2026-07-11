@@ -27,12 +27,6 @@ const STORE_NAV_LINKS = [
     ]
   },
   {
-    section: 'Communications',
-    links: [
-      { tKey: 'nav.emailLog', path: ROUTES.STORE_EMAIL_LOG, icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75' }
-    ]
-  },
-  {
     section: 'Account',
     links: [
       { tKey: 'nav.profile', path: '/store/profile', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' }
@@ -47,7 +41,6 @@ const pageTitles = {
   [ROUTES.STORE_ORDERS]: 'Active External Orders',
   [ROUTES.STORE_CREATE_ORDER]: 'Create Purchase Order',
   [ROUTES.STORE_REJECTED]: 'Rejected Orders',
-  [ROUTES.STORE_EMAIL_LOG]: 'Communications Log',
   ['/store/profile']: 'My Profile'
 }
 
@@ -88,7 +81,7 @@ const StoreSidebar = () => {
       </div>
 
       <div className="mx-5 my-2.5 text-center mt-3">
-        <div className="inline-block px-3 py-1.5 rounded-lg bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] text-[#D8B4FE] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
+        <div className="inline-block px-3 py-1.5 rounded-lg bg-purple-700/10 border border-purple-700/30 dark:border-[rgba(139,92,246,0.25)] text-purple-800 dark:bg-[rgba(139,92,246,0.12)] dark:text-[#D8B4FE] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
           STOREKEEPER
         </div>
       </div>

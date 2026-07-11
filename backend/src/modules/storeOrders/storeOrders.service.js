@@ -123,7 +123,9 @@ export const getStoreOrderById = async (id) => {
   return order;
 };
 
-export const updateStoreOrderStatus = async (id, { status, rejectionReason }, userId, userRole) => {
+export const updateStoreOrderStatus = async (id, data, userId, userRole) => {
+  const { status, rejectionReason } = data;
+
   const order = await prisma.storeOrder.findUnique({
     where: { id },
     include: { items: true }
@@ -167,6 +169,10 @@ export const updateStoreOrderStatus = async (id, { status, rejectionReason }, us
     if (order.status !== 'ORDERED') {
       throw new AppError(`Cannot transition from ${order.status} to DELIVERED. Order must be ORDERED first.`, 400);
     }
+  }
+  
+  if (status === 'REJECTED' && rejectionReason) {
+    updateData.rejectionReason = rejectionReason;
   }
 
   // Transaction execution
@@ -232,4 +238,42 @@ export const updateStoreOrderStatus = async (id, { status, rejectionReason }, us
 
     return updatedOrder;
   });
+};
+
+export const updateSupplierResponse = async (id, supplierResponse, userId, userRole) => {
+  if (userRole !== 'ADMIN') {
+    throw new AppError('Only administrators can update the supplier response', 403);
+  }
+
+  const order = await prisma.storeOrder.findUnique({
+    where: { id }
+  });
+
+  if (!order) {
+    throw new AppError('Store order not found', 404);
+  }
+
+  if (order.status === 'PENDING' || order.status === 'REJECTED') {
+    throw new AppError(`Cannot update supplier response for a ${order.status} order`, 400);
+  }
+
+  const updatedOrder = await prisma.storeOrder.update({
+    where: { id },
+    data: { supplierResponse },
+    include: {
+      items: { include: { part: true } },
+      createdBy: true,
+      reviewedBy: true
+    }
+  });
+
+  await logAction({
+    userId,
+    action: 'SUPPLIER_RESPONSE_UPDATED',
+    entity: 'StoreOrder',
+    entityId: updatedOrder.orderNumber,
+    newValue: { supplierResponse }
+  });
+
+  return updatedOrder;
 };

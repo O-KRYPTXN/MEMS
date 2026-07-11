@@ -31,15 +31,15 @@ const fmt = (n) =>
 
 const STOCK_STATUS_MAP = {
   critical: {
-    cls: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
+    cls: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
     label: 'Out of Stock'
   },
   warning: {
-    cls: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
+    cls: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
     label: 'Low Stock'
   },
   ok: {
-    cls: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+    cls: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
     label: 'In Stock'
   },
 }

@@ -74,7 +74,7 @@ export default function DeptDashboard() {
         <div className="p-5 flex flex-row gap-4 flex-wrap">
           <button 
             onClick={() => navigate(ROUTES.DEPT_REQUESTS + '?new=true')} 
-            className="bg-[rgba(236,72,153,0.12)] border border-[rgba(236,72,153,0.25)] rounded-lg px-4 py-2 text-[#F472B6] text-[0.8125rem] font-semibold hover:bg-[rgba(236,72,153,0.2)] transition-colors"
+            className="bg-pink-700/10 border border-[rgba(236,72,153,0.25)] rounded-lg px-4 py-2 text-pink-800 dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6] text-[0.8125rem] font-semibold hover:bg-[rgba(236,72,153,0.2)] transition-colors"
           >
             {t('deptDashboard.reportProblemBtn')}
           </button>

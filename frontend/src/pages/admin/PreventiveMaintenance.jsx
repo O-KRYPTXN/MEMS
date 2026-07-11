@@ -27,9 +27,9 @@ function daysUntil(dateStr) {
 
 const PMTypeBadge = ({ type }) => {
   const map = {
-    ROUTINE: 'bg-[rgba(59,114,246,0.12)] text-[#5E8FFF]',
-    CALIBRATION: 'bg-[rgba(168,85,247,0.12)] text-[#C084FC]',
-    INSPECTION: 'bg-[rgba(20,184,166,0.12)] text-[#2DD4BF]',
+    ROUTINE: 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#5E8FFF]',
+    CALIBRATION: 'bg-purple-700/10 text-purple-800 dark:bg-[rgba(168,85,247,0.12)] dark:text-[#C084FC]',
+    INSPECTION: 'bg-teal-700/10 text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#2DD4BF]',
   }
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold ${map[type] || map.ROUTINE}`}>
@@ -40,10 +40,10 @@ const PMTypeBadge = ({ type }) => {
 }
 
 const PM_STATUS_MAP = {
-  SCHEDULED: 'bg-[rgba(59,114,246,0.12)] text-[#5E8FFF]',
-  OVERDUE: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]',
-  IN_PROGRESS: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-  COMPLETED: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
+  SCHEDULED: 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#5E8FFF]',
+  OVERDUE: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
+  IN_PROGRESS: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+  COMPLETED: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
   CANCELLED: 'bg-[rgba(90,106,133,0.2)] text-[#5A6A85]',
 }
 

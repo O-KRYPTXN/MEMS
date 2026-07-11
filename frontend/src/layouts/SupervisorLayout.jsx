@@ -56,7 +56,7 @@ const SupervisorSidebar = () => {
       </div>
 
       <div className="mx-5 my-2.5 text-center mt-3">
-        <div className="inline-block px-3 py-1.5 rounded-lg bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
+        <div className="inline-block px-3 py-1.5 rounded-lg bg-teal-700/10 border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
           TECHNICAL SUPERVISOR
         </div>
       </div>
@@ -150,7 +150,7 @@ const SupervisorTopbar = ({ title }) => {
       <h1 className="text-base font-bold text-[var(--text-primary)]">{title}</h1>
       <div className="flex-1" />
       
-      <div className="flex items-center justify-center bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] rounded-full px-[10px] py-[4px] text-[0.72rem] font-bold text-[#14B8A6]">
+      <div className="flex items-center justify-center bg-[rgba(20,184,166,0.12)] border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] rounded-full px-[10px] py-[4px] text-[0.72rem] font-bold text-[#14B8A6]">
         ICU & Emergency Dept
       </div>
 

@@ -20,7 +20,7 @@ const mockSystemTechs = [
 ]
 
 const PriorityBadge = ({ priority }) => {
-  const map = { High: 'bg-[rgba(239,68,68,0.12)] text-[#F87171]', Medium: 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]', Low: 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]' }
+  const map = { High: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]', Medium: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]', Low: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]' }
   return <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider ${map[priority] ?? ''}`}>{priority}</span>
 }
 
@@ -32,9 +32,9 @@ const StatusDot = ({ status, className }) => {
 const StatusPill = ({ status }) => {
   const { t } = useTranslation()
   const colors = {
-    online: 'bg-[rgba(74,222,128,0.12)] border-[rgba(74,222,128,0.25)] text-[#4ADE80]',
-    busy: 'bg-[rgba(252,211,77,0.12)] border-[rgba(252,211,77,0.25)] text-[#FCD34D]',
-    offline: 'bg-[rgba(90,106,133,0.12)] border-[rgba(90,106,133,0.25)] text-[#5A6A85]'
+    online: 'bg-green-700/10 border-[rgba(74,222,128,0.25)] text-green-800 dark:bg-[rgba(74,222,128,0.12)] dark:text-[#4ADE80]',
+    busy: 'bg-yellow-700/10 border-[rgba(252,211,77,0.25)] text-yellow-800 dark:bg-[rgba(252,211,77,0.12)] dark:text-[#FCD34D]',
+    offline: 'bg-slate-700/10 border-[rgba(90,106,133,0.25)] text-slate-800 dark:bg-[rgba(90,106,133,0.12)] dark:text-[#5A6A85]'
   }
   const labelMap = {
     online: t('supTeam.available'),
@@ -140,19 +140,19 @@ export default function SupervisorTeam() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[rgba(20,184,166,0.12)] text-[#14B8A6] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-teal-700/10 text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
           </div>
           <div><div className="text-[1.25rem] font-bold text-[var(--text-primary)] leading-none">{totalTechs}</div><div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{t('supTeam.totalTechnicians')}</div></div>
         </div>
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[rgba(74,222,128,0.12)] text-[#4ADE80] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-green-700/10 text-green-800 dark:bg-[rgba(74,222,128,0.12)] dark:text-[#4ADE80] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </div>
           <div><div className="text-[1.25rem] font-bold text-[var(--text-primary)] leading-none">{activeTechs}</div><div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{t('supTeam.onShiftActive')}</div></div>
         </div>
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[rgba(245,158,11,0.12)] text-[#FCD34D] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
           </div>
           <div><div className="text-[1.25rem] font-bold text-[var(--text-primary)] leading-none">{totalTasks}</div><div className="text-[0.75rem] text-[var(--text-muted)] font-semibold mt-1">{t('supTeam.totalActiveTasks')}</div></div>
@@ -206,7 +206,7 @@ export default function SupervisorTeam() {
             </div>
 
             <div className="border-t border-[var(--border)] p-3 px-5 flex gap-2">
-              <button onClick={() => { setActiveTech(tItem); setShowAssignModal(true) }} className="flex-1 py-1.5 rounded-lg bg-[rgba(20,184,166,0.1)] border border-[rgba(20,184,166,0.25)] text-[#14B8A6] text-[12.5px] font-bold hover:bg-[rgba(20,184,166,0.15)] transition-colors">{t('supTeam.assignTask')}</button>
+              <button onClick={() => { setActiveTech(tItem); setShowAssignModal(true) }} className="flex-1 py-1.5 rounded-lg bg-[rgba(20,184,166,0.1)] border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] text-[#14B8A6] text-[12.5px] font-bold hover:bg-[rgba(20,184,166,0.15)] transition-colors">{t('supTeam.assignTask')}</button>
               <button onClick={() => showToast(t('supTeam.toastCalling', { phone: tItem.phone }), TOAST_COLORS.info)} className="flex-1 py-1.5 rounded-lg bg-transparent border border-[var(--border)] text-[var(--text-secondary)] text-[12.5px] font-bold hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors">{t('supTeam.call')}</button>
             </div>
           </Panel>

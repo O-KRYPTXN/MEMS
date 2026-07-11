@@ -217,8 +217,6 @@ model User {
 
   submittedFaultReports FaultReport[]
 
-  sentEmailLogs EmailLog[]
-
   userAlerts UserAlert[]
 
   auditLogs AuditLog[]
@@ -409,6 +407,7 @@ model StoreOrder {
   status          StoreOrderStatus @default(PENDING)
   supplierName    String?
   supplierEmail   String?
+  supplierResponse String?         // supplier's latest response
   notes           String?
   rejectionReason String?          // populated when admin rejects
   createdAt       DateTime         @default(now())
@@ -425,7 +424,6 @@ model StoreOrder {
 
   // ── Relations ──────────────────────────────────────────
   items     StoreOrderItem[]
-  emailLogs EmailLog[]
 
   @@index([createdById])
   @@index([status])
@@ -473,30 +471,6 @@ model FaultReport {
   @@index([status])
   @@index([submittedById])
   @@index([deviceId])
-}
-
-// ─── EMAIL LOG ──────────────────────────────────────────────
-// Tracks outbound email communications (store email log page).
-// Each thread message is one row; the UI groups by StoreOrder.
-
-model EmailLog {
-  id        String      @id @default(cuid())
-  subject   String
-  body      String
-  recipient String                           // supplier email address
-  sender    String                           // internal sender display name / email
-  status    EmailStatus @default(SENT)
-  sentAt    DateTime    @default(now())
-
-  // ── FK: Who sent it (storekeeper) ──────────────────────
-  sentById String
-  sentBy   User   @relation(fields: [sentById], references: [id])
-
-  // ── FK: Related Store Order ────────────────────────────
-  orderId String?
-  order   StoreOrder? @relation(fields: [orderId], references: [id])
-
-  @@index([orderId])
 }
 
 // ─── ALERT ──────────────────────────────────────────────────

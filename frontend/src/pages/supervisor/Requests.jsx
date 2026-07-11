@@ -19,10 +19,10 @@ function StatusBadge({ status }) {
     'Rejected': t('storeRequests.statusRejected', 'Rejected')
   }
   const colorMap = {
-    'Pending': 'bg-[rgba(245,158,11,0.12)] text-[#FCD34D]',
-    'Approved': 'bg-[rgba(59,130,246,0.12)] text-[#60A5FA]',
-    'Fulfilled': 'bg-[rgba(34,197,94,0.12)] text-[#4ADE80]',
-    'Rejected': 'bg-[rgba(239,68,68,0.12)] text-[#F87171]'
+    'Pending': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'Approved': 'bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,130,246,0.12)] dark:text-[#60A5FA]',
+    'Fulfilled': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'Rejected': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
   }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${colorMap[status] || ''}`}>{labelMap[status] || status}</span>
 }
@@ -171,7 +171,7 @@ export default function SupervisorRequests() {
                     {r.status === 'PENDING' && (
                       <button 
                         onClick={() => { setSelectedReq(r); setReviewDecision('Approve'); setActionNotes(''); setShowModal(true) }} 
-                        className="px-3 py-1.5 bg-[rgba(20,184,166,0.12)] border border-[rgba(20,184,166,0.25)] rounded-lg text-[#14B8A6] text-[12px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors"
+                        className="px-3 py-1.5 bg-teal-700/10 border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] rounded-lg text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6] text-[12px] font-bold hover:bg-[rgba(20,184,166,0.2)] transition-colors"
                       >
                         {t('storeRequests.reviewBtn', 'Review')}
                       </button>
@@ -232,14 +232,14 @@ export default function SupervisorRequests() {
               <button 
                 type="button"
                 onClick={() => setReviewDecision('Approve')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-[rgba(20,184,166,0.12)] border-[#14B8A6] text-[#14B8A6]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#14B8A6]")}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Approve' ? "bg-teal-700/10 border-[#14B8A6] text-teal-800 dark:bg-[rgba(20,184,166,0.12)] dark:text-[#14B8A6]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#14B8A6]")}
               >
                 {t('common.approve')}
               </button>
               <button 
                 type="button"
                 onClick={() => setReviewDecision('Reject')}
-                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-[rgba(239,68,68,0.12)] border-[#F87171] text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
+                className={clsx("flex-1 px-4 py-2.5 rounded-lg border text-sm font-bold transition-colors", reviewDecision === 'Reject' ? "bg-red-700/10 border-[#F87171] text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]" : "bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[#F87171]")}
               >
                 {t('common.reject')}
               </button>
