@@ -459,7 +459,7 @@ export default function Inventory() {
             <div>
               <label className={labelCls}>{t('inventory.location')}</label>
               <select {...register('location', { required: true })} className={inputCls}>
-                <option value="">Select Location</option>
+                <option value="">{t('admin.inventory.selectLocation', 'Select Location')}</option>
                 {LOC_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
@@ -520,7 +520,7 @@ export default function Inventory() {
             <div>
               <label className={labelCls}>{t('inventory.location')}</label>
               <select {...register('location', { required: true })} className={inputCls}>
-                <option value="">Select Location</option>
+                <option value="">{t('admin.inventory.selectLocation', 'Select Location')}</option>
                 {LOC_OPTS.slice(1).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>

@@ -195,7 +195,7 @@ export default function AdminOrders() {
                       <td></td>
                       <td colSpan={6} className="p-4 pt-2">
                         <div className="bg-[var(--bg-input)] rounded-lg border border-[var(--border)] p-3">
-                          <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Order Items</h4>
+                          <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{t('admin.orders.orderItems', 'Order Items')}</h4>
                           <ul className="flex flex-col gap-2">
                             {o.items.map(item => (
                               <li key={item.id} className="flex justify-between text-sm">
@@ -255,7 +255,7 @@ export default function AdminOrders() {
 
         <form id="review-form" onSubmit={handleReview} className="flex flex-col gap-5">
           <div className="bg-[var(--bg-input)] p-3 rounded-lg border border-[var(--border)]">
-            <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Requested Items</h4>
+            <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{t('admin.orders.requestedItems', 'Requested Items')}</h4>
             <ul className="flex flex-col gap-1.5 text-sm">
               {selectedOrder?.items?.map(item => (
                 <li key={item.id} className="flex justify-between">
@@ -264,7 +264,7 @@ export default function AdminOrders() {
                 </li>
               ))}
               <li className="flex justify-between border-t border-[var(--border)] mt-2 pt-2 font-bold text-[var(--text-primary)]">
-                <span>Total Value</span>
+                <span>{t('admin.orders.totalValue', 'Total Value')}</span>
                 <span>${selectedOrder?.items?.reduce((acc, item) => acc + (Number(item.qty) * Number(item.unitPrice)), 0).toFixed(2)}</span>
               </li>
             </ul>

@@ -105,7 +105,7 @@ const Dashboard = () => {
         </div>
         <button
           type="button"
-          onClick={() => alert('12 PM Work Orders generated successfully.')}
+          onClick={() => alert(t('admin.dashboard.pmSuccess', '12 PM Work Orders generated successfully.'))}
           className="inline-flex items-center gap-[7px] py-[9px] px-[18px] rounded-lg bg-[#3B72F6] hover:bg-[#2558D8] text-white text-[0.8125rem] font-semibold transition-colors"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[15px] h-[15px]">
@@ -138,7 +138,7 @@ const Dashboard = () => {
             {metrics?.faultTrend?.length > 0 ? (
               <FaultTrendLineChart data={metrics.faultTrend} />
             ) : (
-              <p className="py-10 text-center text-sm text-[var(--text-muted)]">No fault reports during the last 30 days.</p>
+              <p className="py-10 text-center text-sm text-[var(--text-muted)]">{t('admin.dashboard.noFaults30Days', 'No fault reports during the last 30 days.')}</p>
             )}
           </div>
         </Panel>
@@ -153,7 +153,7 @@ const Dashboard = () => {
                 centerSubLabel={t('dashboard.totalWOs')}
               />
             ) : (
-              <p className="py-10 text-center text-sm text-[var(--text-muted)]">No active work orders.</p>
+              <p className="py-10 text-center text-sm text-[var(--text-muted)]">{t('admin.dashboard.noActiveWOs', 'No active work orders.')}</p>
             )}
           </div>
         </Panel>
@@ -167,7 +167,7 @@ const Dashboard = () => {
           {metrics?.recentUrgentWOs?.length > 0 ? (
             <DataTable columns={woColumns} data={metrics.recentUrgentWOs} />
           ) : (
-            <p className="py-8 text-center text-sm text-[var(--text-muted)]">No urgent work orders.</p>
+            <p className="py-8 text-center text-sm text-[var(--text-muted)]">{t('admin.dashboard.noUrgentWOs', 'No urgent work orders.')}</p>
           )}
         </Panel>
 
@@ -199,7 +199,7 @@ const Dashboard = () => {
                   percentage={Math.round((tech.count / maxTechCount) * 100)} color={techColors[i % techColors.length]} />
               ))
             ) : (
-              <p className="py-8 text-center text-sm text-[var(--text-muted)]">No active technician assignments.</p>
+              <p className="py-8 text-center text-sm text-[var(--text-muted)]">{t('admin.dashboard.noTechAssignments', 'No active technician assignments.')}</p>
             )}
           </div>
         </Panel>
@@ -210,7 +210,7 @@ const Dashboard = () => {
           {metrics?.lowInventory?.length > 0 ? (
             <DataTable columns={invColumns} data={metrics.lowInventory} />
           ) : (
-            <p className="py-8 text-center text-sm text-[var(--text-muted)]">No low-stock inventory.</p>
+            <p className="py-8 text-center text-sm text-[var(--text-muted)]">{t('admin.dashboard.noLowStock', 'No low-stock inventory.')}</p>
           )}
         </Panel>
 
@@ -220,7 +220,7 @@ const Dashboard = () => {
             {metrics?.devicesByDept?.length > 0 ? (
               <DevicesByDeptBarChart data={metrics.devicesByDept} />
             ) : (
-              <p className="py-14 text-center text-sm text-[var(--text-muted)]">No active devices.</p>
+              <p className="py-14 text-center text-sm text-[var(--text-muted)]">{t('admin.dashboard.noActiveDevices', 'No active devices.')}</p>
             )}
           </div>
         </Panel>

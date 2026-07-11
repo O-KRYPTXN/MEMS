@@ -65,6 +65,33 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  updateProfile: async (profileData) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await api.patch('/auth/me', profileData)
+      const userData = response.data.user
+      set({ user: userData, isLoading: false })
+      return { success: true, message: response.data.message }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update profile'
+      set({ error: message, isLoading: false })
+      return { success: false, message }
+    }
+  },
+
+  changePassword: async (passwordData) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await api.patch('/auth/me/password', passwordData)
+      set({ isLoading: false })
+      return { success: true, message: response.data.message }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update password'
+      set({ error: message, isLoading: false })
+      return { success: false, message }
+    }
+  },
+
   logout: async () => {
     set({ isLoading: true })
     try {

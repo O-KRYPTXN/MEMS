@@ -185,3 +185,79 @@ export const activateUser = async (token, password) => {
 
   return { updatedUser, department: user.department };
 };
+
+export const updateProfile = async (userId, data) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new AppError('User not found', 404);
+
+  const updateData = {};
+  if (data.email && data.email !== user.email) {
+    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    if (existing) throw new AppError('Email is already in use by another account', 400);
+    updateData.email = data.email;
+  }
+
+  let newName = user.name;
+  if (data.firstName !== undefined || data.lastName !== undefined) {
+    const currentParts = user.name.split(' ');
+    const first = data.firstName !== undefined ? data.firstName : (currentParts[0] || '');
+    const last = data.lastName !== undefined ? data.lastName : (currentParts.slice(1).join(' ') || '');
+    newName = `${first} ${last}`.trim();
+    updateData.name = newName;
+    updateData.initials = newName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  }
+
+  if (Object.keys(updateData).length === 0) return user;
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      initials: true,
+      theme: true,
+      language: true,
+      departmentId: true,
+      department: { select: { name: true, code: true } }
+    }
+  });
+
+  await logAction({
+    userId,
+    action: 'UPDATED',
+    entity: 'User',
+    entityId: updatedUser.email,
+    oldValue: { name: user.name, email: user.email },
+    newValue: { name: updatedUser.name, email: updatedUser.email }
+  });
+
+  return updatedUser;
+};
+
+export const changePassword = async (userId, currentPassword, newPassword) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new AppError('User not found', 404);
+
+  const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isMatch) throw new AppError('Incorrect current password', 401);
+
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(newPassword, salt);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash }
+  });
+
+  await logAction({
+    userId,
+    action: 'PASSWORD_CHANGED',
+    entity: 'User',
+    entityId: user.email
+  });
+
+  return true;
+};

@@ -140,10 +140,10 @@ export default function AdminRequests() {
             className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#3B72F6] transition-colors h-[34px]"
           >
             <option value="">{t('storeRequests.allDepts', 'All Departments')}</option>
-            <option value="ICU">ICU</option>
-            <option value="ER">ER</option>
-            <option value="Surgery">Surgery</option>
-            <option value="Maintenance">Maintenance</option>
+            <option value="ICU">{t('admin.requests.icu', 'ICU')}</option>
+            <option value="ER">{t('admin.requests.er', 'ER')}</option>
+            <option value="Surgery">{t('admin.requests.surgery', 'Surgery')}</option>
+            <option value="Maintenance">{t('admin.requests.maintenance', 'Maintenance')}</option>
           </select>
         </div>
 

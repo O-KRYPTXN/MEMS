@@ -219,7 +219,7 @@ export default function PreventiveMaintenance() {
       key: 'scheduledAt', label: t('pm.scheduledDate'), render: (val) => {
         const du = daysUntil(val)
         const duLabel = du === 0
-          ? <span className="text-[#FCD34D] text-[0.72rem]">Today</span>
+          ? <span className="text-[#FCD34D] text-[0.72rem]">{t('admin.pm.today', 'Today')}</span>
           : du > 0
             ? <span className="text-[var(--text-muted)] text-[0.72rem]">In {du} days</span>
             : <span className="text-[#F87171] text-[0.72rem]">{Math.abs(du)}d overdue</span>
@@ -227,7 +227,7 @@ export default function PreventiveMaintenance() {
       }
     },
     { key: 'device.lastPmDate', label: t('pm.lastPm'), render: (_, row) => row.device?.lastPmDate ? formatDate(row.device.lastPmDate) : '-' },
-    { key: 'assignedTo', label: t('pm.technician'), render: val => val ? val.name : <span className="text-[var(--text-muted)]">Unassigned</span> },
+    { key: 'assignedTo', label: t('pm.technician'), render: val => val ? val.name : <span className="text-[var(--text-muted)]">{t('admin.pm.unassigned', 'Unassigned')}</span> },
     { key: 'status', label: t('common.status'), render: val => <PMStatusBadge status={val} /> },
     {
       key: 'id', label: t('users.actions'), render: (val, row) => (
@@ -317,10 +317,10 @@ export default function PreventiveMaintenance() {
         </div>
 
         <div className="flex gap-[16px] mb-[12px]">
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#5E8FFF]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Scheduled</span></div>
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#F87171]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Overdue</span></div>
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#4ADE80]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Completed</span></div>
-          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#C084FC]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">Calibration</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#5E8FFF]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">{t('admin.pm.scheduled', 'Scheduled')}</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#F87171]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">{t('admin.pm.overdue', 'Overdue')}</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#4ADE80]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">{t('admin.pm.completed', 'Completed')}</span></div>
+          <div className="flex items-center gap-[6px]"><div className="w-[8px] h-[8px] rounded-full bg-[#C084FC]"></div><span className="text-[0.72rem] text-[var(--text-muted)]">{t('admin.pm.calibration', 'Calibration')}</span></div>
         </div>
 
         <div className="grid grid-cols-7 gap-[4px]">
@@ -420,9 +420,9 @@ export default function PreventiveMaintenance() {
         </div>
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
           <option value="">{t('pm.pmType')}: All</option>
-          <option value="ROUTINE">ROUTINE</option>
-          <option value="CALIBRATION">CALIBRATION</option>
-          <option value="INSPECTION">INSPECTION</option>
+          <option value="ROUTINE">{t('admin.pm.typeRoutine', 'ROUTINE')}</option>
+          <option value="CALIBRATION">{t('admin.pm.typeCalibration', 'CALIBRATION')}</option>
+          <option value="INSPECTION">{t('admin.pm.typeInspection', 'INSPECTION')}</option>
         </select>
         <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className={selectCls}>
           <option value="">{t('users.department')}: All</option>
@@ -489,7 +489,7 @@ export default function PreventiveMaintenance() {
             {selectedPM?.workOrder && (
                <div className="col-span-2 mt-2 p-3 bg-[rgba(59,114,246,0.05)] rounded-lg border border-[rgba(59,114,246,0.2)] flex items-center justify-between">
                  <div>
-                   <div className="text-[11px] font-semibold text-[#5E8FFF] uppercase">Linked Work Order</div>
+                   <div className="text-[11px] font-semibold text-[#5E8FFF] uppercase">{t('admin.pm.linkedWO', 'Linked Work Order')}</div>
                    <div className="text-[13px] font-mono font-medium text-[var(--text-primary)] mt-0.5">{selectedPM.workOrder.workOrderNumber}</div>
                  </div>
                  <div className="text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--bg-hover)] text-[var(--text-secondary)]">

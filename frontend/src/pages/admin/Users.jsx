@@ -300,18 +300,18 @@ export default function Users() {
             <div className="flex items-center gap-2">
               <span className="font-medium text-[var(--text-primary)]">{val}</span>
               {row.id === currentUser?.id && (
-                <span className="text-[10px] bg-[rgba(59,130,246,0.15)] text-[#3B72F6] px-1.5 py-0.5 rounded font-bold">👤 You</span>
+                <span className="text-[10px] bg-[rgba(59,130,246,0.15)] text-[#3B72F6] px-1.5 py-0.5 rounded font-bold">👤 {t('users.you', 'You')}</span>
               )}
             </div>
-            {row.isSuspended && <span className="text-[10px] text-red-500 font-bold">SUSPENDED</span>}
+            {row.isSuspended && <span className="text-[10px] text-red-500 font-bold">{t('users.suspended', 'SUSPENDED')}</span>}
           </div>
         </div>
       )
     },
     { key: 'email', label: t('users.email') },
     { key: 'role', label: t('users.role'), render: val => <RoleBadge role={val} /> },
-    { key: 'department', label: t('users.department'), render: val => val?.name || 'System-wide' },
-    { key: 'createdAt', label: 'Joined', render: val => formatDate(val) },
+    { key: 'department', label: t('users.department'), render: val => val?.name || t('users.systemWide', 'System-wide') },
+    { key: 'createdAt', label: t('users.joined', 'Joined'), render: val => formatDate(val) },
     { key: 'id', label: t('users.actions'), align: 'right',
       render: (val, row) => (
         <div className="flex justify-end gap-2">
@@ -345,16 +345,16 @@ export default function Users() {
     },
     { key: 'email', label: t('users.email') },
     { key: 'role', label: t('users.role'), render: val => <RoleBadge role={val} /> },
-    { key: 'department', label: t('users.department'), render: val => val?.name || 'System-wide' },
-    { key: 'submittedAt', label: 'Submitted', render: val => formatDate(val) },
+    { key: 'department', label: t('users.department'), render: val => val?.name || t('users.systemWide', 'System-wide') },
+    { key: 'submittedAt', label: t('users.submitted', 'Submitted'), render: val => formatDate(val) },
     { key: 'status', label: t('users.status'), render: val => <PendingStatusBadge status={val} /> },
     { key: 'id', label: t('users.actions'), align: 'right',
       render: (val, row) => {
         if (row.status !== 'PENDING') return <span className="text-[var(--text-muted)]">—</span>;
         return (
           <div className="flex justify-end gap-2">
-            <button onClick={(e) => { e.stopPropagation(); handleApprove(row) }} className="px-2.5 py-1 text-[11px] font-semibold rounded-[6px] border border-[#22c55e] text-[#22c55e] hover:bg-[rgba(34,197,94,0.1)]">✓ Approve</button>
-            <button onClick={(e) => { e.stopPropagation(); handleDeny(row) }} className="px-2.5 py-1 text-[11px] font-semibold rounded-[6px] border border-[#ef4444] text-[#ef4444] hover:bg-[rgba(239,68,68,0.1)]">✕ Deny</button>
+            <button onClick={(e) => { e.stopPropagation(); handleApprove(row) }} className="px-2.5 py-1 text-[11px] font-semibold rounded-[6px] border border-[#22c55e] text-[#22c55e] hover:bg-[rgba(34,197,94,0.1)]">✓ {t('common.approve', 'Approve')}</button>
+            <button onClick={(e) => { e.stopPropagation(); handleDeny(row) }} className="px-2.5 py-1 text-[11px] font-semibold rounded-[6px] border border-[#ef4444] text-[#ef4444] hover:bg-[rgba(239,68,68,0.1)]">✕ {t('common.reject', 'Deny')}</button>
           </div>
         );
       }
@@ -439,9 +439,9 @@ export default function Users() {
 
       <Panel noPadding>
         {activeTab === 'pending' ? (
-          <DataTable columns={pendingColumns} data={currentData.items} emptyMessage={isLoading ? 'Loading...' : t('users.noResults')} />
+          <DataTable columns={pendingColumns} data={currentData.items} emptyMessage={isLoading ? t('common.loading', 'Loading...') : t('users.noResults')} />
         ) : (
-          <DataTable columns={userColumns} data={currentData.items} emptyMessage={isLoading ? 'Loading...' : t('users.noResults')} />
+          <DataTable columns={userColumns} data={currentData.items} emptyMessage={isLoading ? t('common.loading', 'Loading...') : t('users.noResults')} />
         )}
         {renderPagination()}
       </Panel>
@@ -465,7 +465,7 @@ export default function Users() {
           
           {showEditModal && selectedUser?.role === 'ADMIN' && selectedRole !== 'ADMIN' && selectedUser?.id !== currentUser?.id && (
             <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 text-orange-500 text-[13px] font-medium">
-              This user will be required to sign in again for the new permissions to take effect.
+              {t('users.requireSigninForPermissions', 'This user will be required to sign in again for the new permissions to take effect.')}
             </div>
           )}
 
@@ -499,20 +499,19 @@ export default function Users() {
       <Modal
         isOpen={showPromotionModal}
         onClose={() => { setShowPromotionModal(false); setPendingEditData(null); }}
-        title="Promote to Administrator?"
+        title={t('users.promoteToAdminTitle', 'Promote to Administrator?')}
         maxWidth="24rem"
         footer={
           <>
             <ModalCancelBtn onClick={() => { setShowPromotionModal(false); setPendingEditData(null); }}>{t('common.cancel')}</ModalCancelBtn>
             <ModalPrimaryBtn onClick={() => executeEdit(pendingEditData)} color="#3B72F6">
-              Yes, Promote
+              {t('users.promoteBtn', 'Yes, Promote')}
             </ModalPrimaryBtn>
           </>
         }
       >
         <p className="text-[0.875rem] text-[var(--text-secondary)]">
-          Are you sure you want to promote <strong>{selectedUser?.name}</strong> to Administrator? 
-          They will have full access to all departments, system settings, and user management.
+          {t('users.promoteDesc', 'Are you sure you want to promote')} <strong>{selectedUser?.name}</strong> {t('users.toAdministrator', 'to Administrator? They will have full access to all departments, system settings, and user management.')}
         </p>
       </Modal>
 
@@ -532,8 +531,8 @@ export default function Users() {
         }
       >
         <p className="text-[0.875rem] text-[var(--text-secondary)]">
-          Are you sure you want to {selectedUser?.isSuspended ? t('users.unsuspend').toLowerCase() : t('users.suspend').toLowerCase()} <strong>{selectedUser?.name}</strong>? 
-          {!selectedUser?.isSuspended && " They will immediately lose access to the system and their current session will be terminated."}
+          {t('users.suspendConfirmQ', 'Are you sure you want to')} {selectedUser?.isSuspended ? t('users.unsuspend').toLowerCase() : t('users.suspend').toLowerCase()} <strong>{selectedUser?.name}</strong>? 
+          {!selectedUser?.isSuspended && t('users.suspendWarning', ' They will immediately lose access to the system and their current session will be terminated.')}
         </p>
       </Modal>
     </div>

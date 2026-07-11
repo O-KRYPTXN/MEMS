@@ -262,7 +262,7 @@ export default function Reports() {
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-2xl font-bold text-[var(--text-primary)]">{faultData.reduce((acc, curr) => acc + curr.value, 0)}</span>
-                <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">Faults</span>
+                <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">{t('admin.reports.faults', 'Faults')}</span>
               </div>
             </div>
             <div className="flex gap-3 mt-4 flex-wrap justify-center">
@@ -295,7 +295,7 @@ export default function Reports() {
           <Panel padding="p-5" className="lg:col-span-1 flex flex-col">
             <div className="text-[0.875rem] font-bold text-[var(--text-primary)] mb-5">{t('reports.sparePartsConsumption', 'Lowest Stock Parts')}</div>
             <div className="flex flex-col gap-4 flex-1 justify-center">
-              {sparePartsData.length === 0 && <span className="text-sm text-[var(--text-muted)]">No parts data</span>}
+              {sparePartsData.length === 0 && <span className="text-sm text-[var(--text-muted)]">{t('admin.reports.noPartsData', 'No parts data')}</span>}
               {sparePartsData.map((part) => (
                 <div key={part.name} className="w-full">
                   <div className="flex justify-between items-end mb-1.5">
@@ -324,11 +324,11 @@ export default function Reports() {
             </div>
             <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={selectCls + " h-[34px]"}>
               <option value="">{t('reports.allCategories', 'All Categories')}</option>
-              <option value="EQUIPMENT">Equipment</option>
-              <option value="MAINTENANCE">Maintenance</option>
-              <option value="INVENTORY">Inventory</option>
-              <option value="FINANCIAL">Financial</option>
-              <option value="COMPLIANCE">Compliance</option>
+              <option value="EQUIPMENT">{t('admin.reports.categoryEquipment', 'Equipment')}</option>
+              <option value="MAINTENANCE">{t('admin.reports.categoryMaintenance', 'Maintenance')}</option>
+              <option value="INVENTORY">{t('admin.reports.categoryInventory', 'Inventory')}</option>
+              <option value="FINANCIAL">{t('admin.reports.categoryFinancial', 'Financial')}</option>
+              <option value="COMPLIANCE">{t('admin.reports.categoryCompliance', 'Compliance')}</option>
             </select>
           </div>
           <div className="flex-1">

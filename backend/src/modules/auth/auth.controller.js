@@ -1,4 +1,4 @@
-import { loginSchema, signupSchema, activateSchema } from './auth.validation.js';
+import { loginSchema, signupSchema, activateSchema, updateProfileSchema, changePasswordSchema } from './auth.validation.js';
 import { generateTokenAndSetCookie, mapFrontendRoleToEnum } from './auth.utils.js';
 import * as authService from './auth.service.js';
 
@@ -167,5 +167,58 @@ export const activate = async (req, res) => {
     }
     console.error('Activation Error:', error);
     res.status(500).json({ message: 'Server error during activation' });
+  }
+};
+
+export const updateProfileHandler = async (req, res) => {
+  try {
+    const parsed = updateProfileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: formatZodErrors(parsed.error) });
+    }
+
+    const updatedUser = await authService.updateProfile(req.user.id, parsed.data);
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        initials: updatedUser.initials,
+        theme: updatedUser.theme,
+        language: updatedUser.language,
+        department: updatedUser.department ? updatedUser.department.name : null,
+        departmentId: updatedUser.departmentId,
+      }
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    console.error('Update Profile Error:', error);
+    res.status(500).json({ message: 'Server error during profile update' });
+  }
+};
+
+export const changePasswordHandler = async (req, res) => {
+  try {
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: formatZodErrors(parsed.error) });
+    }
+
+    await authService.changePassword(req.user.id, parsed.data.currentPassword, parsed.data.newPassword);
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    console.error('Change Password Error:', error);
+    res.status(500).json({ message: 'Server error during password update' });
   }
 };

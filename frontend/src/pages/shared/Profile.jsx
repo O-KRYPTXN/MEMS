@@ -8,6 +8,7 @@ import SelectField from '../../components/forms/SelectField'
 import { useTranslation } from 'react-i18next'
 import Panel, { PanelHeader } from '../../components/ui/Panel'
 import ThemeToggle from '../../components/ui/ThemeToggle'
+import LanguageSwitcher from '../../components/ui/LanguageSwitcher'
 
 const getRoleMap = (t) => ({
   [ROLES.ADMIN]: t('profile.roleAdmin'),
@@ -27,18 +28,16 @@ const Toggle = ({ id, checked, onChange }) => (
 export default function Profile() {
   const { t } = useTranslation()
   const user = useAuthStore(state => state.user)
+  const updateProfile = useAuthStore(state => state.updateProfile)
+  const changePassword = useAuthStore(state => state.changePassword)
   const { showToast } = useToastStore()
   
   const [activeTab, setActiveTab] = useState('profile')
-  const [avatar, setAvatar] = useState(null)
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', email: '' })
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' })
   const [toggles, setToggles] = useState({ 
-    emailAlerts: true, smsAlerts: false, pmReminders: true, lowStock: true, 
-    twoFactor: false, darkTheme: true, compactView: false 
+    twoFactor: false, darkTheme: true 
   })
-  
-  const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (user) {
@@ -49,28 +48,32 @@ export default function Profile() {
     }
   }, [user])
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (evt) => setAvatar(evt.target.result)
-      reader.readAsDataURL(file)
+  const handleProfileSave = async (e) => {
+    e.preventDefault()
+    const result = await updateProfile(profileForm)
+    if (result.success) {
+      showToast(t('profile.toastProfileUpdated', 'Profile updated successfully'), TOAST_COLORS.success)
+    } else {
+      showToast(result.message, TOAST_COLORS.error)
     }
   }
 
-  const handleProfileSave = (e) => {
-    e.preventDefault()
-    showToast(t('profile.toastProfileUpdated'), TOAST_COLORS.success)
-  }
-
-  const handlePasswordUpdate = (e) => {
+  const handlePasswordUpdate = async (e) => {
     e.preventDefault()
     if (passwords.new !== passwords.confirm) {
-      showToast(t('profile.toastPasswordMismatch'), TOAST_COLORS.error)
+      showToast(t('profile.toastPasswordMismatch', 'Passwords do not match'), TOAST_COLORS.error)
       return
     }
-    showToast(t('profile.toastPasswordUpdated'), TOAST_COLORS.success)
-    setPasswords({ current: '', new: '', confirm: '' })
+    const result = await changePassword({
+      currentPassword: passwords.current,
+      newPassword: passwords.new
+    })
+    if (result.success) {
+      showToast(t('profile.toastPasswordUpdated', 'Password updated successfully'), TOAST_COLORS.success)
+      setPasswords({ current: '', new: '', confirm: '' })
+    } else {
+      showToast(result.message, TOAST_COLORS.error)
+    }
   }
 
   const toggleSetting = (key) => {
@@ -79,7 +82,6 @@ export default function Profile() {
 
   const tabs = [
     { id: 'profile', label: t('profile.tabMyProfile'), icon: <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /> },
-    { id: 'notif', label: t('profile.tabNotifications'), icon: <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /> },
     { id: 'security', label: t('profile.tabSecurity'), icon: <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /> },
     { id: 'app', label: t('profile.tabApplication'), icon: <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /> }
   ]
@@ -104,7 +106,9 @@ export default function Profile() {
                 activeTab === t.id ? "bg-blue-700/10 text-blue-800 dark:bg-[rgba(59,114,246,0.12)] dark:text-[#5E8FFF] font-semibold" : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               )}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d={t.icon} /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 shrink-0">
+                {t.icon}
+              </svg>
               {t.label}
             </button>
           ))}
@@ -120,20 +124,10 @@ export default function Profile() {
                 <div className="flex items-center gap-4">
                   <div 
                     className="w-16 h-16 rounded-full bg-[var(--bg-input)] flex items-center justify-center text-xl font-bold text-[var(--text-muted)] overflow-hidden border border-[var(--border)]"
-                    style={avatar ? { backgroundImage: `url(${avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                   >
-                    {!avatar && user?.initials}
+                    {user?.initials}
                   </div>
-                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-[13px] hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold transition-colors">
-                    {t('profile.changePhoto')}
-                  </button>
                 </div>
-                {avatar && (
-                  <button type="button" onClick={() => setAvatar(null)} className="px-4 py-2 bg-transparent border border-red-500/25 rounded-md text-[#F87171] text-[13px] font-bold hover:bg-red-500/10 transition-colors">
-                    {t('profile.removePhoto')}
-                  </button>
-                )}
               </div>
 
               <form onSubmit={handleProfileSave} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -154,43 +148,7 @@ export default function Profile() {
             </div>
           )}
 
-          {activeTab === 'notif' && (
-            <div className="animate-fade-in">
-              <h2 className="text-lg font-bold text-[var(--text-primary)]">{t('profile.tabNotifications')}</h2>
-              <p className="text-xs text-[var(--text-muted)] mt-1 mb-6 pb-4 border-b border-[var(--border)]">{t('profile.notificationsDesc')}</p>
-              
-              <div className="flex flex-col">
-                <div className="flex justify-between items-center py-4 border-b border-[var(--border)]">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--text-primary)]">{t('profile.emailAlerts')}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('profile.emailAlertsDesc')}</div>
-                  </div>
-                  <Toggle id="emailAlerts" checked={toggles.emailAlerts} onChange={() => toggleSetting('emailAlerts')} />
-                </div>
-                <div className="flex justify-between items-center py-4 border-b border-[var(--border)]">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--text-primary)]">{t('profile.smsAlerts')}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('profile.smsAlertsDesc')}</div>
-                  </div>
-                  <Toggle id="smsAlerts" checked={toggles.smsAlerts} onChange={() => toggleSetting('smsAlerts')} />
-                </div>
-                <div className="flex justify-between items-center py-4 border-b border-[var(--border)]">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--text-primary)]">{t('profile.pmReminders')}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('profile.pmRemindersDesc')}</div>
-                  </div>
-                  <Toggle id="pmReminders" checked={toggles.pmReminders} onChange={() => toggleSetting('pmReminders')} />
-                </div>
-                <div className="flex justify-between items-center py-4">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--text-primary)]">{t('profile.lowStock')}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('profile.lowStockDesc')}</div>
-                  </div>
-                  <Toggle id="lowStock" checked={toggles.lowStock} onChange={() => toggleSetting('lowStock')} />
-                </div>
-              </div>
-            </div>
-          )}
+
 
           {activeTab === 'security' && (
             <div className="animate-fade-in">
@@ -227,9 +185,11 @@ export default function Profile() {
               <h2 className="text-lg font-bold text-[var(--text-primary)]">{t('profile.tabApplication')}</h2>
               <p className="text-xs text-[var(--text-muted)] mt-1 mb-6 pb-4 border-b border-[var(--border)]">{t('profile.appDesc')}</p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
-                <SelectField label={t('profile.language')} options={['English', 'العربية']} />
-                <SelectField label={t('profile.dateFormat')} options={['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD']} />
+              <div className="flex flex-col mb-8 gap-5">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)] mb-2">{t('profile.language', 'Language')}</div>
+                  <LanguageSwitcher />
+                </div>
               </div>
 
               <div className="flex flex-col">
@@ -239,13 +199,6 @@ export default function Profile() {
                     <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('profile.darkThemeDesc')}</div>
                   </div>
                   <ThemeToggle />
-                </div>
-                <div className="flex justify-between items-center py-4">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--text-primary)]">{t('profile.compactView')}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('profile.compactViewDesc')}</div>
-                  </div>
-                  <Toggle id="compactView" checked={toggles.compactView} onChange={() => toggleSetting('compactView')} />
                 </div>
               </div>
             </div>

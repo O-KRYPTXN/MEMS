@@ -201,7 +201,19 @@
     "suspendUser": "تجميد المستخدم",
     "unsuspendUser": "إلغاء تجميد المستخدم",
     "confirmSuspend": "نعم، قم بالتجميد",
-    "confirmUnsuspend": "نعم، إلغاء التجميد"
+    "confirmUnsuspend": "نعم، إلغاء التجميد",
+    "you": "أنت",
+    "suspended": "موقوف",
+    "systemWide": "على مستوى النظام",
+    "joined": "انضم",
+    "submitted": "تم التقديم",
+    "requireSigninForPermissions": "سيُطلب من هذا المستخدم تسجيل الدخول مرة أخرى لتفعيل الصلاحيات الجديدة.",
+    "promoteToAdminTitle": "ترقية إلى مسؤول؟",
+    "promoteBtn": "نعم، قم بالترقية",
+    "promoteDesc": "هل أنت متأكد أنك تريد ترقية",
+    "toAdministrator": "إلى مسؤول؟ سيكون لديهم حق الوصول الكامل إلى جميع الأقسام وإعدادات النظام وإدارة المستخدمين.",
+    "suspendConfirmQ": "هل أنت متأكد أنك تريد",
+    "suspendWarning": " سيفقدون إمكانية الوصول إلى النظام فورًا وسيتم إنهاء جلستهم الحالية."
   },
   "reports": {
     "pageTitle": "تقارير النظام",
@@ -967,5 +979,85 @@
     "viewThread": "عرض السلسلة الكاملة",
     "emailThreadTitle": "سلسلة البريد: {{po}}",
     "with": "مع:"
+  },
+  "admin": {
+    "dashboard": {
+      "pmSuccess": "تم إنشاء 12 أمر عمل صيانة وقائية بنجاح.",
+      "noFaults30Days": "لا توجد تقارير أعطال خلال آخر 30 يومًا.",
+      "noActiveWOs": "لا توجد أوامر عمل نشطة.",
+      "noUrgentWOs": "لا توجد أوامر عمل عاجلة.",
+      "noTechAssignments": "لا توجد مهام فنية نشطة.",
+      "noLowStock": "لا يوجد مخزون منخفض.",
+      "noActiveDevices": "لا توجد أجهزة نشطة."
+    },
+    "audit": {
+      "timestamp": "الطابع الزمني",
+      "user": "المستخدم",
+      "system": "النظام",
+      "action": "الإجراء",
+      "entity": "الكيان",
+      "description": "الوصف",
+      "details": "التفاصيل",
+      "viewDetails": "عرض التفاصيل",
+      "title": "سجلات التدقيق",
+      "subtitle": "تتبع نشاط النظام والامتثال التشغيلي",
+      "searchPlaceholder": "البحث في الإجراء، الكيان، المستخدم...",
+      "entityAll": "الكيان: الكل",
+      "entityWorkOrder": "أمر عمل",
+      "entityPMTask": "مهمة صيانة وقائية",
+      "entityPartRequest": "طلب قطعة",
+      "entityStoreOrder": "طلب متجر",
+      "entityDevice": "جهاز",
+      "entityUser": "مستخدم",
+      "actionAll": "الإجراء: الكل",
+      "actionCreated": "تم الإنشاء",
+      "actionUpdated": "تم التحديث",
+      "actionStatusChanged": "تغيرت الحالة",
+      "actionCompleted": "مكتمل",
+      "actionApproved": "معتمد",
+      "actionRejected": "مرفوض",
+      "actionFulfilled": "تم التنفيذ",
+      "actionDelivered": "تم التوصيل",
+      "detailsTitle": "تفاصيل سجل التدقيق",
+      "actor": "الفاعل",
+      "targetEntity": "الكيان المستهدف",
+      "previousState": "الحالة السابقة",
+      "newState": "الحالة الجديدة"
+    },
+    "reports": {
+      "faults": "أعطال",
+      "noPartsData": "لا توجد بيانات قطع",
+      "categoryEquipment": "معدات",
+      "categoryMaintenance": "صيانة",
+      "categoryInventory": "مخزون",
+      "categoryFinancial": "مالية",
+      "categoryCompliance": "امتثال"
+    },
+    "pm": {
+      "today": "اليوم",
+      "unassigned": "غير معين",
+      "scheduled": "مجدول",
+      "overdue": "متأخر",
+      "completed": "مكتمل",
+      "calibration": "معايرة",
+      "typeRoutine": "روتيني",
+      "typeCalibration": "معايرة",
+      "typeInspection": "تفتيش",
+      "linkedWO": "أمر عمل مرتبط"
+    },
+    "orders": {
+      "orderItems": "عناصر الطلب",
+      "requestedItems": "العناصر المطلوبة",
+      "totalValue": "القيمة الإجمالية"
+    },
+    "inventory": {
+      "selectLocation": "اختر الموقع"
+    },
+    "requests": {
+      "icu": "العناية المركزة",
+      "er": "الطوارئ",
+      "surgery": "الجراحة",
+      "maintenance": "الصيانة"
+    }
   }
 }

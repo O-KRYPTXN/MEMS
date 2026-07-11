@@ -201,7 +201,19 @@
     "suspendUser": "Suspend User",
     "unsuspendUser": "Unsuspend User",
     "confirmSuspend": "Yes, Suspend",
-    "confirmUnsuspend": "Yes, Unsuspend"
+    "confirmUnsuspend": "Yes, Unsuspend",
+    "you": "You",
+    "suspended": "SUSPENDED",
+    "systemWide": "System-wide",
+    "joined": "Joined",
+    "submitted": "Submitted",
+    "requireSigninForPermissions": "This user will be required to sign in again for the new permissions to take effect.",
+    "promoteToAdminTitle": "Promote to Administrator?",
+    "promoteBtn": "Yes, Promote",
+    "promoteDesc": "Are you sure you want to promote",
+    "toAdministrator": "to Administrator? They will have full access to all departments, system settings, and user management.",
+    "suspendConfirmQ": "Are you sure you want to",
+    "suspendWarning": " They will immediately lose access to the system and their current session will be terminated."
   },
   "reports": {
     "pageTitle": "System Reports",
@@ -600,7 +612,7 @@
     "roleDepartment": "Department Staff",
     "roleStore": "Storekeeper",
     "roleUnknown": "Unknown Role",
-    "myProfileDesc": "Update your personal information and profile photo.",
+    "myProfileDesc": "Update your personal information.",
     "changePhoto": "Change Photo",
     "removePhoto": "Remove",
     "firstName": "First Name",
@@ -967,5 +979,85 @@
     "viewThread": "View Full Thread",
     "emailThreadTitle": "Email Thread: {{po}}",
     "with": "With:"
+  },
+  "admin": {
+    "dashboard": {
+      "pmSuccess": "12 PM Work Orders generated successfully.",
+      "noFaults30Days": "No fault reports during the last 30 days.",
+      "noActiveWOs": "No active work orders.",
+      "noUrgentWOs": "No urgent work orders.",
+      "noTechAssignments": "No active technician assignments.",
+      "noLowStock": "No low-stock inventory.",
+      "noActiveDevices": "No active devices."
+    },
+    "audit": {
+      "timestamp": "Timestamp",
+      "user": "User",
+      "system": "System",
+      "action": "Action",
+      "entity": "Entity",
+      "description": "Description",
+      "details": "Details",
+      "viewDetails": "View Details",
+      "title": "Audit Logs",
+      "subtitle": "Track system activity and operational compliance",
+      "searchPlaceholder": "Search action, entity, user...",
+      "entityAll": "Entity: All",
+      "entityWorkOrder": "WorkOrder",
+      "entityPMTask": "PMTask",
+      "entityPartRequest": "PartRequest",
+      "entityStoreOrder": "StoreOrder",
+      "entityDevice": "Device",
+      "entityUser": "User",
+      "actionAll": "Action: All",
+      "actionCreated": "Created",
+      "actionUpdated": "Updated",
+      "actionStatusChanged": "Status Changed",
+      "actionCompleted": "Completed",
+      "actionApproved": "Approved",
+      "actionRejected": "Rejected",
+      "actionFulfilled": "Fulfilled",
+      "actionDelivered": "Delivered",
+      "detailsTitle": "Audit Log Details",
+      "actor": "Actor",
+      "targetEntity": "Target Entity",
+      "previousState": "Previous State",
+      "newState": "New State"
+    },
+    "reports": {
+      "faults": "Faults",
+      "noPartsData": "No parts data",
+      "categoryEquipment": "Equipment",
+      "categoryMaintenance": "Maintenance",
+      "categoryInventory": "Inventory",
+      "categoryFinancial": "Financial",
+      "categoryCompliance": "Compliance"
+    },
+    "pm": {
+      "today": "Today",
+      "unassigned": "Unassigned",
+      "scheduled": "Scheduled",
+      "overdue": "Overdue",
+      "completed": "Completed",
+      "calibration": "Calibration",
+      "typeRoutine": "ROUTINE",
+      "typeCalibration": "CALIBRATION",
+      "typeInspection": "INSPECTION",
+      "linkedWO": "Linked Work Order"
+    },
+    "orders": {
+      "orderItems": "Order Items",
+      "requestedItems": "Requested Items",
+      "totalValue": "Total Value"
+    },
+    "inventory": {
+      "selectLocation": "Select Location"
+    },
+    "requests": {
+      "icu": "ICU",
+      "er": "ER",
+      "surgery": "Surgery",
+      "maintenance": "Maintenance"
+    }
   }
 }

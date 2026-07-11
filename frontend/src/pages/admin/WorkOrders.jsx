@@ -329,7 +329,7 @@ export default function WorkOrders() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>
-            <ModalPrimaryBtn onClick={openEditModal} color="#3B72F6">Edit</ModalPrimaryBtn>
+            <ModalPrimaryBtn onClick={openEditModal} color="#3B72F6">{t('common.edit', 'Edit')}</ModalPrimaryBtn>
           </>
         }
       >
