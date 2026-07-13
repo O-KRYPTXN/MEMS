@@ -50,6 +50,7 @@ const TechSidebar = () => {
     enabled: !!user?.id
   })
   const activeTasksCount = (woData?.items || []).filter(task => task.status !== 'DONE' && task.status !== 'CANCELLED').length
+  const unreadNotificationsCount = useNotificationStore((s) => s.unreadCount)
 
   return (
     <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-e border-[var(--border)]">
@@ -104,9 +105,9 @@ const TechSidebar = () => {
           <NavLink to={ROUTES.TECH_NOTIFICATIONS} className={navLinkClass}>
             <Icon d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
             {t('nav.notifications')}
-            {useNotificationStore((s) => s.unreadCount) > 0 && (
+            {unreadNotificationsCount > 0 && (
               <span className="ms-auto flex items-center justify-center rounded-full bg-amber-500/15 text-amber-700 dark:bg-[rgba(245,158,11,0.15)] dark:text-[#FCD34D] text-[0.65rem] font-bold px-[7px] py-[1px]">
-                {useNotificationStore((s) => s.unreadCount)}
+                {unreadNotificationsCount}
               </span>
             )}
           </NavLink>
