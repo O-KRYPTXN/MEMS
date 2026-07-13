@@ -3,6 +3,8 @@ import clsx from 'clsx'
 import { ROUTES } from '../../constants/routes'
 import { useAuthStore } from '../../store/authStore'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
+import * as registrationService from '../../api/registrationService'
 
 const Icon = ({ d, className = 'w-[17px] h-[17px] shrink-0' }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={className}>
@@ -59,6 +61,13 @@ const Sidebar = () => {
     navigate(ROUTES.LOGIN)
   }
 
+  const { data: regData } = useQuery({
+    queryKey: ['adminBadge', 'registrations', 'PENDING'],
+    queryFn: () => registrationService.getRegistrationRequests({ status: 'PENDING', limit: 1 }),
+    enabled: !!user && user.role === 'ADMIN'
+  })
+  const pendingRegsCount = regData?.meta?.totalItems || 0
+
   return (
     <aside className="flex flex-col w-[240px] h-full shrink-0 bg-[var(--bg-sidebar)] border-e border-[var(--border)]">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-[var(--border)]">
@@ -81,6 +90,11 @@ const Sidebar = () => {
               <NavLink key={item.to} to={item.to} className={navLinkClass}>
                 <Icon d={item.icon} />
                 {t(item.tKey)}
+                {item.to === ROUTES.ADMIN_USERS && pendingRegsCount > 0 && (
+                  <span className="ms-auto flex items-center justify-center rounded-full bg-blue-600/15 text-blue-700 dark:bg-[rgba(59,114,246,0.15)] dark:text-[#60A5FA] text-[0.65rem] font-bold px-[7px] py-[1px]">
+                    {pendingRegsCount}
+                  </span>
+                )}
               </NavLink>
             ))}
           </div>

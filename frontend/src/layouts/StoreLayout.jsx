@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import NotificationCenter from '../components/layout/NotificationCenter'
+import { useQuery } from '@tanstack/react-query'
+import * as partRequestsService from '../api/partRequestsService'
 
 const STORE_NAV_LINKS = [
   {
@@ -68,6 +70,13 @@ const StoreSidebar = () => {
     navigate(ROUTES.LOGIN)
   }
 
+  const { data: prData } = useQuery({
+    queryKey: ['partRequests', 'PENDING'],
+    queryFn: () => partRequestsService.getPartRequests({ status: 'PENDING', limit: 1 }),
+    enabled: !!user
+  })
+  const pendingRequestsCount = prData?.meta?.totalItems || 0
+
   return (
     <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-e border-[var(--border)]">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-[var(--border)]">
@@ -94,6 +103,11 @@ const StoreSidebar = () => {
               <NavLink key={lIdx} to={link.path} className={navLinkClass} end>
                 <Icon d={link.icon} />
                 {t(link.tKey)}
+                {link.path === ROUTES.STORE_REQUESTS && pendingRequestsCount > 0 && (
+                  <span className="ms-auto flex items-center justify-center rounded-full bg-purple-600/15 text-purple-700 dark:bg-[rgba(168,85,247,0.15)] dark:text-[#D8B4FE] text-[0.65rem] font-bold px-[7px] py-[1px]">
+                    {pendingRequestsCount}
+                  </span>
+                )}
               </NavLink>
             ))}
           </div>
