@@ -129,6 +129,7 @@ enum AlertType {
   CRITICAL
   WARNING
   INFO
+  SUCCESS
 }
 
 enum RegistrationRequestStatus {
@@ -181,14 +182,12 @@ model User {
   id                String    @id @default(cuid())
   name              String
   email             String    @unique
+  phone             String?
   passwordHash      String?
   role              Role      @default(TECHNICIAN)
   initials          String?
   isActive          Boolean   @default(true)
   isSuspended       Boolean   @default(false)
-  isActivated       Boolean   @default(false)
-  activationToken   String?
-  activationExpires DateTime?
 
   // Per-user UI preferences (persisted to DB so they survive re-login)
   theme    Theme    @default(DARK)
@@ -551,6 +550,8 @@ model RegistrationRequest {
   id          String                    @id @default(cuid())
   name        String
   email       String                    @unique
+  phone       String?
+  passwordHash String                   @default("")
   role        Role
   status      RegistrationRequestStatus @default(PENDING)
   submittedAt DateTime                  @default(now())

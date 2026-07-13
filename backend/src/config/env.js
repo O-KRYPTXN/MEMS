@@ -10,6 +10,9 @@ const envSchema = z.object({
   PORT: z.string().default('5000'),
   DATABASE_URL: z.string().url('DATABASE_URL must be a valid connection string'),
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
+  RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
+  EMAIL_FROM: z.string().email('EMAIL_FROM must be a valid email address'),
+  FRONTEND_URL: z.string().url('FRONTEND_URL must be a valid URL'),
 });
 
 // Validate the process.env object

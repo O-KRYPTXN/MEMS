@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 
 const getStoredTheme = (userId) => {
-  if (!userId) return 'light'
-  return localStorage.getItem(`mems_theme_${userId}`) || 'light'
+  if (!userId) return 'dark'
+  return localStorage.getItem(`mems_theme_${userId}`) || 'dark'
 }
 
 const applyTheme = (theme) => {
@@ -17,7 +17,7 @@ const applyTheme = (theme) => {
 }
 
 export const useThemeStore = create((set, get) => ({
-  theme: 'light',
+  theme: 'dark',
 
   initTheme: (userId) => {
     const stored = getStoredTheme(userId)

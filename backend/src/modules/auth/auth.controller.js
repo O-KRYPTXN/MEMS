@@ -1,4 +1,4 @@
-import { loginSchema, signupSchema, activateSchema, updateProfileSchema, changePasswordSchema } from './auth.validation.js';
+import { loginSchema, signupSchema, updateProfileSchema, changePasswordSchema } from './auth.validation.js';
 import { generateTokenAndSetCookie, mapFrontendRoleToEnum } from './auth.utils.js';
 import * as authService from './auth.service.js';
 
@@ -103,13 +103,14 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: formatZodErrors(parsed.error) });
     }
 
-    const { firstName, lastName, email, role, department } = parsed.data;
+    const { firstName, lastName, email, password, role, department } = parsed.data;
     const dbRole = mapFrontendRoleToEnum(role);
 
     const newRequest = await authService.createRegistrationRequest({
       firstName,
       lastName,
       email,
+      password,
       dbRole,
       department
     });
@@ -128,47 +129,7 @@ export const signup = async (req, res) => {
   }
 };
 
-/**
- * @desc    Activate account by setting password
- * @route   POST /api/auth/activate
- * @access  Public
- */
-export const activate = async (req, res) => {
-  try {
-    const parsed = activateSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ message: formatZodErrors(parsed.error) });
-    }
 
-    const { token, password } = parsed.data;
-
-    const { updatedUser, department } = await authService.activateUser(token, password);
-    const sessionToken = generateTokenAndSetCookie(res, updatedUser.id, updatedUser.role);
-
-    res.status(200).json({
-      message: 'Account activated successfully',
-      token: sessionToken,
-      user: {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        initials: updatedUser.initials,
-        theme: updatedUser.theme,
-        language: updatedUser.language,
-        department: department ? department.name : null,
-        departmentId: updatedUser.departmentId,
-      },
-    });
-
-  } catch (error) {
-    if (error.statusCode) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
-    console.error('Activation Error:', error);
-    res.status(500).json({ message: 'Server error during activation' });
-  }
-};
 
 export const updateProfileHandler = async (req, res) => {
   try {

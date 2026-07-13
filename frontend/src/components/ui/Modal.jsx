@@ -11,14 +11,21 @@ export const ModalCancelBtn = ({ onClick, children = 'Cancel', ...props }) => (
   </button>
 )
 
-export const ModalPrimaryBtn = ({ onClick, type = 'button', children, color = '#14B8A6', ...props }) => (
+export const ModalPrimaryBtn = ({ onClick, type = 'button', children, color = '#14B8A6', isLoading, ...props }) => (
   <button
     type={type}
     onClick={onClick}
-    className="px-5 py-2 border-none rounded-lg text-white text-[0.8125rem] font-semibold cursor-pointer transition-colors font-sans disabled:opacity-50 disabled:cursor-not-allowed"
+    disabled={isLoading || props.disabled}
+    className="px-5 py-2 border-none rounded-lg text-white text-[0.8125rem] font-semibold cursor-pointer transition-colors font-sans disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
     style={{ background: color }}
     {...props}
   >
+    {isLoading && (
+      <svg className="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    )}
     {children}
   </button>
 )

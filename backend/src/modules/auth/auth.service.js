@@ -17,6 +17,20 @@ export const loginUser = async (email, password) => {
   });
 
   if (!user) {
+    // Check if the user is still in the registration queue
+    const request = await prisma.registrationRequest.findUnique({
+      where: { email },
+    });
+
+    if (request) {
+      if (request.status === 'PENDING') {
+        throw new AppError('Your registration request is still pending admin approval.', 403);
+      }
+      if (request.status === 'REJECTED') {
+        throw new AppError('Your registration request has been rejected. Please contact an administrator.', 403);
+      }
+    }
+
     throw new AppError('Invalid credentials', 401);
   }
 
@@ -28,9 +42,6 @@ export const loginUser = async (email, password) => {
     throw new AppError('Account is suspended', 403);
   }
 
-  if (!user.isActivated) {
-    throw new AppError('Account is not activated. Please check your email.', 403);
-  }
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
@@ -47,6 +58,7 @@ export const getUserById = async (id) => {
       id: true,
       name: true,
       email: true,
+      phone: true,
       role: true,
       initials: true,
       theme: true,
@@ -83,7 +95,7 @@ export const getUserForMiddleware = async (id) => {
 };
 
 export const createRegistrationRequest = async (data) => {
-  const { firstName, lastName, email, dbRole, department } = data;
+  const { firstName, lastName, email, password, dbRole, department, phone } = data;
 
   if (dbRole === 'ADMIN') {
     throw new AppError('Signups for administrator roles are forbidden', 403);
@@ -113,10 +125,26 @@ export const createRegistrationRequest = async (data) => {
     throw new AppError('Invalid department specified', 400);
   }
 
-  const newRequest = await prisma.registrationRequest.create({
-    data: {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const newRequest = await prisma.registrationRequest.upsert({
+    where: { email },
+    update: {
+      name: `${firstName} ${lastName}`.trim(),
+      passwordHash,
+      phone: phone || null,
+      role: dbRole,
+      departmentId: dbDepartment ? dbDepartment.id : null,
+      status: 'PENDING',
+      submittedAt: new Date(),
+      reviewedAt: null,
+      userId: null
+    },
+    create: {
       name: `${firstName} ${lastName}`.trim(),
       email,
+      passwordHash,
+      phone: phone || null,
       role: dbRole,
       departmentId: dbDepartment ? dbDepartment.id : null,
       status: 'PENDING',
@@ -131,59 +159,6 @@ export const createRegistrationRequest = async (data) => {
   });
 
   return newRequest;
-};
-
-export const activateUser = async (token, password) => {
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-
-  const user = await prisma.user.findFirst({
-    where: {
-      activationToken: hashedToken,
-      activationExpires: {
-        gt: new Date()
-      }
-    },
-    include: {
-      department: {
-        select: { name: true, code: true }
-      }
-    }
-  });
-
-  if (!user) {
-    throw new AuthError('Invalid or expired activation token', 400);
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(password, salt);
-
-  const updatedUser = await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash,
-      isActivated: true,
-      activationToken: null,
-      activationExpires: null
-    }
-  });
-
-  await logAction({
-    userId: user.id,
-    action: 'ACCOUNT_ACTIVATED',
-    entity: 'User',
-    entityId: user.email,
-    oldValue: { isActivated: false },
-    newValue: { isActivated: true }
-  });
-
-  await createAlert({
-    type: 'SUCCESS',
-    title: 'Account Activated',
-    subtitle: `${updatedUser.name} has completed registration`,
-    targetRoles: ['ADMIN'],
-  });
-
-  return { updatedUser, department: user.department };
 };
 
 export const updateProfile = async (userId, data) => {
@@ -207,6 +182,10 @@ export const updateProfile = async (userId, data) => {
     updateData.initials = newName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
 
+  if (data.phone !== undefined) {
+    updateData.phone = data.phone;
+  }
+
   if (Object.keys(updateData).length === 0) return user;
 
   const updatedUser = await prisma.user.update({
@@ -216,6 +195,7 @@ export const updateProfile = async (userId, data) => {
       id: true,
       name: true,
       email: true,
+      phone: true,
       role: true,
       initials: true,
       theme: true,

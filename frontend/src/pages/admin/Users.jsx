@@ -25,11 +25,11 @@ function getAvatarColor(role) {
 }
 
 const ROLE_BADGES = {
-  admin: 'bg-[rgba(239,68,68,0.15)] text-[#F87171] border border-[rgba(239,68,68,0.3)]',
-  supervisor: 'bg-[rgba(59,130,246,0.15)] text-[#60A5FA] border border-[rgba(59,130,246,0.3)]',
-  technician: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80] border border-[rgba(34,197,94,0.3)]',
-  store: 'bg-[rgba(168,85,247,0.15)] text-[#D8B4FE] border border-[rgba(168,85,247,0.3)]',
-  department: 'bg-[rgba(148,163,184,0.15)] text-[#94A3B8] border border-[rgba(148,163,184,0.3)]'
+  admin: 'bg-red-100 dark:bg-[rgba(239,68,68,0.15)] text-red-700 dark:text-[#F87171] border border-red-200 dark:border-[rgba(239,68,68,0.3)]',
+  supervisor: 'bg-blue-100 dark:bg-[rgba(59,130,246,0.15)] text-blue-700 dark:text-[#60A5FA] border border-blue-200 dark:border-[rgba(59,130,246,0.3)]',
+  technician: 'bg-green-100 dark:bg-[rgba(34,197,94,0.15)] text-green-700 dark:text-[#4ADE80] border border-green-200 dark:border-[rgba(34,197,94,0.3)]',
+  store: 'bg-purple-100 dark:bg-[rgba(168,85,247,0.15)] text-purple-700 dark:text-[#D8B4FE] border border-purple-200 dark:border-[rgba(168,85,247,0.3)]',
+  department: 'bg-slate-100 dark:bg-[rgba(148,163,184,0.15)] text-slate-700 dark:text-[#94A3B8] border border-slate-200 dark:border-[rgba(148,163,184,0.3)]'
 };
 
 const RoleBadge = ({ role }) => {
@@ -41,9 +41,9 @@ const RoleBadge = ({ role }) => {
 };
 
 const PENDING_BADGES = {
-  pending: 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]',
-  approved: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80]',
-  denied: 'bg-[rgba(239,68,68,0.15)] text-[#F87171]',
+  pending: 'bg-orange-100 dark:bg-[rgba(245,158,11,0.15)] text-orange-700 dark:text-[#FCD34D]',
+  approved: 'bg-green-100 dark:bg-[rgba(34,197,94,0.15)] text-green-700 dark:text-[#4ADE80]',
+  denied: 'bg-red-100 dark:bg-[rgba(239,68,68,0.15)] text-red-700 dark:text-[#F87171]',
 };
 
 const PendingStatusBadge = ({ status }) => {
@@ -189,6 +189,20 @@ export default function Users() {
     }
   }, [activeTab, fetchUsers, fetchPendingRequests]);
 
+  // Background fetch to keep the pending count accurate when searching from other tabs
+  useEffect(() => {
+    if (activeTab !== 'pending') {
+      getRegistrationRequests({ page: 1, limit: 1, status: 'PENDING', search: debouncedSearch })
+        .then(res => {
+          setPendingData(prev => ({
+            ...prev,
+            meta: { ...prev.meta, totalItems: res.meta.totalItems }
+          }));
+        })
+        .catch(console.error);
+    }
+  }, [debouncedSearch, activeTab]);
+
   const handleApprove = async (req) => {
     try {
       await approveRegistration(req.id);
@@ -289,7 +303,7 @@ export default function Users() {
     }
   }, [showEditModal, selectedUser, reset]);
 
-  const userColumns = useMemo(() => [
+  const userColumns = [
     { key: 'name', label: t('users.name'), 
       render: (val, row) => (
         <div className="flex items-center gap-3">
@@ -300,7 +314,7 @@ export default function Users() {
             <div className="flex items-center gap-2">
               <span className="font-medium text-[var(--text-primary)]">{val}</span>
               {row.id === currentUser?.id && (
-                <span className="text-[10px] bg-[rgba(59,130,246,0.15)] text-[#3B72F6] px-1.5 py-0.5 rounded font-bold">👤 {t('users.you', 'You')}</span>
+                <span className="text-[10px] bg-blue-100 dark:bg-[rgba(59,130,246,0.15)] text-blue-700 dark:text-[#3B72F6] px-1.5 py-0.5 rounded font-bold">👤 {t('users.you', 'You')}</span>
               )}
             </div>
             {row.isSuspended && <span className="text-[10px] text-red-500 font-bold">{t('users.suspended', 'SUSPENDED')}</span>}
@@ -309,6 +323,7 @@ export default function Users() {
       )
     },
     { key: 'email', label: t('users.email') },
+    { key: 'phone', label: t('profile.phone', 'Phone Number'), render: val => val || <span className="text-[var(--text-muted)]">—</span> },
     { key: 'role', label: t('users.role'), render: val => <RoleBadge role={val} /> },
     { key: 'department', label: t('users.department'), render: val => val?.name || t('users.systemWide', 'System-wide') },
     { key: 'createdAt', label: t('users.joined', 'Joined'), render: val => formatDate(val) },
@@ -330,9 +345,9 @@ export default function Users() {
         </div>
       )
     }
-  ], [t, currentUser]);
+  ];
 
-  const pendingColumns = useMemo(() => [
+  const pendingColumns = [
     { key: 'name', label: t('users.name'), 
       render: (val, row) => (
         <div className="flex items-center gap-3">
@@ -344,6 +359,7 @@ export default function Users() {
       )
     },
     { key: 'email', label: t('users.email') },
+    { key: 'phone', label: t('profile.phone', 'Phone Number'), render: val => val || <span className="text-[var(--text-muted)]">—</span> },
     { key: 'role', label: t('users.role'), render: val => <RoleBadge role={val} /> },
     { key: 'department', label: t('users.department'), render: val => val?.name || t('users.systemWide', 'System-wide') },
     { key: 'submittedAt', label: t('users.submitted', 'Submitted'), render: val => formatDate(val) },
@@ -359,7 +375,7 @@ export default function Users() {
         );
       }
     }
-  ], [t]);
+  ];
 
   const currentData = activeTab === 'pending' ? pendingData : usersData;
   const pageNums = getPageNums(currentPage, currentData.meta.totalPages);

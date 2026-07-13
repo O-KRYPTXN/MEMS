@@ -12,6 +12,7 @@ const pageTitles = {
   '/admin/inventory': 'Spare Parts Inventory',
   '/admin/users': 'Users & Permissions',
   '/admin/reports': 'Reports',
+  '/admin/departments': 'Departments',
   '/admin/profile': 'Profile',
 }
 

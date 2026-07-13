@@ -10,6 +10,13 @@
     "view": "عرض",
     "approve": "موافقة",
     "reject": "رفض",
+    "create": "إنشاء",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "enable": "تفعيل",
+    "disable": "تعطيل",
+    "createdAt": "تاريخ الإنشاء",
+    "errorLoading": "فشل في تحميل البيانات",
     "assign": "تعيين",
     "all": "الكل",
     "allStatuses": "جميع الحالات",
@@ -68,7 +75,23 @@
     "createOrder": "إنشاء طلب",
     "rejectedOrders": "الطلبات المرفوضة",
     "emailLog": "سجل البريد الإلكتروني",
-    "faultReports": "تقارير الأعطال"
+    "faultReports": "تقارير الأعطال",
+    "departments": "الأقسام"
+  },
+  "departments": {
+    "subtitle": "إدارة أقسام المستشفى والوحدات",
+    "add": "إضافة قسم",
+    "edit": "تعديل القسم",
+    "name": "اسم القسم",
+    "code": "الرمز",
+    "status": "الحالة",
+    "empty": "لا توجد أقسام",
+    "createdSuccess": "تم إنشاء القسم بنجاح",
+    "createFailed": "فشل في إنشاء القسم",
+    "updatedSuccess": "تم تحديث القسم بنجاح",
+    "updateFailed": "فشل في تحديث القسم",
+    "statusUpdated": "تم تحديث حالة القسم",
+    "statusFailed": "فشل في تحديث الحالة"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -118,14 +141,22 @@
   "status": {
     "open": "مفتوح",
     "inProgress": "قيد التنفيذ",
+    "inprogress": "قيد التنفيذ",
     "waitingParts": "بانتظار القطع",
+    "waitingparts": "بانتظار القطع",
     "done": "مكتمل",
     "operational": "يعمل",
     "faulty": "عاطل",
     "maintenance": "تحت الصيانة",
     "scheduled": "مجدول",
     "completed": "مكتمل",
-    "decommissioned": "متقاعد"
+    "decommissioned": "متقاعد",
+    "pending": "قيد الانتظار",
+    "approved": "تمت الموافقة",
+    "denied": "مرفوض",
+    "todo": "مهام معلقة",
+    "solved": "تم الحل",
+    "overdue": "متأخر"
   },
   "devices": {
     "catalogTitle": "كتالوج الأجهزة",
@@ -168,8 +199,8 @@
     "admin": "مسؤول",
     "technician": "فني",
     "storekeeper": "أمين مستودع",
-    "supervisor": "مشرف القسم",
-    "department": "القسم"
+    "supervisor": "مشرف",
+    "department": "مشرف القسم"
   },
   "users": {
     "pageTitle": "إدارة المستخدمين",

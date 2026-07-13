@@ -1,6 +1,6 @@
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import prisma from '../../../prisma/prisma.js';
-import { sendActivationEmail } from '../../services/email.service.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 
 import { AppError } from '../../utils/AppError.js';
@@ -45,10 +45,10 @@ export const getAllUsers = async (page, limit, filters) => {
         id: true,
         name: true,
         email: true,
+        phone: true,
         role: true,
         isActive: true,
         isSuspended: true,
-        isActivated: true,
         createdAt: true,
         department: {
           select: {
@@ -75,6 +75,7 @@ export const getUserById = async (id) => {
       id: true,
       name: true,
       email: true,
+      phone: true,
       role: true,
       isActive: true,
       isSuspended: true,
@@ -112,10 +113,9 @@ export const createUser = async (data, executorId) => {
     throw new AppError('A user with this email already exists', 400);
   }
 
-  // Generate activation token
-  const token = crypto.randomBytes(32).toString('hex');
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-  const tokenExpires = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
+  // Generate a random temporary password for admin-created accounts
+  const tempPassword = crypto.randomBytes(8).toString('hex');
+  const passwordHash = await bcrypt.hash(tempPassword, 10);
 
   const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
@@ -123,12 +123,10 @@ export const createUser = async (data, executorId) => {
     data: {
       name,
       email,
+      passwordHash,
       role,
       departmentId,
       initials,
-      isActivated: false,
-      activationToken: hashedToken,
-      activationExpires: tokenExpires,
     },
     select: {
       id: true,
@@ -137,8 +135,6 @@ export const createUser = async (data, executorId) => {
       role: true,
     }
   });
-
-  await sendActivationEmail(email, token);
 
   await logAction({
     userId: executorId,

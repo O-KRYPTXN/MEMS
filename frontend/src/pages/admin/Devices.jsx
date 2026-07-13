@@ -15,10 +15,10 @@ const ROWS_PER_PAGE = 5
 
 // Status maps
 const STATUS_OPTIONS = [
-  { value: 'OPERATIONAL', tKey: 'status.OPERATIONAL', color: 'green' },
-  { value: 'FAULTY', tKey: 'status.FAULTY', color: 'red' },
-  { value: 'MAINTENANCE', tKey: 'status.MAINTENANCE', color: 'orange' },
-  { value: 'DECOMMISSIONED', tKey: 'status.DECOMMISSIONED', color: 'gray' },
+  { value: 'OPERATIONAL', tKey: 'status.operational', color: 'green' },
+  { value: 'FAULTY', tKey: 'status.faulty', color: 'red' },
+  { value: 'MAINTENANCE', tKey: 'status.maintenance', color: 'orange' },
+  { value: 'DECOMMISSIONED', tKey: 'status.decommissioned', color: 'gray' },
 ]
 
 const TABS = [

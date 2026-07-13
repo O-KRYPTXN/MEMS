@@ -4,8 +4,8 @@ import clsx from 'clsx';
 import { useAuthStore } from '../../store/authStore';
 
 const DEPARTMENTS = [
-  'ICU', 'ER', 'Surgery', 'Radiology', 'Cardiology',
-  'Laboratory', 'General Ward', 'Central Storeroom', 'Administration'
+  'Intensive Care Unit', 'Emergency Room', 'Surgery', 'Radiology', 'Cardiology',
+  'Laboratory', 'General Ward', 'Central Storeroom'
 ];
 
 const ROLES = [
@@ -14,6 +14,32 @@ const ROLES = [
   { id: 'Storekeeper', label: 'Storekeeper', icon: '📦' },
   { id: 'Department Supervisor', label: 'Department Supervisor', icon: '🩺' }
 ];
+
+const calculateStrength = (password) => {
+  let score = 0;
+  if (!password) return score;
+  if (password.length >= 8) score += 1;
+  if (/[A-Z]/.test(password)) score += 1;
+  if (/[a-z]/.test(password)) score += 1;
+  if (/[0-9]/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  return score;
+};
+
+const getStrengthColor = (score) => {
+  if (score <= 2) return 'bg-[#F87171] shadow-[0_0_8px_rgba(248,113,113,0.4)]';
+  if (score === 3) return 'bg-[#FBBF24] shadow-[0_0_8px_rgba(251,191,36,0.4)]';
+  if (score === 4) return 'bg-[#60A5FA] shadow-[0_0_8px_rgba(96,165,250,0.4)]';
+  return 'bg-[#4ADE80] shadow-[0_0_8px_rgba(74,222,128,0.4)]';
+};
+
+const getStrengthLabel = (score) => {
+  if (score === 0) return '';
+  if (score <= 2) return 'Weak';
+  if (score === 3) return 'Fair';
+  if (score === 4) return 'Good';
+  return 'Strong';
+};
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -30,6 +56,7 @@ export default function Signup() {
   };
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
+    password: '', confirmPassword: '',
     role: '', department: ''
   });
 
@@ -39,21 +66,6 @@ export default function Signup() {
   };
 
   const validateStep1 = () => {
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      setError('Please provide your first and last name.');
-      return false;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please provide a valid email address.');
-      return false;
-    }
-
-    // Remove mock DB check, the real backend will check if email exists
-    return true;
-  };
-
-  const validateStep2 = () => {
     if (!formData.role) {
       setError('Please select a role.');
       return false;
@@ -65,13 +77,47 @@ export default function Signup() {
     return true;
   };
 
+  const validateStep2 = () => {
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      setError('Please provide your first and last name.');
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please provide a valid email address.');
+      return false;
+    }
+    const phoneRegex = /^01[0125][0-9]{8}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      setError('Please provide a valid Egyptian phone number (e.g. 01012345678).');
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep3 = () => {
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return false;
+    }
+    return true;
+  };
+
   const handleNextStep1 = () => {
     if (validateStep1()) setStep(2);
   };
 
+  const handleNextStep2 = () => {
+    if (validateStep2()) setStep(3);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep2()) return;
+    if (!validateStep3()) return;
 
     setError(null);
     const result = await signup(formData);
@@ -119,7 +165,7 @@ export default function Signup() {
             </div>
 
             <div className="flex gap-1.5 mb-6">
-              {[1, 2].map(s => (
+              {[1, 2, 3].map(s => (
                 <div key={s} className={clsx(
                   "h-1.5 rounded-full flex-1 transition-all duration-300",
                   step > s ? "bg-[#3B82F6]" : step === s ? "bg-gradient-to-r from-[#3B82F6] to-[#60A5FA]" : "bg-[#1F2A40]"
@@ -138,47 +184,7 @@ export default function Signup() {
 
         {step === 1 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 1 OF 2 — PERSONAL INFORMATION</div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="relative">
-                <label className={labelCls}>First Name</label>
-                <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                </div>
-                <input name="firstName" value={formData.firstName} onChange={handleChange} className={inputCls} placeholder="First name" />
-              </div>
-              <div className="relative">
-                <label className={labelCls}>Last Name</label>
-                <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                </div>
-                <input name="lastName" value={formData.lastName} onChange={handleChange} className={inputCls} placeholder="Last name" />
-              </div>
-            </div>
-            <div className="mb-4 relative">
-              <label className={labelCls}>Work Email</label>
-              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-              </div>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} className={inputCls} placeholder="name@hospital.com" />
-            </div>
-            <div className="mb-8 relative">
-              <label className={labelCls}>Phone Number (Optional)</label>
-              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.896-1.596-5.48-4.18-7.076-7.076l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
-              </div>
-              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputCls} placeholder="+1 (555) 000-0000" />
-            </div>
-            <button onClick={handleNextStep1} className="w-full h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2">
-              Next — Select Role
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-            </button>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 2 OF 2 — ROLE & DEPARTMENT</div>
+            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 1 OF 2 — ROLE & DEPARTMENT</div>
             <label className={labelCls}>Requested Role</label>
             <div className="grid grid-cols-2 gap-3 mb-5">
               {ROLES.map(role => (
@@ -204,8 +210,99 @@ export default function Signup() {
                 {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
+            <button onClick={handleNextStep1} className="w-full h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2">
+              Next — Personal Info
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+            </button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 2 OF 2 — PERSONAL INFORMATION</div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="relative">
+                <label className={labelCls}>First Name</label>
+                <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                </div>
+                <input name="firstName" value={formData.firstName} onChange={handleChange} className={inputCls} placeholder="First name" />
+              </div>
+              <div className="relative">
+                <label className={labelCls}>Last Name</label>
+                <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                </div>
+                <input name="lastName" value={formData.lastName} onChange={handleChange} className={inputCls} placeholder="Last name" />
+              </div>
+            </div>
+            <div className="mb-4 relative">
+              <label className={labelCls}>Work Email</label>
+              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+              </div>
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className={inputCls} placeholder="name@hospital.com" />
+            </div>
+            <div className="mb-8 relative">
+              <label className={labelCls}>Phone Number</label>
+              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.896-1.596-5.48-4.18-7.076-7.076l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+              </div>
+              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputCls} placeholder="e.g. 01012345678" />
+            </div>
             <div className="flex gap-3">
               <button onClick={() => setStep(1)} className="w-[100px] h-[42px] rounded-lg border border-[#1F2A40] text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1E293B] text-[13px] font-bold tracking-wide transition-colors">
+                ← Back
+              </button>
+              <button onClick={handleNextStep2} className="flex-1 h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2">
+                Next — Security
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="text-[11px] font-bold text-[#5A6A85] tracking-wider mb-5">STEP 3 OF 3 — SECURITY</div>
+            <div className="mb-4 relative">
+              <label className={labelCls}>Password</label>
+              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+              </div>
+              <input type="password" name="password" value={formData.password} onChange={handleChange} className={inputCls} placeholder="••••••••" />
+              
+              <div className="mt-2.5">
+                <div className="flex gap-1.5 h-1.5 w-full">
+                  {[1, 2, 3, 4, 5].map(level => {
+                    const score = calculateStrength(formData.password);
+                    return (
+                      <div key={level} className={clsx(
+                        "flex-1 rounded-full transition-all duration-300",
+                        score >= level ? getStrengthColor(score) : "bg-[#1F2A40]"
+                      )} />
+                    );
+                  })}
+                </div>
+                <div className="flex justify-between items-center mt-1.5">
+                  <span className="text-[11px] text-[#5A6A85]">Use 8+ chars, mix letters, numbers & symbols</span>
+                  <span className={clsx("text-[11px] font-bold transition-all duration-200", formData.password ? "text-[#E2E8F0]" : "text-transparent")}>
+                    {getStrengthLabel(calculateStrength(formData.password))}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mb-8 relative">
+              <label className={labelCls}>Confirm Password</label>
+              <div className="absolute top-[34px] left-[13px] text-[#5A6A85]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+              </div>
+              <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className={inputCls} placeholder="••••••••" />
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setStep(2)} className="w-[100px] h-[42px] rounded-lg border border-[#1F2A40] text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#1E293B] text-[13px] font-bold tracking-wide transition-colors">
                 ← Back
               </button>
               <button onClick={handleSubmit} disabled={isLoading} className="flex-1 h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-80">
@@ -231,7 +328,7 @@ export default function Signup() {
             </div>
             <h2 className="text-[1.5rem] font-bold text-[#E2E8F0] mb-3">Request Submitted!</h2>
             <p className="text-[#94A3B8] text-[0.875rem] leading-relaxed mb-8 max-w-[340px]">
-              Your account request has been sent to the System Administrator for review. You will receive an email once it is approved.
+              Your registration request has been submitted and is awaiting administrator approval. You will be able to log in once your account is approved.
             </p>
             <button onClick={() => navigate('/login')} className="w-full h-[42px] rounded-lg bg-[#1A2235] hover:bg-[#1E293B] border border-[#1F2A40] text-[#E2E8F0] text-[13px] font-bold tracking-wide transition-colors">
               Back to Sign In

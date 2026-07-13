@@ -12,6 +12,7 @@ export const ROUTES = {
   ADMIN_USERS: '/admin/users',
   ADMIN_REPORTS: '/admin/reports',
   ADMIN_FAULT_REPORTS: '/admin/fault-reports',
+  ADMIN_DEPARTMENTS: '/admin/departments',
 
   // Supervisor
   SUPERVISOR_DASHBOARD: '/supervisor/dashboard',

@@ -13,7 +13,6 @@ import StoreLayout from '../layouts/StoreLayout'
 // Auth
 import Login from '../pages/auth/Login'
 import Signup from '../pages/auth/Signup'
-import SetPassword from '../pages/auth/SetPassword'
 
 // Admin pages
 import AdminDashboard from '../pages/admin/Dashboard'
@@ -27,6 +26,7 @@ import AdminReports from '../pages/admin/Reports'
 import AdminAuditLogs from '../pages/admin/AuditLogs'
 import AdminRequests from '../pages/admin/Requests'
 import AdminOrders from '../pages/admin/Orders'
+import AdminDepartments from '../pages/admin/Departments'
 
 // Supervisor pages
 import SupervisorDashboard from '../pages/supervisor/Dashboard'
@@ -75,7 +75,6 @@ const router = createBrowserRouter([
   // Public routes
   { path: ROUTES.LOGIN, element: <Login /> },
   { path: ROUTES.SIGNUP, element: <Signup /> },
-  { path: '/activate/:token', element: <SetPassword /> },
   { path: ROUTES.UNAUTHORIZED, element: <Unauthorized /> },
 
   // Admin routes
@@ -98,6 +97,7 @@ const router = createBrowserRouter([
       { path: 'requests', element: <AdminRequests /> },
       { path: 'orders', element: <AdminOrders /> },
       { path: 'users', element: <AdminUsers /> },
+      { path: 'departments', element: <AdminDepartments /> },
       { path: 'reports', element: <AdminReports /> },
       { path: 'audit-logs', element: <AdminAuditLogs /> },
       { path: 'fault-reports', element: <SharedFaultReports /> },

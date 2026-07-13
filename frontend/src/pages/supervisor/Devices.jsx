@@ -23,10 +23,10 @@ const isPastDue = (dateStr) => {
 const DeviceStatusBadge = ({ status }) => {
   const { t } = useTranslation()
   const map = {
-    'OPERATIONAL': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
-    'FAULTY': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
-    'MAINTENANCE': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
-    'DECOMMISSIONED': 'bg-slate-700/10 text-slate-800 dark:bg-[rgba(100,116,139,0.12)] dark:text-[#94A3B8]',
+    'OPERATIONAL': 'bg-green-100 text-green-700 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'FAULTY': 'bg-red-100 text-red-700 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]',
+    'MAINTENANCE': 'bg-orange-100 text-orange-700 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'DECOMMISSIONED': 'bg-slate-200 text-slate-700 dark:bg-[rgba(100,116,139,0.12)] dark:text-[#94A3B8]',
   }
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[0.7rem] font-bold ${map[status] ?? ''}`}>{t(`status.${status?.toLowerCase()}`)}</span>
 }

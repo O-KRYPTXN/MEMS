@@ -10,6 +10,13 @@
     "view": "View",
     "approve": "Approve",
     "reject": "Reject",
+    "create": "Create",
+    "active": "Active",
+    "inactive": "Inactive",
+    "enable": "Enable",
+    "disable": "Disable",
+    "createdAt": "Created At",
+    "errorLoading": "Failed to load data",
     "assign": "Assign",
     "all": "All",
     "allStatuses": "All Statuses",
@@ -68,7 +75,23 @@
     "createOrder": "Create Order",
     "rejectedOrders": "Rejected Orders",
     "emailLog": "Email Log",
-    "faultReports": "Fault Reports"
+    "faultReports": "Fault Reports",
+    "departments": "Departments"
+  },
+  "departments": {
+    "subtitle": "Manage hospital departments and units",
+    "add": "Add Department",
+    "edit": "Edit Department",
+    "name": "Department Name",
+    "code": "Code",
+    "status": "Status",
+    "empty": "No departments found",
+    "createdSuccess": "Department created successfully",
+    "createFailed": "Failed to create department",
+    "updatedSuccess": "Department updated successfully",
+    "updateFailed": "Failed to update department",
+    "statusUpdated": "Department status updated",
+    "statusFailed": "Failed to update status"
   },
   "auth": {
     "login": "Login",
@@ -118,14 +141,22 @@
   "status": {
     "open": "Open",
     "inProgress": "In Progress",
+    "inprogress": "In Progress",
     "waitingParts": "Waiting Parts",
+    "waitingparts": "Waiting Parts",
     "done": "Done",
     "operational": "Operational",
     "faulty": "Faulty",
     "maintenance": "Under Maintenance",
     "scheduled": "Scheduled",
     "completed": "Completed",
-    "decommissioned": "Decommissioned"
+    "decommissioned": "Decommissioned",
+    "pending": "Pending",
+    "approved": "Approved",
+    "denied": "Denied",
+    "todo": "To Do",
+    "solved": "Solved",
+    "overdue": "Overdue"
   },
   "devices": {
     "catalogTitle": "Device Catalog",
@@ -168,8 +199,8 @@
     "admin": "Administrator",
     "technician": "Technician",
     "storekeeper": "Storekeeper",
-    "supervisor": "Dept Supervisor",
-    "department": "Department"
+    "supervisor": "Supervisor",
+    "department": "Dept Supervisor"
   },
   "users": {
     "pageTitle": "User Management",

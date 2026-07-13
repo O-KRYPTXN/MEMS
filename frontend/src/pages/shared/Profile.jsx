@@ -33,7 +33,7 @@ export default function Profile() {
   const { showToast } = useToastStore()
   
   const [activeTab, setActiveTab] = useState('profile')
-  const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', email: '' })
+  const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', email: '', phone: '' })
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' })
   const [toggles, setToggles] = useState({ 
     twoFactor: false, darkTheme: true 
@@ -44,12 +44,16 @@ export default function Profile() {
       const parts = (user.name || '').split(' ')
       const first = parts[0] || ''
       const last = parts.slice(1).join(' ') || ''
-      setProfileForm({ firstName: first, lastName: last, email: user.email || '' })
+      setProfileForm({ firstName: first, lastName: last, email: user.email || '', phone: user.phone || '' })
     }
   }, [user])
 
   const handleProfileSave = async (e) => {
     e.preventDefault()
+    if (profileForm.phone && !/^01[0125][0-9]{8}$/.test(profileForm.phone)) {
+      showToast(t('profile.toastInvalidPhone', 'Please provide a valid Egyptian phone number (e.g. 01012345678)'), TOAST_COLORS.error);
+      return;
+    }
     const result = await updateProfile(profileForm)
     if (result.success) {
       showToast(t('profile.toastProfileUpdated', 'Profile updated successfully'), TOAST_COLORS.success)
@@ -135,6 +139,9 @@ export default function Profile() {
                 <InputField label={t('profile.lastName')} value={profileForm.lastName} onChange={e => setProfileForm(f => ({...f, lastName: e.target.value}))} required />
                 <div className="sm:col-span-2">
                   <InputField type="email" label={t('profile.emailAddress')} value={profileForm.email} onChange={e => setProfileForm(f => ({...f, email: e.target.value}))} required />
+                </div>
+                <div className="sm:col-span-2">
+                  <InputField type="tel" label={t('profile.phone', 'Phone Number')} value={profileForm.phone} onChange={e => setProfileForm(f => ({...f, phone: e.target.value}))} placeholder="e.g. 01012345678" required />
                 </div>
                 <div className="sm:col-span-2">
                   <InputField label={t('profile.role')} value={readableRole} disabled />

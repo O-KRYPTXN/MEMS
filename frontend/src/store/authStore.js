@@ -50,20 +50,6 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  activateAccount: async (token, password) => {
-    set({ isLoading: true, error: null })
-    try {
-      const response = await api.post('/auth/activate', { token, password })
-      const userData = response.data.user
-      set({ user: userData, isLoading: false })
-      useThemeStore.getState().initTheme(userData.id)
-      return { success: true }
-    } catch (error) {
-      const message = error.response?.data?.message || 'Activation failed'
-      set({ error: message, isLoading: false })
-      return { success: false, message }
-    }
-  },
 
   updateProfile: async (profileData) => {
     set({ isLoading: true, error: null })

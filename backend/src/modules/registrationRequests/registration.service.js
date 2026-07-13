@@ -1,6 +1,4 @@
-import crypto from 'crypto';
 import prisma from '../../../prisma/prisma.js';
-import { sendActivationEmail, sendRejectionEmail } from '../../services/email.service.js';
 import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 import { AppError } from '../../utils/AppError.js';
 import { createAlert } from '../alerts/alerts.service.js';
@@ -64,22 +62,17 @@ export const approveRegistration = async (id) => {
         throw new AppError('A user with this email already exists', 400);
     }
 
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
-    const expires = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
     const initials = request.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
     const newUser = await prisma.user.create({
         data: {
             name: request.name,
             email: request.email,
+            phone: request.phone,
+            passwordHash: request.passwordHash,
             role: request.role,
             departmentId: request.departmentId,
             initials,
-            isActivated: false,
-            activationToken: hashedToken,
-            activationExpires: expires,
         },
     });
 
@@ -92,12 +85,12 @@ export const approveRegistration = async (id) => {
         },
     });
 
-    await sendActivationEmail(newUser.email, rawToken);
+
 
     await createAlert({
         type: 'SUCCESS',
         title: 'Registration Approved',
-        subtitle: 'Your account has been approved. Please activate it.',
+        subtitle: 'Your account has been approved and is now active.',
         userId: newUser.id
     });
 
@@ -126,7 +119,7 @@ export const rejectRegistration = async (id, reason) => {
         },
     });
 
-    await sendRejectionEmail(request.email, reason);
+
 
     return request;
 };
