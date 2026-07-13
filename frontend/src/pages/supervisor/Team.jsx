@@ -1,27 +1,22 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/ui/Modal'
 import Panel from '../../components/ui/Panel'
 import { useToastStore, TOAST_COLORS } from '../../store/toastStore'
 import { useTranslation } from 'react-i18next'
-
-const initialTeam = [
-  { id: 'tech-1', name: 'James Smith', initials: 'JS', title: 'Senior Biomedical Technician', color: '#3B72F6', status: 'busy', phone: '+20 100 234 5678', email: 'j.smith@hospital.eg', shift: 'Morning (07:00-15:00)', tasksActive: 2, tasksCompleted: 14, maxTasks: 5, tasks: [{ id: 'WO-2038', device: 'Defibrillator AED-7', priority: 'High' }, { id: 'WO-2040', device: 'Defibrillator AED-9', priority: 'Medium' }] },
-  { id: 'tech-2', name: 'Ahmed Hassan', initials: 'AH', title: 'Biomedical Technician', color: '#14B8A6', status: 'online', phone: '+20 101 345 6789', email: 'a.hassan@hospital.eg', shift: 'Morning (07:00-15:00)', tasksActive: 1, tasksCompleted: 9, maxTasks: 5, tasks: [{ id: 'WO-2039', device: 'ECG Monitor E-12', priority: 'High' }] },
-  { id: 'tech-3', name: 'Mohamed Youssef', initials: 'MY', title: 'Biomedical Technician', color: '#A855F7', status: 'busy', phone: '+20 102 456 7890', email: 'm.youssef@hospital.eg', shift: 'Afternoon (15:00-23:00)', tasksActive: 3, tasksCompleted: 22, maxTasks: 5, tasks: [{ id: 'WO-2037', device: 'Infusion Pump IP-11', priority: 'Low' }, { id: 'WO-2036', device: 'Patient Monitor #3', priority: 'High' }, { id: 'WO-2033', device: 'Infusion Pump IP-22', priority: 'Medium' }] },
-  { id: 'tech-4', name: 'Sara Khalid', initials: 'SK', title: 'Biomedical Technician', color: '#F59E0B', status: 'online', phone: '+20 103 567 8901', email: 's.khalid@hospital.eg', shift: 'Morning (07:00-15:00)', tasksActive: 1, tasksCompleted: 17, maxTasks: 5, tasks: [{ id: 'WO-2034', device: 'Pulse Oximeter P-08', priority: 'Medium' }] },
-  { id: 'tech-5', name: 'Rami Ibrahim', initials: 'RI', title: 'Junior Biomedical Technician', color: '#EF4444', status: 'offline', phone: '+20 104 678 9012', email: 'r.ibrahim@hospital.eg', shift: 'Night (23:00-07:00)', tasksActive: 0, tasksCompleted: 6, maxTasks: 5, tasks: [] },
-]
-
-const mockSystemTechs = [
-  { email: 'new.tech@hospital.eg', name: 'New Technician', phone: '+20 109 999 9999' }
-]
+import { useAuthStore } from '../../store/authStore'
+import * as usersService from '../../api/usersService'
+import workOrderService from '../../api/workOrderService'
 
 const PriorityBadge = ({ priority }) => {
-  const map = { High: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]', Medium: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]', Low: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]' }
-  return <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider ${map[priority] ?? ''}`}>{priority}</span>
+  const { t } = useTranslation()
+  const map = { HIGH: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]', CRITICAL: 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]', MEDIUM: 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]', LOW: 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]' }
+  const labelMap = { HIGH: t('priority.high'), CRITICAL: t('priority.critical'), MEDIUM: t('priority.medium'), LOW: t('priority.low') }
+  
+  return <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider ${map[priority] || map.MEDIUM}`}>{labelMap[priority] || priority}</span>
 }
 
 const StatusDot = ({ status, className }) => {
@@ -44,79 +39,99 @@ const StatusPill = ({ status }) => {
   return <div className={clsx("px-2 py-0.5 rounded-full border text-[0.65rem] font-bold uppercase tracking-wider", colors[status])}>{labelMap[status]}</div>
 }
 
-const inputCls = "w-full bg-[#1A2235] border border-[#1F2A40] text-[#E2E8F0] px-3 py-2.5 rounded-lg text-[0.875rem] outline-none focus:border-[#14B8A6] transition-colors"
-const labelCls = "block text-[12px] text-[#94A3B8] font-semibold mb-1.5"
-
 export default function SupervisorTeam() {
   const { t } = useTranslation()
-  const [team, setTeam] = useState(initialTeam)
-  const [showAssignModal, setShowAssignModal] = useState(false)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [activeTech, setActiveTech] = useState(null)
+  const { user } = useAuthStore()
+  const queryClient = useQueryClient()
   const { showToast } = useToastStore()
+  
+  const [showAssignModal, setShowAssignModal] = useState(false)
+  const [activeTech, setActiveTech] = useState(null)
+
+  const queryParams = user?.departmentId ? { departmentId: user.departmentId } : {}
+
+  // 1. Fetch Technicians
+  const { data: techsData, isLoading: isLoadingTechs } = useQuery({
+    queryKey: ['users', 'TECHNICIAN', queryParams],
+    queryFn: () => usersService.getUsers({ role: 'TECHNICIAN', ...queryParams, limit: 100 })
+  })
+  const rawTechnicians = techsData?.items || []
+
+  // 2. Fetch Work Orders
+  const { data: woData, isLoading: isLoadingWOs } = useQuery({
+    queryKey: ['workOrders', queryParams],
+    queryFn: () => workOrderService.getWorkOrders({ ...queryParams, limit: 1000 })
+  })
+  const workOrders = woData?.items || []
+
+  // Derived state mapping
+  const team = useMemo(() => {
+    return rawTechnicians.map(tech => {
+      const assignedWOs = workOrders.filter(wo => wo.assignedToId === tech.id)
+      
+      const activeAssignments = assignedWOs.filter(wo => !['DONE', 'CANCELLED'].includes(wo.status))
+      const completedTasks = assignedWOs.filter(wo => wo.status === 'DONE').length
+      
+      const initials = (tech.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+      const isOnline = tech.isActive
+      const isBusy = activeAssignments.length > 0 && isOnline
+
+      return {
+        id: tech.id,
+        name: tech.name,
+        initials,
+        title: t('roles.TECHNICIAN'),
+        color: isOnline ? '#14B8A6' : '#5A6A85',
+        status: isBusy ? 'busy' : isOnline ? 'online' : 'offline',
+        phone: tech.phone || t('supTeam.noPhone', 'No phone provided'),
+        email: tech.email,
+        shift: t('supTeam.standardShift', 'Standard Shift'), // Not in schema, keeping generic
+        tasksActive: activeAssignments.length,
+        tasksCompleted: completedTasks,
+        maxTasks: 10,
+        tasks: activeAssignments
+      }
+    }).sort((a, b) => b.tasksActive - a.tasksActive)
+  }, [rawTechnicians, workOrders, t])
 
   const totalTechs = team.length
   const activeTechs = team.filter(t => t.status !== 'offline').length
   const totalTasks = team.reduce((sum, t) => sum + t.tasksActive, 0)
 
+  // Unassigned active work orders to populate assignment dropdown
+  const availableWorkOrders = useMemo(() => {
+    return workOrders.filter(wo => !['DONE', 'CANCELLED'].includes(wo.status))
+  }, [workOrders])
+
+  const assignMutation = useMutation({
+    mutationFn: ({ id, data }) => workOrderService.updateWorkOrder(id, data),
+    onError: (err) => showToast(err.response?.data?.message || 'Failed to assign task', TOAST_COLORS.error)
+  })
+
   const handleAssignTask = (e) => {
     e.preventDefault()
     const formData = new FormData(e.target)
-    const wo = formData.get('wo')
+    const woId = formData.get('wo')
     const priority = formData.get('priority')
     
-    if (!wo) return showToast(t('supTeam.toastSelectWo'), TOAST_COLORS.error)
+    if (!woId) return showToast(t('supTeam.toastSelectWo'), TOAST_COLORS.error)
 
-    setTeam(prev => prev.map(tech => {
-      if (tech.id === activeTech.id) {
-        return { 
-          ...tech, 
-          tasksActive: tech.tasksActive + 1,
-          tasks: [{ id: wo, device: 'Assigned Device (Mock)', priority }, ...tech.tasks]
-        }
+    const selectedWO = availableWorkOrders.find(w => w.id === woId)
+    const woDisplay = selectedWO?.workOrderNumber || woId.slice(-6).toUpperCase()
+
+    assignMutation.mutate({
+      id: woId,
+      data: {
+        assignedToId: activeTech.id,
+        priority: priority
       }
-      return tech
-    }))
-    setShowAssignModal(false)
-    showToast(t('supTeam.toastTaskAssigned', { wo, name: activeTech.name }), TOAST_COLORS.supervisor)
-  }
-
-  const handleAddTech = (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    const email = formData.get('techEmail')
-    const shift = formData.get('shift')
-    const phone = formData.get('phone')
-    
-    if (!email) return showToast(t('supTeam.toastSelectTechAdd'), TOAST_COLORS.error)
-    
-    const techObj = mockSystemTechs.find(tItem => tItem.email === email)
-    if (team.find(tItem => tItem.email === email)) return showToast(t('supTeam.toastTechAlreadyInTeam'), TOAST_COLORS.error)
-
-    const newTech = {
-      id: `tech-${Date.now()}`,
-      name: techObj.name,
-      initials: techObj.name.split(' ').map(n => n[0]).join(''),
-      title: 'Biomedical Technician',
-      color: '#14B8A6',
-      status: 'online',
-      phone,
-      email,
-      shift,
-      tasksActive: 0,
-      tasksCompleted: 0,
-      maxTasks: 5,
-      tasks: []
-    }
-    
-    setTeam(prev => [...prev, newTech])
-    setShowAddModal(false)
-    showToast(t('supTeam.toastTechAdded', { name: techObj.name }), TOAST_COLORS.supervisor)
-  }
-
-  const handleRemoveTech = (id) => {
-    setTeam(prev => prev.filter(tItem => tItem.id !== id))
-    showToast(t('supTeam.toastTechRemoved'), TOAST_COLORS.warning)
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['workOrders'])
+        showToast(t('supTeam.toastTaskAssigned', { wo: woDisplay, name: activeTech?.name }), TOAST_COLORS.supervisor)
+        setShowAssignModal(false)
+      }
+    })
   }
 
   return (
@@ -132,9 +147,6 @@ export default function SupervisorTeam() {
               <div key={lg.s} className="flex items-center gap-1.5"><StatusDot status={lg.s} className="w-2.5 h-2.5" /><span className="text-[11px] font-semibold text-[var(--text-secondary)]">{lg.l}</span></div>
             ))}
           </div>
-          <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1.5 px-4 py-2.5 bg-[#14B8A6] hover:bg-[#0D9488] text-white text-[13px] font-bold rounded-lg transition-colors shadow-lg shadow-teal-500/20">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> {t('supTeam.addTechnician')}
-          </button>
         </div>
       </div>
 
@@ -160,10 +172,13 @@ export default function SupervisorTeam() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {team.map(tItem => (
+        {team.length === 0 && !isLoadingTechs ? (
+          <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 text-[var(--text-muted)]">
+            {t('supTeam.noTechniciansFound', 'No technicians found in your department.')}
+          </div>
+        ) : team.map(tItem => (
           <Panel key={tItem.id} noPadding className="hover:-translate-y-[2px] hover:border-[#14B8A6] transition-all duration-300 flex flex-col group">
             <div className="p-5 flex items-start gap-4 relative">
-              <button onClick={() => handleRemoveTech(tItem.id)} className="absolute top-3 right-3 text-[var(--text-muted)] hover:text-[#F87171] transition-colors p-1" title={t('supTeam.removeFromView')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
               <div className="relative">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-[15px] font-bold" style={{ backgroundColor: tItem.color }}>{tItem.initials}</div>
                 <StatusDot status={tItem.status} className="w-3.5 h-3.5 absolute bottom-0 end-0 border-2 border-[var(--bg-panel)]" />
@@ -171,19 +186,19 @@ export default function SupervisorTeam() {
               <div className="flex-1 min-w-0 pr-5">
                 <div className="text-[0.95rem] font-bold text-[var(--text-primary)] truncate">{tItem.name}</div>
                 <div className="text-[0.8rem] text-[var(--text-muted)] truncate">{tItem.title}</div>
-                <div className="text-[0.7rem] text-[#14B8A6] truncate mt-0.5">{tItem.email}</div>
+                <div className="text-[0.75rem] text-[#14B8A6] truncate mt-0.5" title={tItem.email}>{tItem.email}</div>
+                <div className="text-[0.75rem] text-[var(--text-secondary)] truncate mt-0.5">{tItem.phone}</div>
                 <div className="mt-2"><StatusPill status={tItem.status} /></div>
               </div>
             </div>
             
             <div className="px-5 pb-5 flex flex-col gap-3 flex-1">
-              <div className="flex justify-between items-center text-[12.5px] border-b border-[var(--border)] pb-2"><span className="text-[var(--text-muted)] font-semibold">{t('supTeam.shift')}</span><span className="text-[var(--text-primary)]">{tItem.shift}</span></div>
               <div className="flex justify-between items-center text-[12.5px] border-b border-[var(--border)] pb-2"><span className="text-[var(--text-muted)] font-semibold">{t('supTeam.tasksCompleted')}</span><span className="text-[var(--text-primary)] font-bold">{tItem.tasksCompleted}</span></div>
               
               <div className="mt-1">
-                <div className="flex justify-between items-center mb-1.5"><span className="text-[12px] text-[var(--text-primary)] font-bold">{t('supTeam.activeTasks')}</span><span className="text-[11px] text-[var(--text-secondary)] font-semibold">{tItem.tasksActive} / {tItem.maxTasks}</span></div>
+                <div className="flex justify-between items-center mb-1.5"><span className="text-[12px] text-[var(--text-primary)] font-bold">{t('supTeam.activeTasks')}</span><span className="text-[11px] text-[var(--text-secondary)] font-semibold">{tItem.tasksActive}</span></div>
                 <div className="h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(tItem.tasksActive / tItem.maxTasks) * 100}%`, backgroundColor: tItem.color }}></div>
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min((tItem.tasksActive / tItem.maxTasks) * 100, 100)}%`, backgroundColor: tItem.color }}></div>
                 </div>
               </div>
 
@@ -195,8 +210,8 @@ export default function SupervisorTeam() {
                   <div className="flex flex-col gap-2">
                     {tItem.tasks.map(task => (
                       <div key={task.id} className="flex items-center gap-2 bg-[var(--bg-input)] border border-[var(--border)] p-2 rounded-lg">
-                        <div className="text-[11.5px] font-bold text-[#14B8A6] font-mono shrink-0">{task.id}</div>
-                        <div className="text-[11.5px] text-[var(--text-secondary)] truncate flex-1" title={task.device}>{task.device}</div>
+                        <div className="text-[11.5px] font-bold text-[#14B8A6] font-mono shrink-0">{task.workOrderNumber || task.id.slice(-6).toUpperCase()}</div>
+                        <div className="text-[11.5px] text-[var(--text-secondary)] truncate flex-1" title={task.device?.name || '-'}>{task.device?.name || '-'}</div>
                         <PriorityBadge priority={task.priority} />
                       </div>
                     ))}
@@ -207,7 +222,6 @@ export default function SupervisorTeam() {
 
             <div className="border-t border-[var(--border)] p-3 px-5 flex gap-2">
               <button onClick={() => { setActiveTech(tItem); setShowAssignModal(true) }} className="flex-1 py-1.5 rounded-lg bg-[rgba(20,184,166,0.1)] border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] text-[#14B8A6] text-[12.5px] font-bold hover:bg-[rgba(20,184,166,0.15)] transition-colors">{t('supTeam.assignTask')}</button>
-              <button onClick={() => showToast(t('supTeam.toastCalling', { phone: tItem.phone }), TOAST_COLORS.info)} className="flex-1 py-1.5 rounded-lg bg-transparent border border-[var(--border)] text-[var(--text-secondary)] text-[12.5px] font-bold hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors">{t('supTeam.call')}</button>
             </div>
           </Panel>
         ))}
@@ -228,32 +242,12 @@ export default function SupervisorTeam() {
         }
       >
         <form id="assign-task-form" onSubmit={handleAssignTask} className="flex flex-col gap-4 mt-1">
-          <SelectField label={t('supTeam.selectWorkOrder')} name="wo" defaultValue="" placeholder={t('supTeam.selectWOPlaceholder')} options={[{value: 'WO-2050', label: 'WO-2050 — Ventilator Calibration'}, {value: 'WO-2051', label: 'WO-2051 — Monitor Repair (Urgent)'}]} />
-          <SelectField label={t('common.priority')} name="priority" defaultValue="Medium" placeholder="Select Priority" options={['High', 'Medium', 'Low']} />
+          <SelectField label={t('supTeam.selectWorkOrder')} name="wo" defaultValue="" placeholder={t('supTeam.selectWOPlaceholder')} options={availableWorkOrders.map(wo => ({ value: wo.id, label: `${wo.workOrderNumber || wo.id.slice(-6).toUpperCase()} — ${wo.device?.name || 'Device'} (${wo.device?.department?.name || 'Dept'})` }))} />
+          <SelectField label={t('common.priority')} name="priority" defaultValue="MEDIUM" placeholder="Select Priority" options={[{value: 'HIGH', label: t('priority.high')}, {value: 'MEDIUM', label: t('priority.medium')}, {value: 'LOW', label: t('priority.low')}]} />
           <InputField type="textarea" label={t('supTeam.notesOptional')} name="notes" placeholder={t('supTeam.specialInstructions')} />
         </form>
       </Modal>
 
-      <Modal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title={t('supTeam.addTechModalTitle')}
-        maxWidth="420px"
-        footer={
-          <>
-            <ModalCancelBtn onClick={() => setShowAddModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="add-tech-form" color="#14B8A6">
-              {t('supTeam.addTechnician')}
-            </ModalPrimaryBtn>
-          </>
-        }
-      >
-        <form id="add-tech-form" onSubmit={handleAddTech} className="flex flex-col gap-4 mt-1">
-          <SelectField label={t('supTeam.selectTechnician')} name="techEmail" defaultValue="" placeholder={t('supTeam.selectSystemUser')} options={mockSystemTechs.map(tItem => ({value: tItem.email, label: `${tItem.name} (${tItem.email})`}))} />
-          <InputField label={t('supTeam.phoneNumber')} name="phone" defaultValue="+20 109 999 9999" />
-          <SelectField label={t('supTeam.assignedShift')} name="shift" defaultValue="Morning (07:00-15:00)" placeholder={t('supTeam.selectShift')} options={['Morning (07:00-15:00)', 'Afternoon (15:00-23:00)', 'Night (23:00-07:00)']} />
-        </form>
-      </Modal>
     </div>
   )
 }

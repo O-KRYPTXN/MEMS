@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
@@ -34,30 +35,26 @@ const StatusBadge = ({ status }) => {
 
 export default function DeptRequests() {
   const { t } = useTranslation()
-  const [requests, setRequests] = useState([])
-  const [devices, setDevices] = useState([])
   const [activeTab, setActiveTab] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [formData, setFormData] = useState({ deviceId: '', desc: '' })
-  const [isSubmitting, setIsSubmitting] = useState(false)
   
   const { showToast } = useToastStore()
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const [reportsRes, devicesRes] = await Promise.all([
-          faultReportService.getFaultReports({ limit: 100 }),
-          deviceService.getDevices({ all: 'true' })
-        ])
-        setRequests(reportsRes.items || [])
-        setDevices(devicesRes.data || [])
-      } catch (err) {
-        showToast('Failed to load data', TOAST_COLORS.error)
-      }
+  const { data: initialData } = useQuery({
+    queryKey: ['deptRequestsInitialData'],
+    queryFn: async () => {
+      const [reportsRes, devicesRes] = await Promise.all([
+        faultReportService.getFaultReports({ limit: 100 }),
+        deviceService.getDevices({ all: 'true' })
+      ])
+      return { requests: reportsRes.items || [], devices: devicesRes.data || [] }
     }
-    fetchInitialData()
-  }, [showToast])
+  })
+  
+  const requests = initialData?.requests || []
+  const devices = initialData?.devices || []
 
   const filtered = useMemo(() => {
     return requests.filter(r => {
@@ -73,26 +70,25 @@ export default function DeptRequests() {
     solved: requests.filter(r => r.status === 'SOLVED').length,
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!formData.deviceId || !formData.desc.trim()) return
-
-    setIsSubmitting(true)
-    try {
-      const res = await faultReportService.createFaultReport({
-        deviceId: formData.deviceId,
-        description: formData.desc
-      })
-      
-      setRequests(prev => [res.data, ...prev])
+  const createMutation = useMutation({
+    mutationFn: (data) => faultReportService.createFaultReport(data),
+    onSuccess: () => {
       setShowModal(false)
       setFormData({ deviceId: '', desc: '' })
       showToast(t('deptRequests.toastSubmitSuccess'), TOAST_COLORS.department)
-    } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to submit report', TOAST_COLORS.error)
-    } finally {
-      setIsSubmitting(false)
-    }
+      queryClient.invalidateQueries({ queryKey: ['deptRequestsInitialData'] })
+      queryClient.invalidateQueries({ queryKey: ['faultReportStats'] })
+    },
+    onError: (err) => showToast(err.response?.data?.message || 'Failed to submit report', TOAST_COLORS.error)
+  })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!formData.deviceId || !formData.desc.trim()) return
+    createMutation.mutate({
+      deviceId: formData.deviceId,
+      description: formData.desc
+    })
   }
 
   return (
@@ -104,7 +100,7 @@ export default function DeptRequests() {
         </div>
         <button 
           onClick={() => setShowModal(true)} 
-          className="flex items-center gap-2 px-4 py-2 bg-[#EC4899] hover:bg-[#BE185D] text-white rounded-lg text-[0.8125rem] font-bold transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[#BE185D] hover:bg-[#9D174D] text-white rounded-lg text-[0.8125rem] font-bold transition-colors"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           {t('deptRequests.reportNewBtn')}
@@ -123,13 +119,13 @@ export default function DeptRequests() {
             onClick={() => setActiveTab(tab.id)} 
             className={clsx(
               "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
-              activeTab === tab.id ? "bg-[var(--bg-hover)] text-[#F472B6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+              activeTab === tab.id ? "bg-[var(--bg-hover)] text-pink-800 dark:text-[#F472B6]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
             )}
           >
             {tab.label}
             <span className={clsx(
               "ml-2 px-1.5 py-0.5 rounded-full text-[0.65rem] font-bold", 
-              activeTab === tab.id ? "bg-pink-700/10 text-pink-800 dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
+              activeTab === tab.id ? "bg-pink-900/10 text-pink-900 dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6]" : "bg-[var(--bg-input)] text-[var(--text-muted)]"
             )}>
               {tab.count}
             </span>
@@ -179,8 +175,8 @@ export default function DeptRequests() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="report-problem-form" color="#EC4899" disabled={isSubmitting}>
-              {isSubmitting ? '...' : t('deptRequests.submitReportBtn')}
+            <ModalPrimaryBtn type="submit" form="report-problem-form" color="#BE185D" disabled={createMutation.isPending}>
+              {createMutation.isPending ? '...' : t('deptRequests.submitReportBtn')}
             </ModalPrimaryBtn>
           </>
         }

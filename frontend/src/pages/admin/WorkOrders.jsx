@@ -188,7 +188,7 @@ export default function WorkOrders() {
   const renderPagination = () => (
     <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
       <span className="text-[0.8rem] text-[var(--text-muted)]">
-        {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
+        {filtered.length === 0 ? t('common.noResults') : t('common.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}

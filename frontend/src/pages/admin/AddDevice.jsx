@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import InputField from '../../components/forms/InputField'
@@ -23,44 +23,39 @@ const secHeaderCls = "text-[0.7rem] font-bold text-[var(--text-muted)] uppercase
 export default function AddDevice() {
   const { t } = useTranslation()
   const { register, handleSubmit, formState: { errors } } = useForm()
-  const [isLoading, setIsLoading] = useState(false)
-  const [departments, setDepartments] = useState([])
   const { showToast } = useToastStore()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await departmentsService.getDepartments({ all: 'true' })
-        setDepartments(res.data || [])
-      } catch (err) {
-        showToast('Failed to fetch departments', TOAST_COLORS.error)
-      }
-    }
-    fetchDepartments()
-  }, [showToast])
+  const { data: deptsData } = useQuery({
+    queryKey: ['departments', 'all'],
+    queryFn: () => departmentsService.getDepartments({ all: 'true' })
+  })
+  const departments = deptsData?.data || []
 
-  const onSubmit = async (data) => {
-    setIsLoading(true)
-    try {
-      const payload = {
-        name: data.deviceName,
-        serialNumber: data.serialNumber,
-        category: data.category,
-        departmentId: data.departmentId,
-        purchaseDate: new Date(data.purchaseDate).toISOString(),
-        status: data.status,
-        notes: data.notes
-      }
-      
-      await deviceService.createDevice(payload)
+  const createMutation = useMutation({
+    mutationFn: (payload) => deviceService.createDevice(payload),
+    onSuccess: () => {
       showToast('✓ Device added successfully!', TOAST_COLORS.success)
+      queryClient.invalidateQueries({ queryKey: ['devices'] })
+      queryClient.invalidateQueries({ queryKey: ['deviceStats'] })
       navigate(ROUTES.ADMIN_DEVICES)
-    } catch (err) {
+    },
+    onError: (err) => {
       showToast(err.response?.data?.message || 'Failed to create device', TOAST_COLORS.error)
-    } finally {
-      setIsLoading(false)
     }
+  })
+
+  const onSubmit = (data) => {
+    createMutation.mutate({
+      name: data.deviceName,
+      serialNumber: data.serialNumber,
+      category: data.category,
+      departmentId: data.departmentId,
+      purchaseDate: new Date(data.purchaseDate).toISOString(),
+      status: data.status,
+      notes: data.notes
+    })
   }
 
   return (
@@ -121,10 +116,10 @@ export default function AddDevice() {
             </button>
             <button 
               type="submit" 
-              disabled={isLoading}
+              disabled={createMutation.isPending}
               className="px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-[#3B72F6] hover:bg-[#2563EB] disabled:opacity-70 disabled:cursor-not-allowed transition-colors flex items-center justify-center min-w-[140px]"
             >
-              {isLoading ? (
+              {createMutation.isPending ? (
                 <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
@@ -80,59 +81,42 @@ const getPageNums = (cur, total) => {
 
 export default function PreventiveMaintenance() {
   const { t } = useTranslation()
-  const [tasks, setTasks] = useState([])
-  const [devices, setDevices] = useState([])
-  const [techs, setTechs] = useState([])
-  const [departments, setDepartments] = useState([])
-
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [deptFilter, setDeptFilter] = useState('')
   const [techFilter, setTechFilter] = useState('')
   const [activeTab, setActiveTab] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  
   const [calYear, setCalYear] = useState(TODAY.getFullYear())
   const [calMonth, setCalMonth] = useState(TODAY.getMonth())
   const [showModal, setShowModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedPM, setSelectedPM] = useState(null)
   
-  const [loading, setLoading] = useState(true)
   const { showToast } = useToastStore()
+  const queryClient = useQueryClient()
 
   const { register, handleSubmit, reset, watch, setValue } = useForm()
 
-  const fetchDependencies = async () => {
-    try {
+  const { data: depsData } = useQuery({
+    queryKey: ['pmDependencies'],
+    queryFn: async () => {
       const [devRes, uRes, dRes] = await Promise.all([
         deviceService.getDevices({ limit: 100 }),
         usersService.getUsers({ role: 'TECHNICIAN', limit: 100 }),
         departmentsService.getDepartments()
       ]);
-      setDevices(devRes.items || []);
-      setTechs(uRes.items || []);
-      setDepartments(dRes.data || []);
-    } catch (err) {
-      showToast('Failed to load form dependencies', TOAST_COLORS.error);
+      return { devices: devRes.items || [], techs: uRes.items || [], departments: dRes.data || [] };
     }
-  }
+  });
+  const { devices = [], techs = [], departments = [] } = depsData || {};
 
-  const fetchPMTasks = async () => {
-    setLoading(true)
-    try {
-      const res = await pmTaskService.getPMTasks()
-      setTasks(res.items || [])
-    } catch (err) {
-      showToast('Failed to load PM Tasks', TOAST_COLORS.error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchDependencies()
-    fetchPMTasks()
-  }, [])
+  const { data: pmData, isLoading: loading } = useQuery({
+    queryKey: ['pmTasks'],
+    queryFn: () => pmTaskService.getPMTasks()
+  });
+  const tasks = pmData?.items || [];
 
   const TABS = useMemo(() => [
     { label: t('common.allStatuses'), value: '' },
@@ -219,10 +203,10 @@ export default function PreventiveMaintenance() {
       key: 'scheduledAt', label: t('pm.scheduledDate'), render: (val) => {
         const du = daysUntil(val)
         const duLabel = du === 0
-          ? <span className="text-[#FCD34D] text-[0.72rem]">{t('admin.pm.today', 'Today')}</span>
+          ? <span className="text-amber-600 dark:text-[#FCD34D] text-[0.72rem]">{t('admin.pm.today', 'Today')}</span>
           : du > 0
             ? <span className="text-[var(--text-muted)] text-[0.72rem]">In {du} days</span>
-            : <span className="text-[#F87171] text-[0.72rem]">{Math.abs(du)}d overdue</span>
+            : <span className="text-red-600 dark:text-[#F87171] text-[0.72rem]">{Math.abs(du)}d overdue</span>
         return <div><div>{formatDate(val)}</div><div>{duLabel}</div></div>
       }
     },
@@ -247,7 +231,7 @@ export default function PreventiveMaintenance() {
   const renderPagination = () => (
     <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
       <span className="text-[0.8rem] text-[var(--text-muted)]">
-        {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
+        {filtered.length === 0 ? t('common.noResults') : t('common.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
@@ -262,34 +246,38 @@ export default function PreventiveMaintenance() {
     </div>
   )
 
-  const onFormSubmit = async (data) => {
-    try {
-      await pmTaskService.createPMTask(data)
+  const createMutation = useMutation({
+    mutationFn: (data) => pmTaskService.createPMTask(data),
+    onSuccess: () => {
       showToast('PM Task scheduled successfully!', TOAST_COLORS.success)
       setShowModal(false)
-      fetchPMTasks()
-    } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to schedule PM Task', TOAST_COLORS.error)
-    }
-  }
+      queryClient.invalidateQueries({ queryKey: ['pmTasks'] })
+    },
+    onError: (err) => showToast(err.response?.data?.message || 'Failed to schedule PM Task', TOAST_COLORS.error)
+  })
 
-  const handleGenerateWO = async () => {
+  const onFormSubmit = (data) => createMutation.mutate(data)
+
+  const generateWOMutation = useMutation({
+    mutationFn: (pm) => workOrderService.createWorkOrder({
+      deviceId: pm.deviceId,
+      pmTaskId: pm.id,
+      type: 'PREVENTIVE_MAINTENANCE',
+      priority: 'MEDIUM',
+      description: `Auto-generated from PM Task ${pm.pmNumber}`,
+      assignedToId: pm.assignedToId || undefined
+    }),
+    onSuccess: () => {
+      showToast('Work Order generated successfully!', TOAST_COLORS.success)
+      setShowViewModal(false)
+      queryClient.invalidateQueries({ queryKey: ['pmTasks'] })
+    },
+    onError: (err) => showToast(err.response?.data?.message || 'Failed to generate Work Order', TOAST_COLORS.error)
+  })
+
+  const handleGenerateWO = () => {
     if (!selectedPM) return;
-    try {
-      await workOrderService.createWorkOrder({
-        deviceId: selectedPM.deviceId,
-        pmTaskId: selectedPM.id,
-        type: 'PREVENTIVE_MAINTENANCE',
-        priority: 'MEDIUM',
-        description: `Auto-generated from PM Task ${selectedPM.pmNumber}`,
-        assignedToId: selectedPM.assignedToId || undefined
-      });
-      showToast('Work Order generated successfully!', TOAST_COLORS.success);
-      setShowViewModal(false);
-      fetchPMTasks();
-    } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to generate Work Order', TOAST_COLORS.error);
-    }
+    generateWOMutation.mutate(selectedPM)
   };
 
   const openCreateModal = () => {
@@ -391,7 +379,7 @@ export default function PreventiveMaintenance() {
 
               const du = daysUntil(t.scheduledAt)
               const duLabel = du === 0 ? "Today" : du > 0 ? `In ${du} days` : `${Math.abs(du)}d overdue`
-              const duColor = du === 0 ? '#FCD34D' : du > 0 ? (du <= 3 ? '#FCD34D' : '#4ADE80') : '#F87171'
+              const duClass = du === 0 ? 'text-amber-600 dark:text-[#FCD34D]' : du > 0 ? (du <= 3 ? 'text-amber-600 dark:text-[#FCD34D]' : 'text-green-600 dark:text-[#4ADE80]') : 'text-red-600 dark:text-[#F87171]'
 
               return (
                 <div key={idx} className="flex gap-[12px] p-[12px] px-[18px] border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-hover)] cursor-pointer" onClick={() => { setSelectedPM(t); setShowViewModal(true) }}>
@@ -400,7 +388,7 @@ export default function PreventiveMaintenance() {
                     <div className="text-[0.8125rem] font-semibold text-[var(--text-primary)] truncate">{t.device?.name}</div>
                     <div className="text-[0.75rem] text-[var(--text-muted)] mt-[2px]">{t.device?.department?.name || '-'} · {t.type}</div>
                   </div>
-                  <div className="text-[0.75rem] font-semibold whitespace-nowrap" style={{ color: duColor }}>
+                  <div className={`text-[0.75rem] font-semibold whitespace-nowrap ${duClass}`}>
                     {duLabel}
                   </div>
                 </div>
@@ -470,8 +458,8 @@ export default function PreventiveMaintenance() {
             <>
               <ModalCancelBtn onClick={() => setShowViewModal(false)}>{t('common.close')}</ModalCancelBtn>
               {selectedPM?.status === 'SCHEDULED' && !selectedPM?.workOrder && (
-                <ModalPrimaryBtn color="#3B72F6" onClick={handleGenerateWO}>
-                  Generate Work Order
+                <ModalPrimaryBtn color="#3B72F6" onClick={handleGenerateWO} disabled={generateWOMutation.isPending}>
+                  {generateWOMutation.isPending ? t('common.loading') : 'Generate Work Order'}
                 </ModalPrimaryBtn>
               )}
             </>
@@ -508,8 +496,8 @@ export default function PreventiveMaintenance() {
           footer={
             <>
               <ModalCancelBtn onClick={() => setShowModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-              <ModalPrimaryBtn type="submit" form="pm-form" color="#3B72F6">
-                {t('pm.scheduleTask')}
+              <ModalPrimaryBtn type="submit" form="pm-form" color="#3B72F6" disabled={createMutation.isPending}>
+                {createMutation.isPending ? t('common.loading') : t('pm.scheduleTask')}
               </ModalPrimaryBtn>
             </>
           }

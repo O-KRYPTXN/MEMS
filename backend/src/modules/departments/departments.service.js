@@ -4,6 +4,18 @@ import { formatPaginatedResponse } from '../../utils/pagination.util.js';
 import { AppError } from '../../utils/AppError.js';
 
 /**
+ * Get all active departments for public dropdowns (Signup page)
+ */
+export const getPublicActiveDepartments = async () => {
+  const data = await prisma.department.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  });
+  return { data };
+};
+
+/**
  * Get all departments (supports pagination and fetching all)
  */
 export const getAllDepartments = async (page, limit, filters) => {

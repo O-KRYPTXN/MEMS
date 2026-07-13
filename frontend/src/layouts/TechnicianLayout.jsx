@@ -28,7 +28,7 @@ const navLinkClass = ({ isActive }) =>
   clsx(
     'flex items-center gap-3 px-5 py-2.5 border-s-[3px] text-sm transition-colors relative',
     isActive
-      ? 'border-s-[#F59E0B] bg-[rgba(245,158,11,0.08)] text-[#FCD34D] font-semibold'
+      ? 'border-s-amber-500 bg-amber-500/10 text-amber-700 dark:border-s-[#F59E0B] dark:bg-[rgba(245,158,11,0.08)] dark:text-[#FCD34D] font-semibold'
       : 'border-s-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
   )
 
@@ -50,7 +50,7 @@ const TechSidebar = () => {
         </div>
         <div className="min-w-0">
           <p className="text-[var(--text-primary)] font-bold text-base leading-tight">MEMS</p>
-          <p className="text-[#F59E0B] font-semibold text-xs leading-tight mt-0.5">Technician Portal</p>
+          <p className="text-amber-600 dark:text-[#F59E0B] font-semibold text-xs leading-tight mt-0.5">Technician Portal</p>
         </div>
       </div>
 
@@ -74,7 +74,7 @@ const TechSidebar = () => {
           <NavLink to={ROUTES.TECH_WORK_ORDERS} className={navLinkClass}>
             <Icon d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375" />
             {t('nav.workOrders')}
-            <span className="ms-auto flex items-center justify-center rounded-full bg-[rgba(245,158,11,0.15)] text-[#FCD34D] text-[0.65rem] font-bold px-[7px] py-[1px]">5</span>
+            <span className="ms-auto flex items-center justify-center rounded-full bg-amber-500/15 text-amber-700 dark:bg-[rgba(245,158,11,0.15)] dark:text-[#FCD34D] text-[0.65rem] font-bold px-[7px] py-[1px]">5</span>
           </NavLink>
           <NavLink to={ROUTES.TECH_DEVICES} className={navLinkClass}>
             <Icon d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 3v8.25m0 0l-3-3m3 3l3-3" />
@@ -109,7 +109,7 @@ const TechSidebar = () => {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[var(--text-primary)] text-sm font-bold truncate">{user?.name}</p>
-          <p className="text-[#FCD34D] text-xs font-semibold truncate">Biomedical Technician</p>
+          <p className="text-amber-700 dark:text-[#FCD34D] text-xs font-semibold truncate">Biomedical Technician</p>
         </div>
         <button type="button" onClick={handleLogout} className="flex items-center justify-center w-8 h-8 rounded-md text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors shrink-0" aria-label="Logout">
           <Icon d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -120,6 +120,7 @@ const TechSidebar = () => {
 }
 
 const TechTopbar = ({ title }) => {
+  const { user } = useAuthStore()
   const unreadCount = useNotificationStore((s) => s.unreadCount)
   const [showNotifications, setShowNotifications] = useState(false)
   const containerRef = useRef(null)
@@ -138,8 +139,12 @@ const TechTopbar = ({ title }) => {
   return (
     <header className="sticky top-0 z-40 flex items-center gap-4 h-[60px] px-7 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
       <h1 className="text-base font-bold text-[var(--text-primary)]">{title}</h1>
-      <span className="px-[10px] py-[4px] rounded-full bg-yellow-700/10 border border-yellow-700/30 dark:border-[rgba(245,158,11,0.25)] text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D] text-[0.72rem] font-bold">Morning Shift (07:00-15:00)</span>
       <div className="flex-1" />
+      {user?.department?.name && (
+        <div className="flex items-center justify-center bg-yellow-700/10 border border-yellow-700/30 dark:border-[rgba(245,158,11,0.25)] rounded-full px-[10px] py-[4px] text-[0.72rem] font-bold text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]">
+          {user.department.name}
+        </div>
+      )}
       <ThemeToggle />
       <LanguageSwitcher />
       <div className="relative" ref={containerRef}>

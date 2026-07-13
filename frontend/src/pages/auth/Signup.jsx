@@ -3,10 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAuthStore } from '../../store/authStore';
 
-const DEPARTMENTS = [
-  'Intensive Care Unit', 'Emergency Room', 'Surgery', 'Radiology', 'Cardiology',
-  'Laboratory', 'General Ward', 'Central Storeroom'
-];
+import { useQuery } from '@tanstack/react-query';
+import { getDepartmentOptions } from '../../api/departmentsService';
 
 const ROLES = [
   { id: 'Supervisor', label: 'Supervisor', icon: '🏥' },
@@ -47,6 +45,13 @@ export default function Signup() {
   const { signup, isLoading, error: storeError, clearError } = useAuthStore();
   const [localError, setLocalError] = useState(null);
 
+  const { data: deptResponse, isLoading: isLoadingDepts } = useQuery({
+    queryKey: ['departmentOptions'],
+    queryFn: getDepartmentOptions,
+  });
+
+  const activeDepartments = deptResponse?.data || [];
+
   // We use localError for step 1 validation, and storeError for API errors
   const error = localError || storeError;
 
@@ -70,7 +75,7 @@ export default function Signup() {
       setError('Please select a role.');
       return false;
     }
-    if (!formData.department) {
+    if (formData.role === 'Department Supervisor' && !formData.department) {
       setError('Please select a department.');
       return false;
     }
@@ -203,13 +208,15 @@ export default function Signup() {
                 </div>
               ))}
             </div>
-            <div className="mb-8">
-              <label className={labelCls}>Primary Department</label>
-              <select name="department" value={formData.department} onChange={handleChange} className={clsx(inputCls, "pl-[13px]")}>
-                <option value="">Select Department...</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
+            {formData.role === 'Department Supervisor' && (
+              <div className="mb-8">
+                <label className={labelCls}>Primary Department</label>
+                <select name="department" value={formData.department} onChange={handleChange} className={clsx(inputCls, "pl-[13px]")} disabled={isLoadingDepts}>
+                  <option value="">{isLoadingDepts ? 'Loading departments...' : 'Select Department...'}</option>
+                  {activeDepartments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+            )}
             <button onClick={handleNextStep1} className="w-full h-[42px] rounded-lg bg-[#3B82F6] hover:bg-[#2563EB] text-white text-[13px] font-bold tracking-wide transition-colors flex items-center justify-center gap-2">
               Next — Personal Info
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>

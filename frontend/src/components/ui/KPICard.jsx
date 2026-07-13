@@ -1,10 +1,10 @@
 import clsx from 'clsx'
 
 const ICON_VARIANTS = {
-  blue: 'bg-[rgba(59,114,246,0.15)] text-[#5E8FFF]',
-  red: 'bg-[rgba(239,68,68,0.15)] text-[#F87171]',
-  orange: 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]',
-  green: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80]',
+  blue: 'bg-blue-600/15 text-blue-700 dark:bg-[rgba(59,114,246,0.15)] dark:text-[#5E8FFF]',
+  red: 'bg-red-600/15 text-red-700 dark:bg-[rgba(239,68,68,0.15)] dark:text-[#F87171]',
+  orange: 'bg-amber-600/15 text-amber-700 dark:bg-[rgba(245,158,11,0.15)] dark:text-[#FCD34D]',
+  green: 'bg-green-600/15 text-green-700 dark:bg-[rgba(34,197,94,0.15)] dark:text-[#4ADE80]',
 }
 
 const TREND_VARIANTS = {

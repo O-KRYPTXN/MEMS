@@ -117,12 +117,29 @@ export const createRegistrationRequest = async (data) => {
     throw new AppError('A registration request for this email is already pending review', 400);
   }
 
-  const dbDepartment = await prisma.department.findUnique({
-    where: { name: department },
-  });
+  const bmeRoles = ['TECHNICIAN', 'SUPERVISOR', 'STORE'];
+  let dbDepartment = null;
 
-  if (!dbDepartment && dbRole !== 'ADMIN') {
-    throw new AppError('Invalid department specified', 400);
+  if (bmeRoles.includes(dbRole)) {
+    dbDepartment = await prisma.department.findFirst({
+      where: { name: 'Biomedical Engineering' },
+    });
+    
+    if (!dbDepartment) {
+      throw new AppError('Server Error: Biomedical Engineering department seed data is missing.', 500);
+    }
+  } else if (dbRole === 'DEPARTMENT') {
+    if (!department) {
+      throw new AppError('Department is required for clinical staff', 400);
+    }
+    
+    dbDepartment = await prisma.department.findUnique({
+      where: { id: department },
+    });
+
+    if (!dbDepartment || !dbDepartment.isActive) {
+      throw new AppError('Invalid or inactive department specified', 400);
+    }
   }
 
   const passwordHash = await bcrypt.hash(password, 10);

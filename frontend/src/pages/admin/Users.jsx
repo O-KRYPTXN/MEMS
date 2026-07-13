@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import InputField from '../../components/forms/InputField';
 import SelectField from '../../components/forms/SelectField';
@@ -82,10 +83,7 @@ export default function Users() {
   const currentUser = useAuthStore(state => state.user);
   const showToast = useToastStore(state => state.showToast);
   
-  // Data State
-  const [usersData, setUsersData] = useState({ items: [], meta: { totalItems: 0, totalPages: 1 } });
-  const [pendingData, setPendingData] = useState({ items: [], meta: { totalItems: 0, totalPages: 1 } });
-  const [departments, setDepartments] = useState([]);
+  const queryClient = useQueryClient();
   
   // Filters & Pagination
   const [search, setSearch] = useState('');
@@ -96,7 +94,6 @@ export default function Users() {
   const [currentPage, setCurrentPage] = useState(1);
   
   // UI State
-  const [isLoading, setIsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSuspendModal, setShowSuspendModal] = useState(false);
@@ -115,156 +112,98 @@ export default function Users() {
     }, 500);
     return () => clearTimeout(handler);
   }, [search]);
-
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [roleFilter, deptFilter, activeTab]);
-
-  // Fetch Departments for Dropdowns
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await getDepartments({ all: true });
-        setDepartments(res.data || []);
-      } catch (err) {
-        console.error('Failed to load departments', err);
-      }
-    };
-    fetchDepartments();
-  }, []);
+  // Fetch Departments
+  const { data: deptsData } = useQuery({
+    queryKey: ['departments', 'all'],
+    queryFn: () => getDepartments({ all: true })
+  });
+  const departments = deptsData?.data || [];
 
   // Fetch Users
-  const fetchUsers = useCallback(async () => {
-    if (activeTab === 'pending') return;
-    setIsLoading(true);
-    try {
-      const filters = {
-        page: currentPage,
-        limit: ROWS_PER_PAGE,
-        search: debouncedSearch,
-        departmentId: deptFilter,
-      };
-      
-      if (activeTab !== 'all') {
-        filters.role = activeTab;
-      } else if (roleFilter) {
-        filters.role = roleFilter;
-      }
+  const { data: usersResponse, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['users', { page: currentPage, search: debouncedSearch, departmentId: deptFilter, role: activeTab !== 'all' ? activeTab : roleFilter }],
+    queryFn: () => getUsers({
+      page: currentPage,
+      limit: ROWS_PER_PAGE,
+      search: debouncedSearch || undefined,
+      departmentId: deptFilter || undefined,
+      role: activeTab !== 'all' ? activeTab : (roleFilter || undefined),
+    }),
+    enabled: activeTab !== 'pending',
+  });
+  const usersData = usersResponse || { items: [], meta: { totalItems: 0, totalPages: 1 } };
 
-      const res = await getUsers(filters);
-      setUsersData(res);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, debouncedSearch, deptFilter, roleFilter, activeTab]);
+  // Fetch Pending Requests (always fetched to get badge count)
+  const { data: pendingResponse, isLoading: isLoadingPending } = useQuery({
+    queryKey: ['pendingRequests', { page: activeTab === 'pending' ? currentPage : 1, search: debouncedSearch }],
+    queryFn: () => getRegistrationRequests({
+      page: activeTab === 'pending' ? currentPage : 1,
+      limit: activeTab === 'pending' ? ROWS_PER_PAGE : 1,
+      status: 'PENDING',
+      search: debouncedSearch || undefined,
+    }),
+  });
+  const pendingData = pendingResponse || { items: [], meta: { totalItems: 0, totalPages: 1 } };
 
-  // Fetch Pending Requests
-  const fetchPendingRequests = useCallback(async () => {
-    if (activeTab !== 'pending') return;
-    setIsLoading(true);
-    try {
-      const filters = {
-        page: currentPage,
-        limit: ROWS_PER_PAGE,
-        status: 'PENDING',
-        search: debouncedSearch,
-      };
-      const res = await getRegistrationRequests(filters);
-      setPendingData(res);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, debouncedSearch, activeTab]);
+  const isLoading = activeTab === 'pending' ? isLoadingPending : isLoadingUsers;
 
-  useEffect(() => {
-    if (activeTab === 'pending') {
-      fetchPendingRequests();
-    } else {
-      fetchUsers();
-    }
-  }, [activeTab, fetchUsers, fetchPendingRequests]);
-
-  // Background fetch to keep the pending count accurate when searching from other tabs
-  useEffect(() => {
-    if (activeTab !== 'pending') {
-      getRegistrationRequests({ page: 1, limit: 1, status: 'PENDING', search: debouncedSearch })
-        .then(res => {
-          setPendingData(prev => ({
-            ...prev,
-            meta: { ...prev.meta, totalItems: res.meta.totalItems }
-          }));
-        })
-        .catch(console.error);
-    }
-  }, [debouncedSearch, activeTab]);
-
-  const handleApprove = async (req) => {
-    try {
-      await approveRegistration(req.id);
+  // Mutations
+  const approveMutation = useMutation({
+    mutationFn: (id) => approveRegistration(id),
+    onSuccess: () => {
       showToast('Registration request approved', TOAST_COLORS.success);
-      fetchPendingRequests();
-    } catch (err) {
-      console.error(err);
-      showToast(err.response?.data?.message || 'Approval failed', TOAST_COLORS.error);
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ['pendingRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (err) => showToast(err.response?.data?.message || 'Approval failed', TOAST_COLORS.error)
+  });
+  const handleApprove = (req) => approveMutation.mutate(req.id);
 
-  const handleDeny = async (req) => {
-    try {
-      await rejectRegistration(req.id, "Admin denied your request");
+  const denyMutation = useMutation({
+    mutationFn: (id) => rejectRegistration(id, "Admin denied your request"),
+    onSuccess: () => {
       showToast('Registration request denied', TOAST_COLORS.error);
-      fetchPendingRequests();
-    } catch (err) {
-      console.error(err);
-      showToast('Denial failed', TOAST_COLORS.error);
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ['pendingRequests'] });
+    },
+    onError: () => showToast('Denial failed', TOAST_COLORS.error)
+  });
+  const handleDeny = (req) => denyMutation.mutate(req.id);
 
-  const onAddSubmit = async (data) => {
-    try {
-      await createUser(data);
+  const createMutation = useMutation({
+    mutationFn: (data) => createUser(data),
+    onSuccess: () => {
       setShowAddModal(false);
       reset();
       showToast('User created successfully', TOAST_COLORS.success);
-      fetchUsers();
-    } catch (err) {
-      console.error(err);
-      showToast(err.response?.data?.message || 'Failed to create user', TOAST_COLORS.error);
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (err) => showToast(err.response?.data?.message || 'Failed to create user', TOAST_COLORS.error)
+  });
+  const onAddSubmit = (data) => createMutation.mutate(data);
 
-  const executeEdit = async (data) => {
-    try {
-      const payload = {};
-      if (data.name) payload.name = data.name;
-      if (data.role) payload.role = data.role;
-      if (data.department) payload.departmentId = data.department;
-
-      await updateUser(selectedUser.id, payload);
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }) => updateUser(id, payload),
+    onSuccess: () => {
       setShowEditModal(false);
       setShowPromotionModal(false);
       setSelectedUser(null);
       setPendingEditData(null);
       showToast('User updated successfully', TOAST_COLORS.success);
-      fetchUsers();
-    } catch (err) {
-      console.error(err);
-      showToast(err.response?.data?.message || 'Failed to update user', TOAST_COLORS.error);
-    }
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (err) => showToast(err.response?.data?.message || 'Failed to update user', TOAST_COLORS.error)
+  });
+
+  const executeEdit = (data) => {
+    const payload = {};
+    if (data.name) payload.name = data.name;
+    if (data.role) payload.role = data.role;
+    if (data.department) payload.departmentId = data.department;
+    updateMutation.mutate({ id: selectedUser.id, payload });
   };
 
   const onEditSubmit = (data) => {
-    // Check if we are promoting another user to ADMIN
-    if (
-      data.role === 'ADMIN' && 
-      selectedUser?.role !== 'ADMIN' && 
-      selectedUser?.id !== currentUser?.id
-    ) {
+    if (data.role === 'ADMIN' && selectedUser?.role !== 'ADMIN' && selectedUser?.id !== currentUser?.id) {
       setPendingEditData(data);
       setShowPromotionModal(true);
     } else {
@@ -272,20 +211,19 @@ export default function Users() {
     }
   };
 
-  const handleSuspendToggle = async () => {
-    if (!selectedUser) return;
-    try {
-      await updateUserStatus(selectedUser.id, { isSuspended: !selectedUser.isSuspended });
-      const actionStr = selectedUser.isSuspended ? 'unsuspended' : 'suspended';
-      showToast(`User successfully ${actionStr}`, selectedUser.isSuspended ? TOAST_COLORS.success : TOAST_COLORS.warning);
+  const statusMutation = useMutation({
+    mutationFn: ({ id, isSuspended }) => updateUserStatus(id, { isSuspended }),
+    onSuccess: (_, variables) => {
+      const actionStr = variables.isSuspended ? 'suspended' : 'unsuspended';
+      showToast(`User successfully ${actionStr}`, variables.isSuspended ? TOAST_COLORS.warning : TOAST_COLORS.success);
       setShowSuspendModal(false);
       setSelectedUser(null);
-      fetchUsers();
-    } catch (err) {
-      console.error(err);
-      showToast(err.response?.data?.message || 'Failed to change status', TOAST_COLORS.error);
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (err) => showToast(err.response?.data?.message || 'Failed to change status', TOAST_COLORS.error)
+  });
+  const handleSuspendToggle = () => statusMutation.mutate({ id: selectedUser.id, isSuspended: !selectedUser.isSuspended });
+
 
   const openAddModal = () => {
     reset({ name: '', email: '', role: '', department: '' });
@@ -471,8 +409,8 @@ export default function Users() {
         footer={
           <>
             <ModalCancelBtn onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="user-form" color="#3B72F6">
-              {t('common.save')}
+            <ModalPrimaryBtn type="submit" form="user-form" color="#3B72F6" disabled={createMutation.isPending || updateMutation.isPending}>
+              {createMutation.isPending || updateMutation.isPending ? t('common.loading') : t('common.save')}
             </ModalPrimaryBtn>
           </>
         }
@@ -520,8 +458,8 @@ export default function Users() {
         footer={
           <>
             <ModalCancelBtn onClick={() => { setShowPromotionModal(false); setPendingEditData(null); }}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn onClick={() => executeEdit(pendingEditData)} color="#3B72F6">
-              {t('users.promoteBtn', 'Yes, Promote')}
+            <ModalPrimaryBtn onClick={() => executeEdit(pendingEditData)} color="#3B72F6" disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? t('common.loading') : t('users.promoteBtn', 'Yes, Promote')}
             </ModalPrimaryBtn>
           </>
         }
@@ -540,8 +478,8 @@ export default function Users() {
         footer={
           <>
             <ModalCancelBtn onClick={() => { setShowSuspendModal(false); setSelectedUser(null); }}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn onClick={handleSuspendToggle} color={selectedUser?.isSuspended ? '#10B981' : '#EF4444'}>
-              {selectedUser?.isSuspended ? t('users.confirmUnsuspend') : t('users.confirmSuspend')}
+            <ModalPrimaryBtn onClick={handleSuspendToggle} color={selectedUser?.isSuspended ? '#10B981' : '#EF4444'} disabled={statusMutation.isPending}>
+              {statusMutation.isPending ? t('common.loading') : (selectedUser?.isSuspended ? t('users.confirmUnsuspend') : t('users.confirmSuspend'))}
             </ModalPrimaryBtn>
           </>
         }

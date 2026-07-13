@@ -55,7 +55,8 @@
     "userManual": "User Manual",
     "serviceManual": "Service Manual",
     "toastDownloadStarted": "Download started: {{title}}",
-    "download": "Download"
+    "download": "Download",
+    "showingResults": "Showing {{start}}–{{end}} of {{total}} results"
   },
   "nav": {
     "dashboard": "Dashboard",

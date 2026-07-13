@@ -55,7 +55,8 @@
     "userManual": "دليل المستخدم",
     "serviceManual": "دليل الصيانة",
     "toastDownloadStarted": "بدأ تحميل: {{title}}",
-    "download": "تنزيل"
+    "download": "تنزيل",
+    "showingResults": "عرض {{start}}–{{end}} من {{total}} نتيجة"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

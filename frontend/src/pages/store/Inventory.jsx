@@ -20,9 +20,9 @@ function StockBadge({ status }) {
     'Out of Stock': t('storeInventory.statusOutOfStock', 'Out of Stock')
   }
   const colorMap = {
-    'In Stock': 'bg-green-700/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
-    'Low Stock': 'bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
-    'Out of Stock': 'bg-red-700/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
+    'In Stock': 'bg-green-600/10 text-green-800 dark:bg-[rgba(34,197,94,0.12)] dark:text-[#4ADE80]',
+    'Low Stock': 'bg-yellow-600/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]',
+    'Out of Stock': 'bg-red-600/10 text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171]'
   }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold whitespace-nowrap ${colorMap[status] || ''}`}>{labelMap[status] || status}</span>
 }
@@ -47,13 +47,13 @@ export default function StoreInventory() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  
+
   const [showAddModal, setShowAddModal] = useState(false)
   const [showRestockModal, setShowRestockModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingPartId, setEditingPartId] = useState(null)
   const [selectedPart, setSelectedPart] = useState(null)
-  
+
   const [restockQty, setRestockQty] = useState(1)
   const [addFormData, setAddFormData] = useState({ name: '', category: 'Sensors', qty: 0, minLevel: 1 })
   const [editFormData, setEditFormData] = useState({ name: '', category: 'Sensors', qty: 0, minLevel: 1 })
@@ -97,9 +97,9 @@ export default function StoreInventory() {
   const handleRestock = (e) => {
     e.preventDefault()
     if (!selectedPart) return
-    restockMutation.mutate({ 
-      id: selectedPart.id, 
-      qty: selectedPart.qty + parseInt(restockQty, 10) 
+    restockMutation.mutate({
+      id: selectedPart.id,
+      qty: selectedPart.qty + parseInt(restockQty, 10)
     })
   }
 
@@ -149,10 +149,10 @@ export default function StoreInventory() {
   }
 
   const kpis = [
-    { label: t('storeInventory.totalItemsTracked', 'Total Items Tracked'), value: kpiTotal, bg: 'bg-[rgba(139,92,246,0.15)] text-[#A78BFA]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/> },
-    { label: t('storeInventory.lowStockAlerts', 'Low Stock Alerts'), value: kpiLow, bg: 'bg-[rgba(245,158,11,0.15)] text-[#FCD34D]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.625h.01M12 4.5l-9 15h18l-9-15z"/> },
-    { label: t('storeInventory.outOfStock', 'Out of Stock'), value: kpiOut, bg: 'bg-[rgba(239,68,68,0.15)] text-[#F87171]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.625h.01M12 4.5l-9 15h18l-9-15z"/> },
-    { label: t('storeInventory.categoriesTracked', 'Categories Tracked'), value: kpiCats, bg: 'bg-[rgba(34,197,94,0.15)] text-[#4ADE80]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/> }
+    { label: t('storeInventory.totalItemsTracked', 'Total Items Tracked'), value: kpiTotal, bg: 'bg-purple-600/10 text-purple-700 dark:bg-[rgba(139,92,246,0.15)] dark:text-[#A78BFA]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /> },
+    { label: t('storeInventory.lowStockAlerts', 'Low Stock Alerts'), value: kpiLow, bg: 'bg-amber-600/10 text-amber-700 dark:bg-[rgba(245,158,11,0.15)] dark:text-[#FCD34D]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.625h.01M12 4.5l-9 15h18l-9-15z" /> },
+    { label: t('storeInventory.outOfStock', 'Out of Stock'), value: kpiOut, bg: 'bg-red-600/10 text-red-700 dark:bg-[rgba(239,68,68,0.15)] dark:text-[#F87171]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.625h.01M12 4.5l-9 15h18l-9-15z" /> },
+    { label: t('storeInventory.categoriesTracked', 'Categories Tracked'), value: kpiCats, bg: 'bg-green-600/10 text-green-700 dark:bg-[rgba(34,197,94,0.15)] dark:text-[#4ADE80]', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /> }
   ]
 
   const tabs = ['All', 'Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']
@@ -164,8 +164,8 @@ export default function StoreInventory() {
           <h1 className="text-[1.25rem] font-bold text-[var(--text-primary)]">{t('storeInventory.pageTitle', 'Inventory Catalog')}</h1>
           <p className="mt-[3px] text-[0.8125rem] text-[var(--text-muted)]">{t('storeInventory.pageSubtitle', 'Manage central store inventory levels, track stock, and process new arrivals.')}</p>
         </div>
-        <button 
-          onClick={() => setShowAddModal(true)} 
+        <button
+          onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg text-[0.8125rem] font-bold transition-colors"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
@@ -191,11 +191,11 @@ export default function StoreInventory() {
         {tabs.map(tab => {
           const id = tab.toLowerCase()
           return (
-            <button 
-              key={id} 
-              onClick={() => setActiveTab(id)} 
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
               className={clsx(
-                "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", 
+                "px-4 py-2 rounded-[8px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap",
                 activeTab === id ? "bg-[var(--bg-hover)] text-[#D8B4FE]" : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               )}
             >
@@ -209,17 +209,17 @@ export default function StoreInventory() {
         <div className="bg-[var(--bg-card)] border-b border-[var(--border)] p-3 px-4 flex flex-wrap gap-3 items-center">
           <div className="flex-1 max-w-sm relative">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[15px] h-[15px] text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" /></svg>
-            <input 
-              type="text" 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
               placeholder={t('storeInventory.searchPlaceholder', 'Search part code or name...')}
               className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] pl-9 pr-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
             />
           </div>
-          <select 
-            value={statusFilter} 
-            onChange={e => setStatusFilter(e.target.value)} 
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
             className="bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-secondary)] px-3 py-1.5 rounded-lg text-[0.8125rem] outline-none focus:border-[#8B5CF6] transition-colors h-[34px]"
           >
             <option value="">{t('common.allStatuses', 'All Statuses')}</option>
@@ -241,7 +241,7 @@ export default function StoreInventory() {
             <tbody className="divide-y divide-[var(--border)]">
               {isLoading ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('common.loading')}</td></tr> : paginatedParts.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">{t('storeInventory.noPartsFound', 'No parts found.')}</td></tr> : paginatedParts.map(p => {
                 const status = getStatus(p.qty, p.minLevel)
-                const qtyColor = p.qty === 0 ? "text-[#F87171]" : p.qty <= p.minLevel ? "text-[#FCD34D]" : "text-[var(--text-primary)]"
+                const qtyColor = p.qty === 0 ? "text-red-700 dark:text-[#F87171]" : p.qty <= p.minLevel ? "text-amber-700 dark:text-[#FCD34D]" : "text-[var(--text-primary)]"
                 return (
                   <tr key={p.id} className="hover:bg-[rgba(255,255,255,0.02)]">
                     <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.partCode}</td>
@@ -251,8 +251,8 @@ export default function StoreInventory() {
                     <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.minLevel}</td>
                     <td className="p-4"><StockBadge status={status} /></td>
                     <td className="p-4 flex items-center gap-2">
-                      <button 
-                        onClick={() => { setSelectedPart(p); setShowRestockModal(true) }} 
+                      <button
+                        onClick={() => { setSelectedPart(p); setShowRestockModal(true) }}
                         className="px-3 py-1 bg-transparent border border-[var(--border)] rounded text-[var(--text-secondary)] text-[12px] font-bold hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors"
                       >
                         {t('storeInventory.restockBtn', 'Restock')}
@@ -328,12 +328,12 @@ export default function StoreInventory() {
         }
       >
         <form id="add-part-form" onSubmit={handleAddPart} className="grid grid-cols-2 gap-4">
-          <SelectField label={t('storeInventory.categoryInput', 'Category')} value={addFormData.category} onChange={e => setAddFormData(f => ({...f, category: e.target.value}))} options={['Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']} required />
+          <SelectField label={t('storeInventory.categoryInput', 'Category')} value={addFormData.category} onChange={e => setAddFormData(f => ({ ...f, category: e.target.value }))} options={['Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']} required />
           <div className="col-span-2">
-            <InputField label={t('storeInventory.partNameInput', 'Part Name')} value={addFormData.name} onChange={e => setAddFormData(f => ({...f, name: e.target.value}))} placeholder={t('storeInventory.partNamePlaceholder', 'Full descriptive name')} required />
+            <InputField label={t('storeInventory.partNameInput', 'Part Name')} value={addFormData.name} onChange={e => setAddFormData(f => ({ ...f, name: e.target.value }))} placeholder={t('storeInventory.partNamePlaceholder', 'Full descriptive name')} required />
           </div>
-          <InputField type="number" label={t('storeInventory.initialStock', 'Initial Stock')} min="0" value={addFormData.qty} onChange={e => setAddFormData(f => ({...f, qty: e.target.value}))} required />
-          <InputField type="number" label={t('storeInventory.minimumLevel', 'Minimum Level')} min="1" value={addFormData.minLevel} onChange={e => setAddFormData(f => ({...f, minLevel: e.target.value}))} required />
+          <InputField type="number" label={t('storeInventory.initialStock', 'Initial Stock')} min="0" value={addFormData.qty} onChange={e => setAddFormData(f => ({ ...f, qty: e.target.value }))} required />
+          <InputField type="number" label={t('storeInventory.minimumLevel', 'Minimum Level')} min="1" value={addFormData.minLevel} onChange={e => setAddFormData(f => ({ ...f, minLevel: e.target.value }))} required />
         </form>
       </Modal>
 
@@ -352,12 +352,12 @@ export default function StoreInventory() {
         }
       >
         <form id="edit-part-form" onSubmit={handleEditPart} className="grid grid-cols-2 gap-4">
-          <SelectField label={t('storeInventory.categoryInput', 'Category')} value={editFormData.category} onChange={e => setEditFormData(f => ({...f, category: e.target.value}))} options={['Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']} required />
+          <SelectField label={t('storeInventory.categoryInput', 'Category')} value={editFormData.category} onChange={e => setEditFormData(f => ({ ...f, category: e.target.value }))} options={['Sensors', 'Cables', 'Consumables', 'Accessories', 'Power']} required />
           <div className="col-span-2">
-            <InputField label={t('storeInventory.partNameInput', 'Part Name')} value={editFormData.name} onChange={e => setEditFormData(f => ({...f, name: e.target.value}))} placeholder={t('storeInventory.partNamePlaceholder', 'Full descriptive name')} required />
+            <InputField label={t('storeInventory.partNameInput', 'Part Name')} value={editFormData.name} onChange={e => setEditFormData(f => ({ ...f, name: e.target.value }))} placeholder={t('storeInventory.partNamePlaceholder', 'Full descriptive name')} required />
           </div>
-          <InputField type="number" label={t('storeInventory.stockQty', 'Stock Qty')} min="0" value={editFormData.qty} onChange={e => setEditFormData(f => ({...f, qty: e.target.value}))} required />
-          <InputField type="number" label={t('storeInventory.minimumLevel', 'Minimum Level')} min="1" value={editFormData.minLevel} onChange={e => setEditFormData(f => ({...f, minLevel: e.target.value}))} required />
+          <InputField type="number" label={t('storeInventory.stockQty', 'Stock Qty')} min="0" value={editFormData.qty} onChange={e => setEditFormData(f => ({ ...f, qty: e.target.value }))} required />
+          <InputField type="number" label={t('storeInventory.minimumLevel', 'Minimum Level')} min="1" value={editFormData.minLevel} onChange={e => setEditFormData(f => ({ ...f, minLevel: e.target.value }))} required />
         </form>
       </Modal>
     </div>

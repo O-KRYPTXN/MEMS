@@ -146,6 +146,11 @@ export default function Profile() {
                 <div className="sm:col-span-2">
                   <InputField label={t('profile.role')} value={readableRole} disabled />
                 </div>
+                {user?.department?.name && (
+                  <div className="sm:col-span-2">
+                    <InputField label={t('profile.department', 'Department')} value={user.department.name} disabled />
+                  </div>
+                )}
                 <div className="sm:col-span-2 mt-2">
                   <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-[#3B72F6] hover:bg-[#2563EB] text-white rounded-lg text-[13px] font-bold transition-colors min-w-[200px]">
                     {t('profile.saveChanges')}

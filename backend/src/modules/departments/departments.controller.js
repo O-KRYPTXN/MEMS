@@ -7,6 +7,16 @@ const formatZodErrors = (error) => {
 };
 
 /**
+ * @desc    Get public active departments (for Signup)
+ * @route   GET /api/departments/options
+ * @access  Public
+ */
+export const getPublicDepartments = catchAsync(async (req, res) => {
+  const result = await departmentService.getPublicActiveDepartments();
+  res.status(200).json(result);
+});
+
+/**
  * @desc    Get all departments
  * @route   GET /api/departments
  * @access  Private (All roles can view for dropdowns)

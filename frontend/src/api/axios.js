@@ -15,9 +15,8 @@ api.interceptors.response.use(
   (error) => {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     if (error.response && error.response.status === 401) {
-      // If the backend returns 401 Unauthorized, the token is likely invalid or expired
-      // In the future, we could trigger a logout event here if needed
-      console.warn('API returned 401 Unauthorized');
+      // If the backend returns 401 Unauthorized, the token is invalid or expired
+      // The authStore checkAuth will catch this and gracefully redirect to login.
     }
     return Promise.reject(error);
   }

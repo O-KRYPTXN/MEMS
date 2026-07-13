@@ -13,7 +13,7 @@ export const getDevices = catchAsync(async (req, res) => {
     all: req.query.all
   };
 
-  if (req.user.role === 'DEPARTMENT' || req.user.role === 'SUPERVISOR') {
+  if (req.user.role === 'DEPARTMENT') {
     filters.departmentId = req.user.departmentId;
   }
 
@@ -24,7 +24,7 @@ export const getDevices = catchAsync(async (req, res) => {
 
 export const getDeviceStats = catchAsync(async (req, res) => {
   let departmentId = null;
-  if (req.user.role === 'DEPARTMENT' || req.user.role === 'SUPERVISOR') {
+  if (req.user.role === 'DEPARTMENT') {
     departmentId = req.user.departmentId;
   }
 

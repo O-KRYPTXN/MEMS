@@ -163,7 +163,7 @@ export default function TechnicianInventory() {
         {[{id:'all', label:t('techInventory.allStatus')}, {id:'In Stock', label:t('common.statusInStock', 'In Stock')}, {id:'Low Stock', label:t('common.statusLowStock', 'Low Stock')}, {id:'Out of Stock', label:t('common.statusOutStock', 'Out of Stock')}].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={clsx("px-[18px] py-[7px] rounded-[7px] text-[0.8125rem] font-semibold transition-colors flex items-center whitespace-nowrap", activeTab === tab.id ? "bg-yellow-700/10 text-yellow-800 dark:bg-[rgba(245,158,11,0.12)] dark:text-[#FCD34D]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")}>
             {tab.label}
-            <span className={clsx("ms-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-[rgba(245,158,11,0.2)] text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
+            <span className={clsx("ms-[5px] px-[6px] py-[1px] rounded-full text-[0.65rem] font-bold", activeTab === tab.id ? "bg-amber-500/20 text-amber-700 dark:bg-[rgba(245,158,11,0.2)] dark:text-[#F59E0B]" : "bg-[var(--bg-hover)] text-[var(--text-muted)]")}>{counts[tab.id]}</span>
           </button>
         ))}
       </div>
@@ -201,7 +201,7 @@ export default function TechnicianInventory() {
                   <td className="p-4 text-[13px] font-medium text-[var(--text-primary)] whitespace-nowrap">{p.partCode}</td>
                   <td className="p-4 text-[13px] text-[var(--text-secondary)] font-semibold">{p.name}</td>
                   <td className="p-4 text-[13px] text-[var(--text-secondary)]">{p.category}</td>
-                  <td className={clsx("p-4 text-[13.5px] font-bold", p.qty === 0 ? "text-[#F87171]" : p.qty <= p.minLevel ? "text-[#FCD34D]" : "text-[var(--text-primary)]")}>{p.qty}</td>
+                  <td className={clsx("p-4 text-[13.5px] font-bold", p.qty === 0 ? "text-red-600 dark:text-[#F87171]" : p.qty <= p.minLevel ? "text-amber-600 dark:text-[#FCD34D]" : "text-[var(--text-primary)]")}>{p.qty}</td>
                   <td className="p-4"><StockBadge status={status} /></td>
                   <td className="p-4">
                     <button onClick={() => { setSelectedPart(p); setShowReqModal(true) }} className="px-2.5 py-1 text-[11px] font-bold bg-transparent border border-[var(--border)] text-[var(--text-secondary)] rounded-md hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors">{t('techInventory.requestPartBtn')}</button>

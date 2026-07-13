@@ -54,7 +54,7 @@ const navLinkClass = ({ isActive }) =>
   clsx(
     'flex items-center gap-3 px-5 py-2.5 border-s-[3px] text-sm transition-colors relative',
     isActive
-      ? 'border-s-[#8B5CF6] bg-[rgba(139,92,246,0.08)] text-[#D8B4FE] font-semibold'
+      ? 'border-s-[#8B5CF6] bg-purple-600/10 text-purple-700 dark:bg-[rgba(139,92,246,0.08)] dark:text-[#D8B4FE] font-semibold'
       : 'border-s-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
   )
 
@@ -121,6 +121,7 @@ const StoreTopbar = ({ title }) => {
   const [showNotifications, setShowNotifications] = useState(false)
   const containerRef = useRef(null)
   const dateString = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }), [])
+  const { user } = useAuthStore()
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -136,6 +137,11 @@ const StoreTopbar = ({ title }) => {
     <header className="sticky top-0 z-40 flex items-center gap-4 h-[60px] px-7 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
       <h1 className="text-base font-bold text-[var(--text-primary)]">{title}</h1>
       <div className="flex-1" />
+      {user?.department && (
+        <span className="bg-purple-600/10 text-purple-700 dark:bg-[rgba(168,85,247,0.12)] dark:text-[#C084FC] px-2.5 py-1 rounded-md text-[0.7rem] font-bold tracking-wide border border-purple-500/20 dark:border-[rgba(168,85,247,0.25)]">
+          {user.department.name}
+        </span>
+      )}
       <ThemeToggle />
       <LanguageSwitcher />
       <div className="relative" ref={containerRef}>

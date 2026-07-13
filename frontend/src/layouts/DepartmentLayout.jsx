@@ -26,7 +26,7 @@ const navLinkClass = ({ isActive }) =>
   clsx(
     'flex items-center gap-3 px-5 py-2.5 border-s-[3px] text-sm transition-colors relative',
     isActive
-      ? 'border-s-[#EC4899] bg-[rgba(236,72,153,0.08)] text-[#F472B6] font-semibold'
+      ? 'border-s-[#BE185D] bg-pink-900/10 text-pink-900 dark:border-s-[#EC4899] dark:bg-[rgba(236,72,153,0.08)] dark:text-[#F472B6] font-semibold'
       : 'border-s-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
   )
 
@@ -43,17 +43,17 @@ const DeptSidebar = () => {
   return (
     <aside className="flex flex-col w-[240px] min-h-screen shrink-0 bg-[var(--bg-sidebar)] border-e border-[var(--border)]">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-[var(--border)]">
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0" style={{ background: 'linear-gradient(135deg, #EC4899, #F43F5E)' }}>
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0" style={{ background: 'linear-gradient(135deg, #BE185D, #9D174D)' }}>
           <Icon d="M12 3v18M3 12h18" className="w-5 h-5 text-white" />
         </div>
         <div className="min-w-0">
           <p className="text-[var(--text-primary)] font-bold text-base leading-tight">MEMS</p>
-          <p className="text-[#EC4899] font-semibold text-xs leading-tight mt-0.5">Dept Portal</p>
+          <p className="text-[#BE185D] dark:text-[#EC4899] font-semibold text-xs leading-tight mt-0.5">Dept Portal</p>
         </div>
       </div>
 
       <div className="mx-5 my-2.5 text-center mt-3">
-        <div className="inline-block px-3 py-1.5 rounded-lg bg-pink-700/10 border border-[rgba(236,72,153,0.25)] text-pink-800 dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
+        <div className="inline-block px-3 py-1.5 rounded-lg bg-pink-900/10 border border-pink-900/25 text-pink-900 dark:border-[rgba(236,72,153,0.25)] dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6] text-[0.7rem] font-bold uppercase tracking-[0.08em]">
           DEPT SUPERVISOR
         </div>
       </div>
@@ -81,12 +81,12 @@ const DeptSidebar = () => {
       </nav>
 
       <div className="flex items-center gap-3 px-4 py-3 border-t border-[var(--border)]">
-        <div className="flex items-center justify-center w-[34px] h-[34px] rounded-full text-white text-xs font-semibold shrink-0" style={{ background: 'linear-gradient(135deg, #EC4899, #F43F5E)' }}>
+        <div className="flex items-center justify-center w-[34px] h-[34px] rounded-full text-white text-xs font-semibold shrink-0" style={{ background: 'linear-gradient(135deg, #BE185D, #9D174D)' }}>
           {user?.initials}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[var(--text-primary)] text-sm font-bold truncate">{user?.name}</p>
-          <p className="text-[#F472B6] text-xs font-semibold truncate">Dept Supervisor</p>
+          <p className="text-[#BE185D] dark:text-[#F472B6] text-xs font-semibold truncate">Dept Supervisor</p>
         </div>
         <button type="button" onClick={handleLogout} className="flex items-center justify-center w-8 h-8 rounded-md text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors shrink-0" aria-label="Logout">
           <Icon d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -101,6 +101,7 @@ const DeptTopbar = ({ title }) => {
   const [showNotifications, setShowNotifications] = useState(false)
   const containerRef = useRef(null)
   const dateString = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }), [])
+  const { user } = useAuthStore()
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -116,6 +117,11 @@ const DeptTopbar = ({ title }) => {
     <header className="sticky top-0 z-40 flex items-center gap-4 h-[60px] px-7 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
       <h1 className="text-base font-bold text-[var(--text-primary)]">{title}</h1>
       <div className="flex-1" />
+      {user?.department && (
+        <span className="bg-pink-900/10 text-pink-900 dark:bg-[rgba(236,72,153,0.12)] dark:text-[#F472B6] px-2.5 py-1 rounded-md text-[0.7rem] font-bold tracking-wide border border-pink-900/20 dark:border-[rgba(236,72,153,0.25)]">
+          {user.department.name}
+        </span>
+      )}
       <ThemeToggle />
       <LanguageSwitcher />
       <div className="relative" ref={containerRef}>

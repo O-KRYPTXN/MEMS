@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import Panel from '../../components/ui/Panel'
@@ -55,12 +56,7 @@ const Devices = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { showToast } = useToastStore()
-  
-  // State
-  const [devices, setDevices] = useState([])
-  const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1 })
-  const [stats, setStats] = useState({ total: 0, operational: 0, faulty: 0, maintenance: 0, decommissioned: 0 })
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
   
   // Filters
   const [search, setSearch] = useState('')
@@ -86,42 +82,27 @@ const Devices = () => {
     return () => clearTimeout(handler)
   }, [search])
 
-  // Fetch Data
-  useEffect(() => {
-    const fetchDevices = async () => {
-      try {
-        setIsLoading(true)
-        const params = {
-          page: currentPage,
-          limit: ROWS_PER_PAGE,
-          search: debouncedSearch || undefined,
-          status: activeTab || statusFilter || undefined,
-          category: categoryFilter || undefined,
-        }
-        const data = await deviceService.getDevices(params)
-        setDevices(data.items || [])
-        setMeta(data.meta || { totalItems: 0, totalPages: 1 })
-      } catch (err) {
-        showToast('Failed to load devices', TOAST_COLORS.error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchDevices()
-  }, [currentPage, debouncedSearch, statusFilter, categoryFilter, activeTab, showToast])
-
   // Fetch Stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await deviceService.getDeviceStats()
-        setStats(res.data)
-      } catch (err) {
-        console.error('Failed to load stats', err)
-      }
-    }
-    fetchStats()
-  }, [])
+  const { data: statsData } = useQuery({
+    queryKey: ['deviceStats'],
+    queryFn: () => deviceService.getDeviceStats()
+  })
+  const stats = statsData?.data || { total: 0, operational: 0, faulty: 0, maintenance: 0, decommissioned: 0 }
+
+  // Fetch Devices
+  const { data, isLoading } = useQuery({
+    queryKey: ['devices', { page: currentPage, search: debouncedSearch, status: activeTab || statusFilter, category: categoryFilter }],
+    queryFn: () => deviceService.getDevices({
+      page: currentPage,
+      limit: ROWS_PER_PAGE,
+      search: debouncedSearch || undefined,
+      status: activeTab || statusFilter || undefined,
+      category: categoryFilter || undefined,
+    }),
+  })
+
+  const devices = data?.items || []
+  const meta = data?.meta || { totalItems: 0, totalPages: 1 }
 
   const openDevice = useCallback((row) => { setViewDevice(row); setShowModal(true) }, [])
 

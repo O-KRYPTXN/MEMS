@@ -37,7 +37,7 @@ export const login = async (req, res) => {
         initials: user.initials,
         theme: user.theme,
         language: user.language,
-        department: user.department ? user.department.name : null,
+        department: user.department,
         departmentId: user.departmentId,
       },
     });
@@ -150,7 +150,7 @@ export const updateProfileHandler = async (req, res) => {
         initials: updatedUser.initials,
         theme: updatedUser.theme,
         language: updatedUser.language,
-        department: updatedUser.department ? updatedUser.department.name : null,
+        department: updatedUser.department,
         departmentId: updatedUser.departmentId,
       }
     });

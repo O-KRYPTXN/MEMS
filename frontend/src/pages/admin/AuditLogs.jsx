@@ -41,7 +41,7 @@ const AuditLogs = () => {
     { 
       key: 'createdAt', 
       label: t('admin.audit.timestamp', 'Timestamp'), 
-      render: val => <span className="text-[#94A3B8] text-sm whitespace-nowrap">{formatDate(val)}</span> 
+      render: val => <span className="text-[var(--text-muted)] text-sm whitespace-nowrap">{formatDate(val)}</span> 
     },
     { 
       key: 'user', 
@@ -80,7 +80,7 @@ const AuditLogs = () => {
       render: (_, row) => (
         <button
           onClick={() => setSelectedLog(row)}
-          className="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[#94A3B8] hover:text-[var(--text-primary)] transition-colors"
+          className="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
           title={t('admin.audit.viewDetails', 'View Details')}
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">

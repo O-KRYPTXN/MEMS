@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
 import SelectField from '../../components/forms/SelectField'
 import InputField from '../../components/forms/InputField'
@@ -35,11 +36,7 @@ export default function SupervisorDevices() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   
-  // State
-  const [devices, setDevices] = useState([])
-  const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1 })
-  const [stats, setStats] = useState({ total: 0, operational: 0, faulty: 0, maintenance: 0, decommissioned: 0 })
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
   
   // Filters
   const [activeTab, setActiveTab] = useState('')
@@ -67,65 +64,50 @@ export default function SupervisorDevices() {
     return () => clearTimeout(handler)
   }, [search])
 
-  // Fetch Devices
-  const fetchDevices = async () => {
-    try {
-      setIsLoading(true)
-      const params = {
-        page: currentPage,
-        limit: ROWS,
-        search: debouncedSearch || undefined,
-        status: activeTab || undefined,
-        departmentId: deptFilter || undefined,
-        category: categoryFilter || undefined,
-      }
-      const data = await deviceService.getDevices(params)
-      setDevices(data.items || [])
-      setMeta(data.meta || { totalItems: 0, totalPages: 1 })
-    } catch (err) {
-      showToast('Failed to load devices', TOAST_COLORS.error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchDevices()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, debouncedSearch, activeTab, deptFilter, categoryFilter])
-
   // Fetch Stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await deviceService.getDeviceStats()
-        setStats(res.data)
-      } catch (err) {
-        console.error('Failed to load stats', err)
-      }
-    }
-    fetchStats()
-  }, [])
+  const { data: statsData } = useQuery({
+    queryKey: ['deviceStats'],
+    queryFn: () => deviceService.getDeviceStats()
+  })
+  const stats = statsData?.data || { total: 0, operational: 0, faulty: 0, maintenance: 0, decommissioned: 0 }
+
+  // Fetch Devices
+  const { data, isLoading } = useQuery({
+    queryKey: ['devices', { page: currentPage, search: debouncedSearch, status: activeTab, departmentId: deptFilter, category: categoryFilter }],
+    queryFn: () => deviceService.getDevices({
+      page: currentPage,
+      limit: ROWS,
+      search: debouncedSearch || undefined,
+      status: activeTab || undefined,
+      departmentId: deptFilter || undefined,
+      category: categoryFilter || undefined,
+    }),
+  })
+
+  const devices = data?.items || []
+  const meta = data?.meta || { totalItems: 0, totalPages: 1 }
 
   useEffect(() => {
     if (showFaultModal) setFaultDeviceId(selectedDevice?.id || '')
   }, [showFaultModal, selectedDevice])
 
-  const handleReportFault = async (e) => {
-    e.preventDefault()
-    if (!faultDeviceId) return showToast(t('supDevices.toastSelectDevice'), TOAST_COLORS.error)
-    
-    try {
-      await deviceService.updateDeviceStatus(faultDeviceId, 'FAULTY')
+  const faultMutation = useMutation({
+    mutationFn: (id) => deviceService.updateDeviceStatus(id, 'FAULTY'),
+    onSuccess: () => {
       showToast(t('supDevices.toastFaultReported'), TOAST_COLORS.supervisor)
       setShowFaultModal(false)
-      fetchDevices() // Refetch
-      // Update stats manually or refetch stats
-      const newStats = await deviceService.getDeviceStats()
-      setStats(newStats.data)
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: ['devices'] })
+      queryClient.invalidateQueries({ queryKey: ['deviceStats'] })
+    },
+    onError: () => {
       showToast('Failed to report fault', TOAST_COLORS.error)
     }
+  })
+
+  const handleReportFault = (e) => {
+    e.preventDefault()
+    if (!faultDeviceId) return showToast(t('supDevices.toastSelectDevice'), TOAST_COLORS.error)
+    faultMutation.mutate(faultDeviceId)
   }
 
   const getTabCount = (val) => {
@@ -244,8 +226,8 @@ export default function SupervisorDevices() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowFaultModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <ModalPrimaryBtn type="submit" form="fault-form" color="#14B8A6">
-              {t('supDevices.submitFaultReport')}
+            <ModalPrimaryBtn type="submit" form="fault-form" disabled={faultMutation.isPending} color="#14B8A6">
+              {faultMutation.isPending ? t('common.loading') : t('supDevices.submitFaultReport')}
             </ModalPrimaryBtn>
           </>
         }

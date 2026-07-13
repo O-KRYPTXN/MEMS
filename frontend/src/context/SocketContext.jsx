@@ -45,6 +45,8 @@ export const SocketProvider = ({ children }) => {
     const onNotificationNew = (alert) => {
       incrementUnread();
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['parts'] });
+      queryClient.invalidateQueries({ queryKey: ['partRequests'] });
 
       // Toast for high priority alerts
       if (alert?.type === 'CRITICAL' || alert?.type === 'HIGH' || alert?.type === 'WARNING') {

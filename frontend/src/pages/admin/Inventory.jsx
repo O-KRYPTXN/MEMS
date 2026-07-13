@@ -17,10 +17,10 @@ function getStatus(item) {
 }
 
 function getQtyColor(item) {
-  if (item.qty === 0) return 'text-[#F87171]'
-  if (item.qty <= Math.ceil(item.minLevel * 0.3)) return 'text-[#F87171]'
-  if (item.qty <= item.minLevel) return 'text-[#FCD34D]'
-  return 'text-[#4ADE80]'
+  if (item.qty === 0) return 'text-red-700 dark:text-[#F87171]'
+  if (item.qty <= Math.ceil(item.minLevel * 0.3)) return 'text-red-700 dark:text-[#F87171]'
+  if (item.qty <= item.minLevel) return 'text-amber-700 dark:text-[#FCD34D]'
+  return 'text-green-700 dark:text-[#4ADE80]'
 }
 
 const fmt = (n) =>
@@ -244,7 +244,7 @@ export default function Inventory() {
   const renderPagination = () => (
     <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
       <span className="text-[0.8rem] text-[var(--text-muted)]">
-        {filtered.length === 0 ? t('common.noResults') : t('users.showingResults', { start, end, total: filtered.length })}
+        {filtered.length === 0 ? t('common.noResults') : t('common.showingResults', { start, end, total: filtered.length })}
       </span>
       <div className="flex items-center gap-1">
         <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
@@ -340,7 +340,7 @@ export default function Inventory() {
         </div>
       </div>
 
-      {!bannerDismissed && (outOfStock > 0 || lowStock > 0) && (
+      {!bannerDismissed && (outOfStock > 0) && (
         <div className="flex items-center gap-[14px] bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.3)] rounded-[12px] p-[14px] px-[18px]">
           <div className="w-[38px] h-[38px] shrink-0 rounded-full bg-[rgba(239,68,68,0.15)] flex items-center justify-center">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-[20px] h-[20px] text-[#F87171]">

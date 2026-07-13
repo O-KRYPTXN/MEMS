@@ -71,7 +71,7 @@ export async function createPartRequest(data) {
   await createAlert({
     type: 'INFO',
     title: 'New Part Request',
-    subtitle: `${partRequest.requestNumber} requires approval`,
+    subtitle: `${partRequest.qty}x ${partRequest.part.name} requested by ${partRequest.user.name}${partRequest.workOrder ? ` for ${partRequest.workOrder.workOrderNumber}` : ''}.`,
     targetRoles: ['STORE', 'SUPERVISOR'],
     partRequestId: partRequest.id
   });
@@ -140,7 +140,7 @@ export async function updateRequestStatus(id, data) {
 
   const request = await prisma.partRequest.findUnique({
     where: { id },
-    include: { part: true }
+    include: { part: true, workOrder: true, user: true }
   });
 
   if (!request) {
@@ -185,7 +185,8 @@ export async function updateRequestStatus(id, data) {
         include: {
           part: true,
           user: { select: { id: true, name: true, role: true } },
-          reviewedBy: { select: { id: true, name: true, role: true } }
+          reviewedBy: { select: { id: true, name: true, role: true } },
+          workOrder: true
         }
       }),
       prisma.part.update({
@@ -208,7 +209,7 @@ export async function updateRequestStatus(id, data) {
     await createAlert({
       type: 'SUCCESS',
       title: 'Part Request Fulfilled',
-      subtitle: `${request.requestNumber} has been fulfilled by the store`,
+      subtitle: `${updatedRequest.qty}x ${updatedRequest.part.name} have been issued${updatedRequest.workOrder ? ` for ${updatedRequest.workOrder.workOrderNumber}` : ''}.`,
       userId: updatedRequest.userId,
       partRequestId: updatedRequest.id
     });
@@ -238,7 +239,8 @@ export async function updateRequestStatus(id, data) {
     include: {
       part: true,
       user: { select: { id: true, name: true, role: true } },
-      reviewedBy: { select: { id: true, name: true, role: true } }
+      reviewedBy: { select: { id: true, name: true, role: true } },
+      workOrder: true
     }
   });
 
@@ -255,7 +257,7 @@ export async function updateRequestStatus(id, data) {
     await createAlert({
       type: 'INFO',
       title: 'Part Request Approved',
-      subtitle: `${request.requestNumber} has been approved`,
+      subtitle: `${updatedRequest.qty}x ${updatedRequest.part.name} approved for ${updatedRequest.user.name}.`,
       userIds: [updatedRequest.userId],
       targetRoles: ['STORE'],
       partRequestId: updatedRequest.id
@@ -264,7 +266,7 @@ export async function updateRequestStatus(id, data) {
     await createAlert({
       type: 'WARNING',
       title: 'Part Request Rejected',
-      subtitle: `${request.requestNumber} has been rejected`,
+      subtitle: `Request for ${updatedRequest.qty}x ${updatedRequest.part.name} was rejected.`,
       userId: updatedRequest.userId,
       partRequestId: updatedRequest.id
     });

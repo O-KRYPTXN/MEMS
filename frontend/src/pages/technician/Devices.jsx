@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
 import InputField from '../../components/forms/InputField'
 import SelectField from '../../components/forms/SelectField'
@@ -36,9 +37,8 @@ const DeviceStatusBadge = ({ status }) => {
 export default function TechDevices() {
   const { t } = useTranslation()
   
-  const [devices, setDevices] = useState([])
-  const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1 })
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+  
   
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -60,39 +60,34 @@ export default function TechDevices() {
     return () => clearTimeout(handler)
   }, [search])
 
-  const fetchDevices = async () => {
-    try {
-      setIsLoading(true)
-      const params = {
-        page: currentPage,
-        limit: ROWS,
-        search: debouncedSearch || undefined,
-      }
-      const data = await deviceService.getDevices(params)
-      setDevices(data.items || [])
-      setMeta(data.meta || { totalItems: 0, totalPages: 1 })
-    } catch (err) {
-      showToast('Failed to load devices', TOAST_COLORS.error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { data, isLoading } = useQuery({
+    queryKey: ['devices', { page: currentPage, search: debouncedSearch }],
+    queryFn: () => deviceService.getDevices({
+      page: currentPage,
+      limit: ROWS,
+      search: debouncedSearch || undefined,
+    }),
+  })
 
-  useEffect(() => {
-    fetchDevices()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, debouncedSearch])
+  const devices = data?.items || []
+  const meta = data?.meta || { totalItems: 0, totalPages: 1 }
 
-  const handleReportFault = async (e) => {
-    e.preventDefault()
-    try {
-      await deviceService.updateDeviceStatus(selectedDevice.id, 'FAULTY')
-      showToast(t('common.toastFaultLogged', { id: selectedDevice.assetCode }), TOAST_COLORS.technician)
+  const faultMutation = useMutation({
+    mutationFn: (id) => deviceService.updateDeviceStatus(id, 'FAULTY'),
+    onSuccess: () => {
+      showToast(t('common.toastFaultLogged', { id: selectedDevice?.assetCode }), TOAST_COLORS.technician)
       setShowFaultModal(false)
-      fetchDevices() // Refetch
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: ['devices'] })
+    },
+    onError: () => {
       showToast('Failed to report fault', TOAST_COLORS.error)
     }
+  })
+
+  const handleReportFault = (e) => {
+    e.preventDefault()
+    if (!selectedDevice) return
+    faultMutation.mutate(selectedDevice.id)
   }
 
   return (
@@ -164,7 +159,7 @@ export default function TechDevices() {
         footer={
           <>
             <ModalCancelBtn onClick={() => setShowFaultModal(false)}>{t('common.cancel')}</ModalCancelBtn>
-            <button type="submit" form="fault-form" className="px-4 py-2 bg-red-700/10 border border-red-700/30 dark:border-[rgba(239,68,68,0.25)] text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171] hover:bg-[rgba(239,68,68,0.2)] rounded-lg text-[13px] font-bold transition-colors">{t('common.submitFault')}</button>
+            <button type="submit" form="fault-form" disabled={faultMutation.isPending} className="px-4 py-2 bg-red-700/10 border border-red-700/30 dark:border-[rgba(239,68,68,0.25)] text-red-800 dark:bg-[rgba(239,68,68,0.12)] dark:text-[#F87171] hover:bg-[rgba(239,68,68,0.2)] rounded-lg text-[13px] font-bold transition-colors disabled:opacity-50">{faultMutation.isPending ? t('common.loading') : t('common.submitFault')}</button>
           </>
         }
       >

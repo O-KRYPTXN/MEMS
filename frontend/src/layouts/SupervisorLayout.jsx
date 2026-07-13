@@ -29,7 +29,7 @@ const navLinkClass = ({ isActive }) =>
   clsx(
     'flex items-center gap-3 px-5 py-2.5 border-s-[3px] text-sm transition-colors relative',
     isActive
-      ? 'border-s-[#14B8A6] bg-[rgba(20,184,166,0.08)] text-[#14B8A6] font-semibold'
+      ? 'border-s-[#14B8A6] bg-teal-600/10 text-teal-700 dark:bg-[rgba(20,184,166,0.08)] dark:text-[#2DD4BF] font-semibold'
       : 'border-s-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
   )
 
@@ -130,6 +130,7 @@ const SupervisorSidebar = () => {
 }
 
 const SupervisorTopbar = ({ title }) => {
+  const { user } = useAuthStore()
   const unreadCount = useNotificationStore((s) => s.unreadCount)
   const [showNotifications, setShowNotifications] = useState(false)
   const containerRef = useRef(null)
@@ -150,9 +151,11 @@ const SupervisorTopbar = ({ title }) => {
       <h1 className="text-base font-bold text-[var(--text-primary)]">{title}</h1>
       <div className="flex-1" />
       
-      <div className="flex items-center justify-center bg-[rgba(20,184,166,0.12)] border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] rounded-full px-[10px] py-[4px] text-[0.72rem] font-bold text-[#14B8A6]">
-        ICU & Emergency Dept
-      </div>
+      {user?.department?.name && (
+        <div className="flex items-center justify-center bg-[rgba(20,184,166,0.12)] border border-teal-700/30 dark:border-[rgba(20,184,166,0.25)] rounded-full px-[10px] py-[4px] text-[0.72rem] font-bold text-[#14B8A6]">
+          {user.department.name}
+        </div>
+      )}
 
       <ThemeToggle />
       <LanguageSwitcher />

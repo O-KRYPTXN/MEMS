@@ -45,7 +45,7 @@ const navLinkClass = ({ isActive }) =>
   clsx(
     'flex items-center gap-3 px-5 py-2 border-s-[3px] text-sm transition-colors',
     isActive
-      ? 'border-s-[#3B72F6] bg-[rgba(59,114,246,0.08)] text-[#5E8FFF] font-semibold'
+      ? 'border-s-[#3B72F6] bg-blue-600/10 text-blue-700 dark:bg-[rgba(59,114,246,0.08)] dark:text-[#5E8FFF] font-semibold'
       : 'border-s-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
   )
 
